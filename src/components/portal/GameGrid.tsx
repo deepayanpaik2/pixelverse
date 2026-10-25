@@ -38,7 +38,7 @@ export function GameGrid({ games, pageSize = 48, mosaic = false, className }: Ga
   const hasMore = visible < total;
 
   const loadMore = useCallback(() => {
-    setCount((c) => Math.min(c + pageSize * 2, total));
+    setCount((c) => Math.min(c + pageSize, total));
   }, [pageSize, total]);
 
   useEffect(() => {
@@ -67,7 +67,7 @@ export function GameGrid({ games, pageSize = 48, mosaic = false, className }: Ga
 
   return (
     <div className="space-y-6">
-      <div className={className || `grid gap-3.5 sm:gap-5 ${mosaic ? MOSAIC_COLS : DEFAULT_COLS}`}>
+      <div className={className || `grid gap-2.5 sm:gap-4 lg:gap-5 ${mosaic ? MOSAIC_COLS : DEFAULT_COLS}`}>
         {games.slice(0, visible).map((game, idx) => (
           <GameTile
             key={game.id}

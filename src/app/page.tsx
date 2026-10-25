@@ -56,7 +56,7 @@ function Shelf({
           </Link>
         )}
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5 sm:gap-5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-4 lg:gap-5">
         {games.map((game) => (
           <GameTile key={game.id} game={game} size="1x1" />
         ))}
@@ -91,7 +91,7 @@ export default function HomePage() {
   );
 
   return (
-    <div className="space-y-12 sm:space-y-16 pb-24 max-w-[1920px] mx-auto w-full px-2 sm:px-4 lg:px-6">
+    <div className="space-y-8 sm:space-y-14 pb-20 max-w-[1920px] mx-auto w-full px-1.5 sm:px-4 lg:px-6">
       {/* 3D Spotlight Cockpit Hero */}
       <SpotlightHero games={spotlightGames} />
 
@@ -99,30 +99,30 @@ export default function HomePage() {
       <CategoryChips />
 
       {/* Fresh Releases Section: 3D Mosaic Grid */}
-      <section className="space-y-4 fade-up">
+      <section className="space-y-3.5 sm:space-y-4 fade-up">
         <div className="section-head">
-          <div className="flex items-center gap-3.5">
-            <div className="gaming-icon-box w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 text-[var(--accent)]">
-              <Sparkles className="w-5 h-5 fill-current" />
+          <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+            <div className="gaming-icon-box w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0 text-[var(--accent)]">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
             </div>
-            <div>
-              <h2 className="text-xl sm:text-2xl text-white font-display font-extrabold tracking-tight flex items-center gap-2">
+            <div className="min-w-0">
+              <h2 className="text-lg sm:text-2xl text-white font-display font-extrabold tracking-tight flex items-center gap-2 truncate">
                 New Releases
               </h2>
-              <p className="text-xs text-slate-400 font-medium">Fresh from the arcade feed, newest first</p>
+              <p className="text-xs text-slate-400 font-medium truncate">Fresh from the arcade feed, newest first</p>
             </div>
           </div>
           <Link
             href="/new"
             onClick={() => playSfx('tap')}
-            className="glass-chip shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black text-slate-200 hover:text-white transition-all group"
+            className="glass-chip shrink-0 flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl text-xs font-black text-slate-200 hover:text-white transition-all group"
           >
-            <span>View All New</span>
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            <span>View All</span>
+            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 grid-flow-dense gap-3.5 sm:gap-5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 grid-flow-dense gap-2.5 sm:gap-4 lg:gap-5">
           {freshGames.map((game, idx) => (
             <GameTile
               key={game.id}

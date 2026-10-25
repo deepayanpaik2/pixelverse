@@ -67,10 +67,10 @@ function GameTileBase({ game, size = '1x1', priority = false }: GameTileProps) {
       title={game.title}
       onPointerMove={onTilt}
       onPointerLeave={onTiltEnd}
-      className={`game-tile group relative rounded-[1.4rem] p-2 bg-[#090b14]/90 border border-white/[0.12] ${outlineTheme.tileHoverBorder} transition-all flex flex-col justify-between ${SIZE_CLASSES[size]}`}
+      className={`game-tile group relative rounded-[1.2rem] sm:rounded-[1.4rem] p-1.5 sm:p-2 bg-[#090b14]/90 border border-white/[0.12] ${outlineTheme.tileHoverBorder} transition-all flex flex-col justify-between ${SIZE_CLASSES[size]}`}
     >
-      {/* 3D Depth Reactive Ambient Glow customized per game outline theme */}
-      <div className="absolute inset-0 z-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+      {/* 3D Depth Reactive Ambient Glow customized per game outline theme (desktop hover only) */}
+      <div className="hidden sm:block absolute inset-0 z-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">
         <div
           className="absolute -inset-2 rounded-[1.6rem] blur-2xl opacity-40 transition-all duration-300"
           style={{
@@ -81,7 +81,7 @@ function GameTileBase({ game, size = '1x1', priority = false }: GameTileProps) {
 
       {/* Upper Image Frame (100% Whole Uncropped Artwork with Creative Outline Frame) */}
       <div
-        className={`relative w-full rounded-[1.1rem] overflow-hidden bg-[#060812] border ${outlineTheme.borderClass} ${outlineTheme.hoverBorderClass} ${outlineTheme.glowShadowClass} transition-all duration-300 shrink-0 flex items-center justify-center ${
+        className={`relative w-full rounded-[1rem] sm:rounded-[1.1rem] overflow-hidden bg-[#060812] border ${outlineTheme.borderClass} ${outlineTheme.hoverBorderClass} ${outlineTheme.glowShadowClass} transition-all duration-300 shrink-0 flex items-center justify-center ${
           size === 'wide'
             ? 'aspect-[16/7]'
             : size === '2x2'
@@ -178,37 +178,37 @@ function GameTileBase({ game, size = '1x1', priority = false }: GameTileProps) {
       </div>
 
       {/* Clean Info Area UNDER the Image (Zero artwork obstruction!) */}
-      <div className="w-full px-1.5 pt-2.5 pb-1 flex flex-col justify-center">
-        <div className="flex items-center justify-between gap-1.5 min-w-0">
+      <div className="w-full px-1 pt-1.5 sm:px-1.5 sm:pt-2.5 pb-0.5 sm:pb-1 flex flex-col justify-center min-w-0">
+        <div className="flex items-center justify-between gap-1 min-w-0">
           <h3
             className={`font-display font-extrabold text-white truncate group-hover:text-white transition-colors leading-tight ${
-              big ? 'text-base sm:text-lg' : 'text-xs sm:text-[13px]'
+              big ? 'text-sm sm:text-base lg:text-lg' : 'text-[11.5px] sm:text-[13px]'
             }`}
           >
             {game.title}
           </h3>
           {hasRating && (
-            <div className="flex items-center gap-1 text-[11px] text-amber-300 font-black shrink-0 tabular-nums">
-              <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+            <div className="flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-[11px] text-amber-300 font-black shrink-0 tabular-nums">
+              <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-amber-400 text-amber-400" />
               <span>{game.rating_score}</span>
             </div>
           )}
         </div>
 
-        <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium mt-1">
+        <div className="flex items-center justify-between text-[9px] sm:text-[10px] text-slate-400 font-medium mt-0.5 sm:mt-1 gap-1 min-w-0">
           <span
-            className="truncate font-semibold tracking-wide text-[10.5px]"
+            className="truncate font-semibold tracking-wide text-[9.5px] sm:text-[10.5px]"
             style={{ color: outlineTheme.accentHex }}
           >
             {game.category}
           </span>
-          <span className="shrink-0 text-slate-500 font-mono text-[9px] uppercase tracking-wide">
+          <span className="shrink-0 text-slate-500 font-mono text-[8.5px] sm:text-[9px] uppercase tracking-wide">
             {game.supported_players}
           </span>
         </div>
 
         {size === '2x2' && game.description && (
-          <p className="text-[11px] text-slate-300 line-clamp-2 mt-1.5 leading-relaxed font-normal">
+          <p className="text-[10.5px] sm:text-[11px] text-slate-300 line-clamp-2 mt-1 sm:mt-1.5 leading-relaxed font-normal">
             {game.description}
           </p>
         )}

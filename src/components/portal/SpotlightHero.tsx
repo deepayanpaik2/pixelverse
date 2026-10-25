@@ -39,7 +39,7 @@ export function SpotlightHero({ games }: SpotlightHeroProps) {
 
   return (
     <div
-      className="relative overflow-hidden rounded-[2.5rem] border border-white/[0.15] bg-[#06070b]/90 min-h-[32rem] lg:h-[38rem] shadow-[0_30px_70px_-20px_rgba(0,0,0,0.95)] group fade-in card-3d"
+      className="relative overflow-hidden rounded-2xl sm:rounded-[2.5rem] border border-white/[0.15] bg-[#06070b]/90 min-h-[26rem] sm:min-h-[32rem] lg:h-[38rem] shadow-[0_20px_50px_-15px_rgba(0,0,0,0.9)] group fade-in card-3d"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
@@ -77,58 +77,73 @@ export function SpotlightHero({ games }: SpotlightHeroProps) {
       <div className="absolute inset-0 z-10 bg-gradient-to-r from-[#06070b]/90 via-[#06070b]/40 to-transparent" />
 
       {/* Content Container */}
-      <div className="relative z-30 h-full flex flex-col md:flex-row items-end md:items-center justify-between gap-8 p-6 sm:p-12 lg:p-16">
+      <div className="relative z-30 h-full flex flex-col md:flex-row items-stretch md:items-center justify-between gap-6 sm:gap-8 p-4 sm:p-10 lg:p-16">
         {/* Frosted 3D HUD Information Cockpit */}
         <div
           key={current.id}
-          className="fade-up glass-panel rounded-[2rem] p-6 sm:p-10 max-w-xl w-full space-y-5 border border-white/15 shadow-[0_20px_50px_-10px_rgba(0,0,0,0.85)] relative overflow-hidden"
+          className="fade-up glass-panel rounded-2xl sm:rounded-[2rem] p-4 sm:p-8 lg:p-10 max-w-xl w-full space-y-4 sm:space-y-5 border border-white/15 shadow-[0_20px_50px_-10px_rgba(0,0,0,0.85)] relative overflow-hidden"
         >
           {/* Subtle Ambient Light Sweep */}
           <div className="absolute -top-24 -left-24 w-48 h-48 rounded-full bg-[var(--accent)] opacity-15 blur-2xl pointer-events-none" />
 
           {/* Badges strip with perfect alignment */}
-          <div className="flex flex-wrap items-center gap-2.5">
-            <span className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-[var(--accent)] to-[var(--accent-secondary)] text-[#06070b] text-[11px] font-black uppercase tracking-wider shadow-[0_0_16px_var(--accent-glow)]">
-              <Sparkles className="w-3.5 h-3.5 fill-current" /> Featured
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-[var(--accent)] to-[var(--accent-secondary)] text-[#06070b] text-[10px] sm:text-[11px] font-black uppercase tracking-wider shadow-[0_0_12px_var(--accent-glow)]">
+              <Sparkles className="w-3 h-3 fill-current" /> Featured
             </span>
-            <span className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-black bg-white/[0.08] border border-white/15 text-[var(--accent)] drop-shadow-sm backdrop-blur-md">
+            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-black bg-white/[0.08] border border-white/15 text-[var(--accent)] drop-shadow-sm backdrop-blur-md">
               <Zap className="w-3 h-3" /> {current.category}
             </span>
-            <span className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-black bg-white/[0.08] border border-white/15 text-slate-200 drop-shadow-sm backdrop-blur-md">
+            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-black bg-white/[0.08] border border-white/15 text-slate-200 drop-shadow-sm backdrop-blur-md">
               <Gamepad2 className="w-3 h-3 text-[var(--accent-secondary)]" /> {current.supported_players}
             </span>
+          </div>
+
+          {/* Mobile Proportionate Game Preview Photo */}
+          <div className="block md:hidden w-full aspect-[16/8] rounded-xl overflow-hidden bg-black/60 border border-white/15 relative">
+            <img
+              src={current.thumbnail_url}
+              alt=""
+              aria-hidden
+              className="absolute inset-0 w-full h-full object-cover blur-md opacity-30"
+            />
+            <img
+              src={current.banner_url || current.thumbnail_url}
+              alt={current.title}
+              className="relative z-10 w-full h-full object-contain p-1"
+            />
           </div>
 
           {/* Spotlight Index HUD */}
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-[var(--accent)] animate-ping" />
-            <span className="text-[11px] font-mono font-bold tracking-widest text-[var(--accent)] uppercase">
+            <span className="text-[10px] sm:text-[11px] font-mono font-bold tracking-widest text-[var(--accent)] uppercase">
               // SPOTLIGHT 0{currentIndex + 1} OF 0{games.length}
             </span>
           </div>
 
           {/* Giant Title */}
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl text-white font-display font-extrabold leading-[1.05] tracking-tight drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)] line-clamp-2">
+          <h1 className="text-2xl sm:text-5xl lg:text-6xl text-white font-display font-extrabold leading-[1.1] tracking-tight drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)] line-clamp-2">
             {current.title}
           </h1>
 
           {/* Description */}
-          <p className="text-xs sm:text-sm text-slate-300 line-clamp-3 leading-relaxed font-medium">
+          <p className="text-xs sm:text-sm text-slate-300 line-clamp-2 sm:line-clamp-3 leading-relaxed font-medium">
             {current.description}
           </p>
 
           {/* Actions Cluster */}
-          <div className="pt-2 flex flex-wrap items-center gap-4">
+          <div className="pt-1 sm:pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
             <Link
               href={`/game/${current.slug}`}
               data-sfx="launch"
-              className="btn-gaming flex items-center gap-3 px-8 py-4 rounded-full font-black text-sm tracking-wider shadow-[0_12px_28px_-6px_var(--accent-glow)]"
+              className="btn-gaming flex items-center justify-center gap-3 px-8 py-3.5 sm:py-4 rounded-full font-black text-sm tracking-wider shadow-[0_12px_28px_-6px_var(--accent-glow)] w-full sm:w-auto text-center"
             >
               <Play className="w-4 h-4 fill-current ml-0.5" /> Play Now
             </Link>
 
-            <div className="flex items-center gap-2 text-[11px] font-bold text-slate-300 uppercase tracking-wide">
-              <ShieldCheck className="w-4 h-4 text-[var(--accent)]" />
+            <div className="flex items-center justify-center sm:justify-start gap-2 text-[10px] sm:text-[11px] font-bold text-slate-300 uppercase tracking-wide">
+              <ShieldCheck className="w-3.5 h-3.5 text-[var(--accent)]" />
               <span>Instant • Free • No Download</span>
             </div>
           </div>

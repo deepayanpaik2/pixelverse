@@ -301,8 +301,14 @@ h1[class*="font-"] { font-weight: 750; letter-spacing: -0.025em; }
 @keyframes aurora-b { to { transform: translate3d(-16vmax, 12vmax, 0) scale(.9); } }
 @keyframes aurora-c { to { transform: translate3d(-10vmax, -14vmax, 0) scale(1.2); } }
 
-@media (max-width: 640px) {
-  .aurora span { filter: blur(60px); width: 80vmax; height: 80vmax; opacity: .42; }
+@media (max-width: 768px), (hover: none) {
+  .aurora span {
+    filter: none !important;
+    animation: none !important;
+    opacity: 0.22 !important;
+    width: 90vw !important;
+    height: 90vw !important;
+  }
 }
 
 /* ---------- Falling glitter canvas ---------- */
@@ -354,11 +360,25 @@ html[data-playing="true"] .glitter { opacity: 0; }
 @keyframes shimmer { to { background-position-x: -200%; } }
 .tile-plate { background: linear-gradient(180deg, rgba(6, 7, 11, 0) 0%, rgba(6, 7, 11, .62) 40%, rgba(6, 7, 11, .95) 100%); }
 
-/* Touch screens have no hover: keep tiles still, show the outline while pressed */
-@media (hover: none) {
-  .game-tile:hover { transform: none; box-shadow: 0 10px 28px -16px rgba(0, 0, 0, 0.9); border-color: rgba(255,255,255,.09); }
-  .game-tile:hover::after { opacity: 0; }
-  .game-tile:active { transform: scale(.975); }
+/* Touch screens: disable 3D rotate perspective calculations and glare overlays for ultra-fluid 120Hz/60Hz scrolling */
+@media (hover: none), (max-width: 768px) {
+  .game-tile {
+    transform: none !important;
+    box-shadow: 0 4px 16px -6px rgba(0, 0, 0, 0.8) !important;
+    will-change: auto !important;
+  }
+  .game-tile:hover {
+    transform: none !important;
+    box-shadow: 0 4px 16px -6px rgba(0, 0, 0, 0.8) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+  }
+  .game-tile:hover::after {
+    display: none !important;
+  }
+  .game-tile:active {
+    transform: scale(0.98) !important;
+    transition-duration: 0.08s !important;
+  }
 }
 
 /* ---------- Ornament: the small diamond that marks every section title ---------- */
@@ -496,16 +516,16 @@ html[data-playing="true"] .glitter { opacity: 0; }
    Performance: fast, responsive rendering for 5000+ game catalog
    ========================================================================== */
 
-/* Game tiles: promote to compositor layer, contain layout/paint */
+/* Game tiles: promote layout containment safely without GPU layer exhaustion */
 .game-tile {
-  contain: layout style paint;
-  will-change: transform, box-shadow, border-color;
+  contain: layout style;
+  touch-action: manipulation;
 }
 
-/* offscreen tiles: defer paint until near viewport */
-.game-tile:not(:where([loading="eager"])) {
-  content-visibility: auto;
-  contain-intrinsic-size: 200px 150px;
+@media (hover: hover) {
+  .game-tile:hover {
+    will-change: transform;
+  }
 }
 
 /* Aurora: GPU-composited, low-frequency transforms */
@@ -513,14 +533,19 @@ html[data-playing="true"] .glitter { opacity: 0; }
   will-change: transform;
 }
 
-/* Throttled pointer events: avoid reflow during rapid hover moves */
-.game-tile {
-  touch-action: manipulation;
+/* Smooth native momentum scrolling without horizontal overflow */
+html {
+  overflow-x: hidden;
+  max-width: 100vw;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
 }
 
-/* Smooth but cheap scrolling */
-html {
-  scroll-behavior: smooth;
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }

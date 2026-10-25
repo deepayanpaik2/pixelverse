@@ -74,7 +74,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
             <div className="flex-1 flex w-full">
               <Sidebar />
               <div className="flex-1 min-w-0 flex flex-col">
-                <main id="main-content" className="flex-1 min-w-0 p-3 sm:p-6 lg:p-8 max-w-[1920px] mx-auto w-full pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-8">
+                <main id="main-content" className="flex-1 min-w-0 p-2 sm:p-6 lg:p-8 max-w-[1920px] mx-auto w-full pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-8">
                   {children}
                 </main>
                 <Footer />

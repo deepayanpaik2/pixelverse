@@ -131,6 +131,7 @@ export function Navbar() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
 
   const themeRef = useRef<HTMLDivElement>(null);
   const langRef = useRef<HTMLDivElement>(null);
@@ -185,36 +186,36 @@ export function Navbar() {
     <header className="sticky top-0 z-50 w-full drawer-neon border-b border-white/[0.12] px-3 sm:px-6 py-2.5 pt-[calc(0.625rem+env(safe-area-inset-top))] backdrop-blur-2xl">
       <div className="max-w-[1920px] mx-auto flex items-center justify-between gap-3 sm:gap-6">
         {/* Left Section: Mobile Menu Button & Brand Logo */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <button
             onClick={() => setMobileMenu(!mobileMenu)}
-            className="sm:hidden p-2.5 rounded-xl bg-black/50 border border-white/15 text-white hover:border-[var(--accent)] active:scale-95 transition-all shadow-md"
+            className="sm:hidden p-2 rounded-xl bg-black/50 border border-white/15 text-white hover:border-[var(--accent)] active:scale-95 transition-all shadow-md shrink-0"
             aria-label="Toggle menu"
           >
-            {mobileMenu ? <X className="w-5 h-5 text-[var(--accent)]" /> : <Menu className="w-5 h-5" />}
+            {mobileMenu ? <X className="w-4 h-4 text-[var(--accent)]" /> : <Menu className="w-4 h-4" />}
           </button>
 
           {/* Holographic 3D Brand Mark */}
           <Link
             href="/"
-            className="flex items-center gap-3 group shrink-0"
+            className="flex items-center gap-2.5 sm:gap-3 group shrink-0 min-w-0"
             aria-label="Pixelverse home"
             onClick={() => playSfx('tap')}
           >
-            <div className="relative">
+            <div className="relative shrink-0">
               <div className="absolute -inset-1 rounded-xl bg-[var(--accent)] opacity-20 blur-md group-hover:opacity-60 transition-opacity duration-300" />
-              <BrandMark className="relative w-9 h-9 sm:w-10 sm:h-10 drop-shadow-[0_0_12px_var(--accent-glow)] group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300" />
+              <BrandMark className="relative w-8 h-8 sm:w-10 sm:h-10 drop-shadow-[0_0_12px_var(--accent-glow)] group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300" />
             </div>
-            <div className="flex flex-col leading-none">
-              <div className="flex items-center gap-2">
-                <span className="font-display text-[1.25rem] sm:text-[1.4rem] font-black tracking-tight text-gradient">
+            <div className="flex flex-col leading-none min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="font-display text-[1.15rem] sm:text-[1.4rem] font-black tracking-tight text-gradient">
                   Pixelverse
                 </span>
-                <span className="px-1.5 py-0.5 rounded-full text-[9px] font-mono font-bold tracking-wider bg-white/5 border border-white/10 text-slate-300 group-hover:border-[var(--accent)]/50 group-hover:text-[var(--accent)] group-hover:shadow-[0_0_8px_var(--accent-glow)] transition-all">
+                <span className="hidden sm:inline-block px-1.5 py-0.5 rounded-full text-[9px] font-mono font-bold tracking-wider bg-white/5 border border-white/10 text-slate-300 group-hover:border-[var(--accent)]/50 group-hover:text-[var(--accent)] group-hover:shadow-[0_0_8px_var(--accent-glow)] transition-all">
                   by Deepayan
                 </span>
               </div>
-              <span className="text-[9px] sm:text-[10px] text-slate-400 mt-0.5 tracking-wider font-semibold uppercase flex items-center gap-1">
+              <span className="hidden sm:flex text-[9px] sm:text-[10px] text-slate-400 mt-0.5 tracking-wider font-semibold uppercase items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
                 14,000+ Online Games
               </span>
@@ -282,14 +283,28 @@ export function Navbar() {
         </div>
 
         {/* Right Section: Aligned 3D Gaming Action Controls */}
-        <div className="flex items-center gap-2 sm:gap-2.5">
+        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+          {/* Mobile Search Toggle Button */}
+          <button
+            type="button"
+            onClick={() => {
+              setShowMobileSearch(!showMobileSearch);
+              playSfx('tap');
+            }}
+            className="sm:hidden p-2 rounded-xl bg-black/60 border border-white/15 text-slate-200 hover:text-[var(--accent)] hover:border-[var(--accent)]/50 active:scale-95 transition-all shadow-sm"
+            title="Search Games"
+            aria-label="Search Games"
+          >
+            <Search className="w-4 h-4" />
+          </button>
+
           {/* Kids Mode Toggle Pill */}
           <button
             onClick={() => {
               setKidsMode(!kidsMode);
               playSfx('toggle');
             }}
-            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-black transition-all btn-3d ${
+            className={`hidden sm:flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-black transition-all btn-3d ${
               kidsMode
                 ? 'bg-emerald-400 text-black shadow-[0_4px_16px_rgba(52,211,153,0.5)] border border-emerald-300'
                 : 'bg-black/50 border border-white/15 text-slate-300 hover:text-white hover:border-white/30'
@@ -596,6 +611,58 @@ export function Navbar() {
               🚀 Submit Game
             </Link>
           </div>
+        </div>
+      )}
+
+      {/* Instant Mobile Quick Search Bar */}
+      {showMobileSearch && (
+        <div className="sm:hidden mt-2 pt-2 border-t border-white/10 animate-in fade-in slide-in-from-top-1 duration-150">
+          <form onSubmit={handleSearchSubmit} className="relative w-full">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            <input
+              type="text"
+              placeholder={t.searchPlaceholder}
+              value={searchQuery}
+              autoFocus
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setShowSuggestions(true);
+              }}
+              className="w-full bg-[#060810] border border-white/20 text-xs rounded-full pl-10 pr-10 py-2.5 text-white placeholder-slate-400 focus:outline-none focus:border-[var(--accent)]"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </form>
+
+          {showSuggestions && suggestions.length > 0 && (
+            <div className="mt-2 rounded-xl border border-white/15 bg-black/95 divide-y divide-white/5 max-h-56 overflow-y-auto">
+              {suggestions.map((game) => (
+                <Link
+                  key={game.id}
+                  href={`/game/${game.slug}`}
+                  onClick={() => {
+                    setShowSuggestions(false);
+                    setShowMobileSearch(false);
+                    playSfx('launch');
+                  }}
+                  className="flex items-center gap-3 p-2 hover:bg-white/10"
+                >
+                  <img src={game.thumbnail_url} alt="" className="w-8 h-8 rounded-lg object-contain bg-black/60 p-0.5 shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-bold text-white truncate">{game.title}</div>
+                    <div className="text-[10px] text-[var(--accent)] font-semibold">{game.category}</div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </header>

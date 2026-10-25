@@ -68,7 +68,10 @@ export function PointerFX() {
       const t = e.target instanceof Element ? e.target : null;
       const name = soundFor(t);
       playSfx(name);
-      if (!reduce) spawn(layer, e.clientX, e.clientY, name === 'launch' || name === 'open');
+      // Only spawn animated particles on mouse clicks to keep mobile touch scrolling 100% lag-free
+      if (!reduce && e.pointerType === 'mouse') {
+        spawn(layer, e.clientX, e.clientY, name === 'launch' || name === 'open');
+      }
     };
 
     let lastHover: Element | null = null;

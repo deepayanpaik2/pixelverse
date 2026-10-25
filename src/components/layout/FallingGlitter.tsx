@@ -76,6 +76,12 @@ export function FallingGlitter() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || intensity === 'minimal') return;
+
+    // On mobile touch devices, disable the continuous canvas animation loop to eliminate scroll lag and conserve mobile battery
+    if (window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches) {
+      return;
+    }
+
     const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
 

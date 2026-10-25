@@ -171,9 +171,15 @@ export function Sidebar() {
         </div>
       </aside>
 
-      {/* Mobile Sticky Bottom Navigation Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 drawer-neon border-t border-white/15 px-2 pt-1.5 pb-[calc(0.4rem+env(safe-area-inset-bottom))] flex items-stretch justify-around backdrop-blur-2xl">
-        {[mainNavItems[0], mainNavItems[1], mainNavItems[2], mainNavItems[3], mainNavItems[4], mainNavItems[6]].map((item) => {
+      {/* Mobile Sticky Bottom Navigation Bar — Golden 5-item thumb friendly layout */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 drawer-neon border-t border-white/15 px-1 pt-1.5 pb-[calc(0.5rem+env(safe-area-inset-bottom))] flex items-stretch justify-around backdrop-blur-2xl">
+        {[
+          { label: 'Home', href: '/', icon: Home },
+          { label: 'Recent', href: '/history', icon: Clock },
+          { label: 'New', href: '/new', icon: Sparkles },
+          { label: 'Hot', href: '/trending', icon: Flame },
+          { label: 'Favorites', href: '/favorites', icon: Heart, badge: favorites.length > 0 ? favorites.length : undefined },
+        ].map((item) => {
           const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
           const Icon = item.icon;
 
@@ -182,20 +188,20 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               onClick={() => playSfx('tap')}
-              className={`relative flex-1 min-w-0 flex flex-col items-center py-1 rounded-xl text-[10px] font-black transition-all ${
-                isActive ? 'text-[var(--accent)] scale-105' : 'text-slate-400 active:text-white'
+              className={`relative flex-1 min-w-0 flex flex-col items-center justify-center py-1 rounded-xl text-[10px] font-black transition-all ${
+                isActive ? 'text-[var(--accent)] font-extrabold' : 'text-slate-400 active:text-white'
               }`}
             >
               <div
                 className={`p-1 rounded-lg transition-all ${
-                  isActive ? 'bg-[var(--accent)]/20 shadow-[0_0_10px_var(--accent-glow)]' : ''
+                  isActive ? 'bg-[var(--accent)]/20 shadow-[0_0_10px_var(--accent-glow)] scale-105' : ''
                 }`}
               >
                 <Icon className="w-4 h-4 mb-0.5 fill-current" />
               </div>
-              <span className="w-full text-center truncate px-0.5 tracking-tight">{item.label}</span>
+              <span className="w-full text-center truncate px-0.5 tracking-tight text-[10px]">{item.label}</span>
               {item.badge !== undefined && (
-                <span className="absolute top-0.5 right-[20%] bg-rose-500 text-white text-[9px] min-w-[15px] h-[15px] px-1 rounded-full font-black flex items-center justify-center shadow-md">
+                <span className="absolute top-0.5 right-[22%] bg-rose-500 text-white text-[9px] min-w-[15px] h-[15px] px-1 rounded-full font-black flex items-center justify-center shadow-md">
                   {item.badge}
                 </span>
               )}
