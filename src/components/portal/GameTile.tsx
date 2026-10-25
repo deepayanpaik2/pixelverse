@@ -6,6 +6,7 @@ import { Play, Heart, Star, Sparkles } from 'lucide-react';
 import { GameManifest } from '@/types';
 import { useAuth } from '@/features/auth/AuthContext';
 import { NEW_GAME_IDS } from '@/lib/games';
+import { getOutlineTheme, GameIconOutline } from './GameIconOutline';
 
 interface GameTileProps {
   game: GameManifest;
@@ -33,6 +34,9 @@ function GameTileBase({ game, size = '1x1', priority = false }: GameTileProps) {
   const isNew = NEW_GAME_IDS.has(game.id);
   const hasRating = game.likes_count + game.dislikes_count > 0;
   const big = size !== '1x1';
+
+  // Deterministic creative outline theme unique to this game
+  const outlineTheme = getOutlineTheme(game.id, game.category);
 
   const onTilt = (e: React.PointerEvent<HTMLAnchorElement>) => {
     if (e.pointerType !== 'mouse') return;
@@ -63,16 +67,21 @@ function GameTileBase({ game, size = '1x1', priority = false }: GameTileProps) {
       title={game.title}
       onPointerMove={onTilt}
       onPointerLeave={onTiltEnd}
-      className={`game-tile group relative rounded-[1.4rem] p-2 bg-[#090b14]/90 border border-white/[0.12] hover:border-[var(--accent)] transition-all flex flex-col justify-between ${SIZE_CLASSES[size]}`}
+      className={`game-tile group relative rounded-[1.4rem] p-2 bg-[#090b14]/90 border border-white/[0.12] ${outlineTheme.tileHoverBorder} transition-all flex flex-col justify-between ${SIZE_CLASSES[size]}`}
     >
-      {/* 3D Depth Reactive Ambient Glow */}
+      {/* 3D Depth Reactive Ambient Glow customized per game outline theme */}
       <div className="absolute inset-0 z-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        <div className="absolute -inset-2 rounded-[1.6rem] blur-2xl opacity-40 bg-gradient-to-tr from-[var(--accent)] to-[var(--accent-secondary)]" />
+        <div
+          className="absolute -inset-2 rounded-[1.6rem] blur-2xl opacity-40 transition-all duration-300"
+          style={{
+            background: `radial-gradient(circle, ${outlineTheme.accentGlow} 0%, transparent 70%)`,
+          }}
+        />
       </div>
 
-      {/* Upper Image Frame (100% Whole Uncropped Artwork) */}
+      {/* Upper Image Frame (100% Whole Uncropped Artwork with Creative Outline Frame) */}
       <div
-        className={`relative w-full rounded-[1.1rem] overflow-hidden bg-[#060812] border border-white/10 shrink-0 flex items-center justify-center ${
+        className={`relative w-full rounded-[1.1rem] overflow-hidden bg-[#060812] border ${outlineTheme.borderClass} ${outlineTheme.hoverBorderClass} ${outlineTheme.glowShadowClass} transition-all duration-300 shrink-0 flex items-center justify-center ${
           size === 'wide'
             ? 'aspect-[16/7]'
             : size === '2x2'
@@ -80,6 +89,9 @@ function GameTileBase({ game, size = '1x1', priority = false }: GameTileProps) {
             : 'aspect-[4/3]'
         }`}
       >
+        {/* Creative Outline Frame with Micro-Corner Ornaments and Edge Accents */}
+        <GameIconOutline theme={outlineTheme} />
+
         {!loaded && !broken && <div className="absolute inset-0 tile-skeleton z-10" />}
 
         {broken ? (
@@ -113,7 +125,7 @@ function GameTileBase({ game, size = '1x1', priority = false }: GameTileProps) {
               decoding="async"
               onLoad={() => setLoaded(true)}
               onError={() => setBroken(true)}
-              className={`relative z-10 w-full h-full object-contain p-1 rounded-xl transition-transform duration-300 ease-out group-hover:scale-105 drop-shadow-md ${
+              className={`relative z-10 w-full h-full object-contain p-2 rounded-xl transition-transform duration-300 ease-out group-hover:scale-105 drop-shadow-md ${
                 loaded ? 'opacity-100' : 'opacity-0'
               }`}
             />
@@ -121,13 +133,19 @@ function GameTileBase({ game, size = '1x1', priority = false }: GameTileProps) {
         )}
 
         {/* Subtle top/bottom sheen */}
-        <div className="absolute inset-0 z-20 bg-gradient-to-t from-black/50 via-transparent to-black/20 opacity-60 group-hover:opacity-30 transition-opacity pointer-events-none" />
+        <div className="absolute inset-0 z-15 bg-gradient-to-t from-black/50 via-transparent to-black/20 opacity-60 group-hover:opacity-30 transition-opacity pointer-events-none" />
 
         {/* Top Badges Strip inside Image Frame */}
         <div className="tile-badge absolute top-2.5 left-2.5 right-2.5 z-30 flex items-start justify-between gap-1.5 pointer-events-none">
           <div className="flex items-center gap-1 min-w-0">
             {isNew && (
-              <span className="shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black text-black bg-gradient-to-r from-emerald-300 to-[var(--accent)] shadow-[0_0_10px_var(--accent-glow)]">
+              <span
+                className="shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black text-black shadow-md"
+                style={{
+                  background: `linear-gradient(to right, #ffffff, ${outlineTheme.accentHex})`,
+                  boxShadow: `0 0 10px ${outlineTheme.accentGlow}`,
+                }}
+              >
                 <Sparkles className="w-2.5 h-2.5" /> NEW
               </span>
             )}
@@ -145,10 +163,16 @@ function GameTileBase({ game, size = '1x1', priority = false }: GameTileProps) {
           </button>
         </div>
 
-        {/* Center Floating 3D Play Orb on Hover */}
+        {/* Center Floating 3D Play Orb on Hover colored to match Outline Theme */}
         <div className="tile-play-orb absolute inset-0 z-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-          <div className="w-12 h-12 rounded-full btn-gaming flex items-center justify-center scale-75 group-hover:scale-100 transition-transform duration-300 shadow-[0_0_24px_var(--accent-glow)]">
-            <Play className="w-5 h-5 fill-current ml-0.5 text-black" />
+          <div
+            className="w-12 h-12 rounded-full flex items-center justify-center scale-75 group-hover:scale-100 transition-transform duration-300 shadow-xl text-black font-black"
+            style={{
+              backgroundColor: outlineTheme.accentHex,
+              boxShadow: `0 0 24px ${outlineTheme.accentGlow}`,
+            }}
+          >
+            <Play className="w-5 h-5 fill-current ml-0.5" />
           </div>
         </div>
       </div>
@@ -157,7 +181,7 @@ function GameTileBase({ game, size = '1x1', priority = false }: GameTileProps) {
       <div className="w-full px-1.5 pt-2.5 pb-1 flex flex-col justify-center">
         <div className="flex items-center justify-between gap-1.5 min-w-0">
           <h3
-            className={`font-display font-extrabold text-white truncate group-hover:text-[var(--accent)] transition-colors leading-tight ${
+            className={`font-display font-extrabold text-white truncate group-hover:text-white transition-colors leading-tight ${
               big ? 'text-base sm:text-lg' : 'text-xs sm:text-[13px]'
             }`}
           >
@@ -172,7 +196,12 @@ function GameTileBase({ game, size = '1x1', priority = false }: GameTileProps) {
         </div>
 
         <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium mt-1">
-          <span className="truncate text-[var(--accent)] font-semibold">{game.category}</span>
+          <span
+            className="truncate font-semibold tracking-wide text-[10.5px]"
+            style={{ color: outlineTheme.accentHex }}
+          >
+            {game.category}
+          </span>
           <span className="shrink-0 text-slate-500 font-mono text-[9px] uppercase tracking-wide">
             {game.supported_players}
           </span>
