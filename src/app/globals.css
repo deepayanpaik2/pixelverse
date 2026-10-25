@@ -1,0 +1,924 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   Opal Noir — Pixelverse design system
+   Blue-black surfaces · iridescent opal edge as the single signature · pearl type
+   ========================================================================== */
+
+:root {
+  --background: #06070b;
+  --foreground: #f3f0ea;
+  --card-bg: rgba(16, 19, 28, 0.76);
+  --card-bg-hover: rgba(22, 27, 40, 0.88);
+  --border-color: #222736;
+  --border-highlight: rgba(169, 233, 223, 0.5);
+  --accent: #a9e9df;
+  --accent-glow: rgba(169, 233, 223, 0.4);
+  --accent-rgb: 169, 233, 223;
+  --accent-secondary: #b9a8ff;
+  --accent-secondary-rgb: 185, 168, 255;
+  --grid-color: rgba(169, 233, 223, 0.09);
+  --nebula-1: rgba(169, 233, 223, 0.22);
+  --nebula-2: rgba(124, 108, 235, 0.28);
+  --nebula-3: rgba(244, 163, 192, 0.18);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+[data-theme="cyberpunk"] {
+  --background: #070312;
+  --foreground: #fdf4ff;
+  --card-bg: rgba(24, 12, 42, 0.82);
+  --card-bg-hover: rgba(36, 18, 64, 0.92);
+  --border-color: #581c87;
+  --border-highlight: rgba(0, 243, 255, 0.65);
+  --accent: #00f3ff;
+  --accent-glow: rgba(0, 243, 255, 0.48);
+  --accent-rgb: 0, 243, 255;
+  --accent-secondary: #f43f5e;
+  --accent-secondary-rgb: 244, 63, 94;
+  --grid-color: rgba(0, 243, 255, 0.14);
+  --nebula-1: rgba(0, 243, 255, 0.28);
+  --nebula-2: rgba(192, 132, 252, 0.35);
+  --nebula-3: rgba(244, 63, 94, 0.22);
+}
+
+[data-theme="synthwave"] {
+  --background: #0f051d;
+  --foreground: #fff1f2;
+  --card-bg: rgba(34, 12, 58, 0.84);
+  --card-bg-hover: rgba(48, 18, 82, 0.94);
+  --border-color: #831843;
+  --border-highlight: rgba(255, 42, 133, 0.65);
+  --accent: #ff2a85;
+  --accent-glow: rgba(255, 42, 133, 0.48);
+  --accent-rgb: 255, 42, 133;
+  --accent-secondary: #00f5d4;
+  --accent-secondary-rgb: 0, 245, 212;
+  --grid-color: rgba(255, 42, 133, 0.14);
+  --nebula-1: rgba(255, 42, 133, 0.28);
+  --nebula-2: rgba(124, 58, 237, 0.35);
+  --nebula-3: rgba(0, 245, 212, 0.22);
+}
+
+[data-theme="midnight-neon"] {
+  --background: #020817;
+  --foreground: #f8fafc;
+  --card-bg: rgba(7, 21, 46, 0.82);
+  --card-bg-hover: rgba(14, 34, 72, 0.92);
+  --border-color: #1e3a8a;
+  --border-highlight: rgba(0, 240, 255, 0.65);
+  --accent: #00f0ff;
+  --accent-glow: rgba(0, 240, 255, 0.48);
+  --accent-rgb: 0, 240, 255;
+  --accent-secondary: #6366f1;
+  --accent-secondary-rgb: 99, 102, 241;
+  --grid-color: rgba(0, 240, 255, 0.14);
+  --nebula-1: rgba(0, 240, 255, 0.3);
+  --nebula-2: rgba(99, 102, 241, 0.35);
+  --nebula-3: rgba(14, 165, 233, 0.25);
+}
+
+[data-theme="sunset-orange"] {
+  --background: #100603;
+  --foreground: #fff7ed;
+  --card-bg: rgba(38, 15, 6, 0.82);
+  --card-bg-hover: rgba(56, 23, 10, 0.92);
+  --border-color: #7c2d12;
+  --border-highlight: rgba(255, 123, 0, 0.65);
+  --accent: #ff7b00;
+  --accent-glow: rgba(255, 123, 0, 0.48);
+  --accent-rgb: 255, 123, 0;
+  --accent-secondary: #facc15;
+  --accent-secondary-rgb: 250, 204, 21;
+  --grid-color: rgba(255, 123, 0, 0.14);
+  --nebula-1: rgba(255, 123, 0, 0.28);
+  --nebula-2: rgba(220, 38, 38, 0.32);
+  --nebula-3: rgba(250, 204, 21, 0.2);
+}
+
+[data-theme="forest-green"] {
+  --background: #020f08;
+  --foreground: #ecfdf5;
+  --card-bg: rgba(6, 34, 19, 0.82);
+  --card-bg-hover: rgba(10, 48, 28, 0.92);
+  --border-color: #065f46;
+  --border-highlight: rgba(16, 185, 129, 0.65);
+  --accent: #10b981;
+  --accent-glow: rgba(16, 185, 129, 0.48);
+  --accent-rgb: 16, 185, 129;
+  --accent-secondary: #06b6d4;
+  --accent-secondary-rgb: 6, 182, 212;
+  --grid-color: rgba(16, 185, 129, 0.14);
+  --nebula-1: rgba(16, 185, 129, 0.28);
+  --nebula-2: rgba(6, 182, 212, 0.32);
+  --nebula-3: rgba(52, 211, 153, 0.2);
+}
+
+[data-theme="deep-purple"] {
+  --background: #0d041c;
+  --foreground: #faf5ff;
+  --card-bg: rgba(28, 10, 56, 0.84);
+  --card-bg-hover: rgba(42, 16, 82, 0.94);
+  --border-color: #581c87;
+  --border-highlight: rgba(168, 85, 247, 0.65);
+  --accent: #a855f7;
+  --accent-glow: rgba(168, 85, 247, 0.48);
+  --accent-rgb: 168, 85, 247;
+  --accent-secondary: #ec4899;
+  --accent-secondary-rgb: 236, 72, 153;
+  --grid-color: rgba(168, 85, 247, 0.14);
+  --nebula-1: rgba(168, 85, 247, 0.32);
+  --nebula-2: rgba(236, 72, 153, 0.28);
+  --nebula-3: rgba(99, 102, 241, 0.24);
+}
+
+[data-theme="bloodforge"] {
+  --background: #110306;
+  --foreground: #fff1f2;
+  --card-bg: rgba(38, 7, 14, 0.84);
+  --card-bg-hover: rgba(56, 12, 22, 0.94);
+  --border-color: #881337;
+  --border-highlight: rgba(255, 30, 66, 0.65);
+  --accent: #ff1e42;
+  --accent-glow: rgba(255, 30, 66, 0.48);
+  --accent-rgb: 255, 30, 66;
+  --accent-secondary: #ff7b00;
+  --accent-secondary-rgb: 255, 123, 0;
+  --grid-color: rgba(255, 30, 66, 0.14);
+  --nebula-1: rgba(255, 30, 66, 0.3);
+  --nebula-2: rgba(255, 123, 0, 0.28);
+  --nebula-3: rgba(159, 18, 57, 0.24);
+}
+
+[data-theme="light"] {
+  --background: #f1f5f9;
+  --foreground: #0f172a;
+  --card-bg: rgba(255, 255, 255, 0.92);
+  --card-bg-hover: rgba(255, 255, 255, 0.98);
+  --border-color: #cbd5e1;
+  --border-highlight: rgba(2, 132, 199, 0.5);
+  --accent: #0284c7;
+  --accent-glow: rgba(2, 132, 199, 0.35);
+  --accent-rgb: 2, 132, 199;
+  --accent-secondary: #8b5cf6;
+  --accent-secondary-rgb: 139, 92, 246;
+  --grid-color: rgba(2, 132, 199, 0.08);
+  --nebula-1: rgba(2, 132, 199, 0.12);
+  --nebula-2: rgba(139, 92, 246, 0.14);
+  --nebula-3: rgba(14, 165, 233, 0.1);
+}
+
+[data-theme="high-contrast"] {
+  --background: #000000;
+  --foreground: #ffffff;
+  --card-bg: #0e0e0e;
+  --card-bg-hover: #1c1c1c;
+  --border-color: #ffffff;
+  --border-highlight: #ffff00;
+  --accent: #ffff00;
+  --accent-glow: rgba(255, 255, 0, 0.6);
+  --accent-rgb: 255, 255, 0;
+  --accent-secondary: #00ffff;
+  --accent-secondary-rgb: 0, 255, 255;
+  --grid-color: rgba(255, 255, 255, 0.2);
+  --nebula-1: rgba(255, 255, 0, 0.2);
+  --nebula-2: rgba(0, 255, 255, 0.2);
+  --nebula-3: rgba(255, 255, 255, 0.15);
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  background: var(--background);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: "Outfit", "Plus Jakarta Sans", "Figtree", "Noto Sans Devanagari", "Noto Sans Bengali", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  line-height: 1.55;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+  text-rendering: optimizeLegibility;
+}
+
+/* Display type: modern, crisp gaming typography */
+h1, h2, h3, h4,
+.font-display {
+  font-family: "Outfit", "Plus Jakarta Sans", "Figtree", system-ui, sans-serif;
+  font-optical-sizing: auto;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+:is(h1, h2, h3, h4)[class*="font-"] { font-weight: 700; }
+h1[class*="font-"] { font-weight: 750; letter-spacing: -0.025em; }
+
+/* Visible keyboard focus everywhere */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+::selection { background: var(--accent); color: #06070b; }
+
+/* ---------- Surfaces ---------- */
+
+/* Extremely fine static grain: gives the dark surfaces a paper-like depth without costing frames */
+.grain::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -8;
+  pointer-events: none;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+.glass-panel {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012)), var(--card-bg);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  border: 1px solid var(--border-color);
+  box-shadow: inset 0 1px 0 rgba(244, 248, 255, 0.07), 0 14px 44px -16px rgba(0, 0, 0, 0.7);
+}
+
+.glass-panel-hover { transition: border-color .3s ease, box-shadow .3s ease; }
+.glass-panel-hover:hover { border-color: rgba(var(--accent-rgb), 0.55); box-shadow: 0 0 22px var(--accent-glow); }
+
+.glass-clear {
+  background: rgba(12, 10, 22, 0.62);
+  backdrop-filter: blur(22px) saturate(170%);
+  -webkit-backdrop-filter: blur(22px) saturate(170%);
+  border: 1px solid rgba(244, 248, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(244, 248, 255, 0.05);
+}
+
+.glass-chip {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition: background .2s ease, border-color .2s ease, transform .2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow .2s ease, color .2s ease;
+}
+.glass-chip:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(var(--accent-rgb), 0.65);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -6px var(--accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+.glass-chip[data-active="true"] {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%);
+  color: #06070b !important;
+  border-color: rgba(255, 255, 255, 0.6);
+  font-weight: 800;
+  box-shadow: 0 4px 0 #05070f, 0 8px 22px -4px var(--accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transform: translateY(-1px);
+}
+.glass-chip:active {
+  transform: translateY(2px) scale(.97);
+  box-shadow: 0 0 0 #05070f;
+}
+
+/* ---------- Aurora: three slow, tinted lights behind everything ---------- */
+.aurora { position: fixed; inset: 0; z-index: -10; overflow: hidden; pointer-events: none; }
+.aurora::after {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, transparent 0%, rgba(6, 7, 11, 0.6) 78%);
+}
+.aurora span {
+  position: absolute; width: 58vmax; height: 58vmax; border-radius: 9999px;
+  filter: blur(90px); opacity: .5; will-change: transform;
+}
+/*A1*/.aurora span:nth-child(1) { background: radial-gradient(circle, var(--nebula-1, rgba(169, 233, 223, .20)), transparent 65%); top: -26vmax; left: -16vmax; animation: aurora-a 30s ease-in-out infinite alternate; }
+/*A2*/.aurora span:nth-child(2) { background: radial-gradient(circle, var(--nebula-2, rgba(124, 108, 235, .34)), transparent 65%); top: 6vmax; right: -24vmax; animation: aurora-b 36s ease-in-out infinite alternate; }
+/*A3*/.aurora span:nth-child(3) { background: radial-gradient(circle, var(--nebula-3, rgba(244, 163, 192, .17)), transparent 65%); bottom: -30vmax; left: 20vmax; animation: aurora-c 42s ease-in-out infinite alternate; }
+@keyframes aurora-a { to { transform: translate3d(14vmax, 10vmax, 0) scale(1.15); } }
+@keyframes aurora-b { to { transform: translate3d(-16vmax, 12vmax, 0) scale(.9); } }
+@keyframes aurora-c { to { transform: translate3d(-10vmax, -14vmax, 0) scale(1.2); } }
+
+@media (max-width: 640px) {
+  .aurora span { filter: blur(60px); width: 80vmax; height: 80vmax; opacity: .42; }
+}
+
+/* ---------- Falling glitter canvas ---------- */
+.glitter {
+  position: fixed; inset: 0; z-index: -9;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  transition: opacity .6s ease;
+}
+html[data-playing="true"] .glitter { opacity: 0; }
+
+/* ---------- The opal edge: one iridescent hairline, used on tiles, hero and the player ---------- */
+@property --edge-angle { syntax: "<angle>"; inherits: false; initial-value: 135deg; }
+.opal-edge::before {
+  content: ""; position: absolute; inset: 0; z-index: 4; pointer-events: none;
+  border-radius: inherit; padding: 1px;
+  background: conic-gradient(from var(--edge-angle), #f7c6da, #bfe9ee, #b9a8ff, #f3dca8, #f7c6da);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  opacity: var(--edge-opacity, .22);
+  transition: opacity .45s ease;
+}
+.opal-edge:hover::before, .opal-edge:focus-visible::before, .opal-edge:active::before { opacity: 1; animation: edge-spin 5s linear infinite; }
+@keyframes edge-spin { to { --edge-angle: 495deg; } }
+
+/* ---------- Game tiles: tilt toward the pointer, opal outline, soft glare ---------- */
+.game-tile {
+  --rx: 0deg; --ry: 0deg; --mx: 50%; --my: 50%;
+  transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry));
+  transition: transform .55s cubic-bezier(.2, .8, .2, 1), box-shadow .45s ease, border-color .45s ease;
+  box-shadow: 0 10px 28px -16px rgba(0, 0, 0, 0.9);
+  will-change: transform;
+}
+.game-tile:hover {
+  transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry)) translateY(-5px) scale(1.012);
+  transition-duration: .18s, .45s, .45s;
+  border-color: transparent;
+  box-shadow: 0 26px 50px -20px rgba(169, 233, 223, 0.30), 0 18px 40px -22px rgba(185, 168, 255, 0.45);
+}
+.game-tile:active { transform: perspective(900px) scale(.972); transition-duration: .1s; }
+.game-tile::after {
+  content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: 0;
+  background: radial-gradient(380px circle at var(--mx) var(--my), rgba(255, 255, 255, 0.17), transparent 55%);
+  transition: opacity .35s ease;
+}
+.game-tile:hover::after { opacity: 1; }
+.game-tile h3 { font-family: "Figtree", "Noto Sans Devanagari", "Noto Sans Bengali", system-ui, sans-serif; letter-spacing: -0.005em; }
+.tile-skeleton { background: linear-gradient(110deg, #0c0e16 8%, #161a27 18%, #0c0e16 33%); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
+@keyframes shimmer { to { background-position-x: -200%; } }
+.tile-plate { background: linear-gradient(180deg, rgba(6, 7, 11, 0) 0%, rgba(6, 7, 11, .62) 40%, rgba(6, 7, 11, .95) 100%); }
+
+/* Touch screens have no hover: keep tiles still, show the outline while pressed */
+@media (hover: none) {
+  .game-tile:hover { transform: none; box-shadow: 0 10px 28px -16px rgba(0, 0, 0, 0.9); border-color: rgba(255,255,255,.09); }
+  .game-tile:hover::after { opacity: 0; }
+  .game-tile:active { transform: scale(.975); }
+}
+
+/* ---------- Ornament: the small diamond that marks every section title ---------- */
+.diamond {
+  display: inline-block; width: 9px; height: 9px; flex-shrink: 0;
+  transform: rotate(45deg);
+  background: currentColor;
+  box-shadow: 0 0 12px currentColor;
+}
+
+/* ---------- Motion helpers ---------- */
+@keyframes fade-up { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.fade-up { animation: fade-up .6s cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+.fade-in { animation: fade-in .5s ease both; }
+
+.text-gradient {
+  background: linear-gradient(100deg, #f9d3e3, #cdeff0 35%, #c4b8ff 65%, #f9d3e3);
+  background-size: 200% auto;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+/* The page-load moment: a single pearl shimmer passes over the wordmark */
+@keyframes gild { to { background-position: 200% center; } }
+.wordmark { animation: gild 6s linear infinite; }
+
+/* Game loader */
+@keyframes gem-spin { 0% { transform: rotate(45deg) scale(1); } 50% { transform: rotate(225deg) scale(.7); } 100% { transform: rotate(405deg) scale(1); } }
+.gem-loader {
+  width: 28px; height: 28px; border: 2px solid var(--accent); background: rgba(var(--accent-rgb), .12);
+  animation: gem-spin 2.2s ease-in-out infinite; box-shadow: 0 0 24px var(--accent-glow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora span, .tile-skeleton, .fade-up, .fade-in, .wordmark, .gem-loader { animation: none !important; }
+  .game-tile, .game-tile::after { transition: none !important; }
+  html { scroll-behavior: auto; }
+}
+
+/* ---------- Buttons ---------- */
+.btn-mosaic {
+  position: relative;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 3px 3px 0px var(--border-color);
+}
+.btn-mosaic:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0px var(--accent); }
+.btn-mosaic:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0px var(--accent); }
+
+.btn-gold {
+  position: relative; overflow: hidden;
+  background: linear-gradient(135deg, #f9d3e3 0%, #cdeff0 48%, #c4b8ff 100%);
+  color: #0a0c14;
+  box-shadow: 0 10px 30px -10px rgba(169, 233, 223, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.75), inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+  transition: transform .2s ease, box-shadow .3s ease, filter .3s ease;
+}
+.btn-gold::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, .6) 50%, transparent 70%);
+  transform: translateX(-120%); transition: transform .7s ease;
+}
+.btn-gold:hover { filter: brightness(1.05); box-shadow: 0 16px 38px -10px rgba(185, 168, 255, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.85), inset 0 0 0 1px rgba(255, 255, 255, 0.35); }
+.btn-gold:hover::after { transform: translateX(120%); }
+.btn-gold:active { transform: scale(.96); }
+
+/* ---------- Scrollbars ---------- */
+* { scrollbar-width: thin; scrollbar-color: #333a52 transparent; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: rgba(6, 7, 11, 0.6); }
+::-webkit-scrollbar-thumb { background: #2a3044; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+.scrollbar-none { scrollbar-width: none; }
+.scrollbar-none::-webkit-scrollbar { display: none; }
+
+/* ---------- Voice activity ring ---------- */
+@keyframes speaking-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(159, 230, 195, 0.7); }
+  70% { box-shadow: 0 0 0 8px rgba(159, 230, 195, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(159, 230, 195, 0); }
+}
+.voice-speaking-ring { animation: speaking-pulse 1.2s infinite; border-color: #9fe6c3 !important; }
+
+/* ---------- Phones ---------- */
+@media (max-width: 640px) {
+  input, select, textarea { font-size: 16px; } /* stops iOS Safari from zooming on focus */
+}
+
+
+/* ==========================================================================
+   Click / touch effects, game opening sequence
+   ========================================================================== */
+
+.fx-layer { position: fixed; inset: 0; z-index: 9999; pointer-events: none; overflow: hidden; }
+
+/* Player stage: opens like a curtain parting when the game page loads */
+@keyframes stage-open {
+  from { opacity: 0; transform: perspective(1400px) rotateX(5deg) translateY(26px) scale(.965); clip-path: inset(7% 7% 7% 7% round 30px); filter: blur(6px); }
+  to   { opacity: 1; transform: none; clip-path: inset(0 0 0 0 round 30px); filter: none; }
+}
+.stage-open { animation: stage-open 1s cubic-bezier(.2, .8, .2, 1) backwards; }
+
+/* Launch veil: non-blocking background indicator */
+.launch-veil {
+  display: none !important;
+  pointer-events: none !important;
+}
+.launch-orb { position: relative; width: 116px; height: 116px; border-radius: 30px; animation: orb-in .9s cubic-bezier(.2, .8, .2, 1) both; }
+.launch-orb img { position: relative; z-index: 1; width: 100%; height: 100%; object-fit: cover; border-radius: 28px; }
+.launch-orb::before {
+  content: ""; position: absolute; inset: -4px; border-radius: 34px;
+  background: conic-gradient(from var(--edge-angle), #f7c6da, #bfe9ee, #b9a8ff, #f3dca8, #f7c6da);
+  animation: edge-spin 2.4s linear infinite; filter: blur(.3px);
+}
+.launch-orb::after {
+  content: ""; position: absolute; inset: -22px; border-radius: 50px; z-index: -1;
+  background: radial-gradient(circle, rgba(185, 168, 255, .35), transparent 70%); animation: orb-breathe 2.6s ease-in-out infinite;
+}
+@keyframes orb-in { from { opacity: 0; transform: scale(.6) rotate(-8deg); } to { opacity: 1; transform: none; } }
+@keyframes orb-breathe { 50% { opacity: .45; transform: scale(1.12); } }
+.launch-bar { width: 176px; height: 2px; border-radius: 2px; background: rgba(255, 255, 255, .12); overflow: hidden; }
+.launch-bar::after {
+  content: ""; display: block; width: 42%; height: 100%; border-radius: 2px;
+  background: linear-gradient(90deg, #f7c6da, #bfe9ee, #b9a8ff); animation: launch-bar 1.5s ease-in-out infinite;
+}
+@keyframes launch-bar { from { transform: translateX(-110%); } to { transform: translateX(260%); } }
+
+/* Sections and cards ease in once when the page opens */
+.fade-up { animation-delay: .04s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .stage-open, .launch-orb, .launch-orb::before, .launch-orb::after, .launch-bar::after, .opal-edge::before { animation: none !important; }
+  .game-tile, .game-tile:hover { transform: none !important; }
+}
+
+/* ==========================================================================
+   Performance: fast, responsive rendering for 5000+ game catalog
+   ========================================================================== */
+
+/* Game tiles: promote to compositor layer, contain layout/paint */
+.game-tile {
+  contain: layout style paint;
+  will-change: transform, box-shadow, border-color;
+}
+
+/* offscreen tiles: defer paint until near viewport */
+.game-tile:not(:where([loading="eager"])) {
+  content-visibility: auto;
+  contain-intrinsic-size: 200px 150px;
+}
+
+/* Aurora: GPU-composited, low-frequency transforms */
+.aurora span {
+  will-change: transform;
+}
+
+/* Throttled pointer events: avoid reflow during rapid hover moves */
+.game-tile {
+  touch-action: manipulation;
+}
+
+/* Smooth but cheap scrolling */
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+/* Mobile: prevent double-tap zoom, keep taps snappy */
+button, a, [role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Focus rings: crisp, high-contrast on every device */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+  box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.35);
+}
+
+/* Skip link for keyboard users */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* Reduced animation intensity preference */
+[data-animation="reduced"] .aurora span,
+[data-animation="reduced"] .nebula span,
+[data-animation="reduced"] .grid-floor::before,
+[data-animation="reduced"] .game-tile,
+[data-animation="reduced"] .fade-up,
+[data-animation="reduced"] .card-3d,
+[data-animation="reduced"] .wordmark,
+[data-animation="reduced"] .gem-loader {
+  animation: none !important;
+  transition: none !important;
+}
+[data-animation="minimal"] .game-tile,
+[data-animation="minimal"] .card-3d {
+  transform: none !important;
+}
+
+/* Touch target minimum 44px for primary interactions */
+button, a[role="button"], [data-sfx] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe area insets for notched devices */
+.safe-area {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  padding-top: max(0.5rem, env(safe-area-inset-top));
+}
+
+/* Backdrop-filter performance */
+.glass-panel-hover { will-change: border-color, box-shadow; }
+
+/* ==========================================================================
+   ULTRA GAMING 3D ENGINE & NEBULA MATRIX
+   Dynamic reactive themes · 3D layered elevation · Gaming icons · Perfect alignment
+   ========================================================================== */
+
+/* ---------- Nebula background: cosmic clouds reacting to theme ---------- */
+.nebula {
+  position: fixed; inset: 0; z-index: -11; overflow: hidden; pointer-events: none;
+}
+.nebula::after {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 100% 85% at 50% 0%, rgba(6,7,11,0) 0%, var(--background) 100%);
+  transition: background 0.5s ease;
+}
+.nebula span {
+  position: absolute; width: 75vmax; height: 75vmax; border-radius: 50%;
+  filter: blur(110px); opacity: 0.42; will-change: transform;
+  transition: background 0.7s ease;
+}
+.nebula span:nth-child(1) {
+  background: var(--nebula-1, rgba(0, 243, 255, 0.25));
+  top: -24vmax; left: -14vmax;
+  animation: nebula-a 38s ease-in-out infinite alternate;
+}
+.nebula span:nth-child(2) {
+  background: var(--nebula-2, rgba(192, 132, 252, 0.28));
+  top: 8vmax; right: -22vmax;
+  animation: nebula-b 44s ease-in-out infinite alternate;
+}
+.nebula span:nth-child(3) {
+  background: var(--nebula-3, rgba(255, 42, 133, 0.22));
+  bottom: -32vmax; left: 18vmax;
+  animation: nebula-c 52s ease-in-out infinite alternate;
+}
+@keyframes nebula-a { to { transform: translate3d(20vmax, 14vmax, 0) scale(1.18); } }
+@keyframes nebula-b { to { transform: translate3d(-20vmax, 16vmax, 0) scale(1.12); } }
+@keyframes nebula-c { to { transform: translate3d(-14vmax, -18vmax, 0) scale(1.22); } }
+
+/* ---------- Cyberpunk 3D perspective grid floor with drifting animation ---------- */
+.grid-floor {
+  position: fixed; inset: 0; z-index: -11; overflow: hidden; pointer-events: none;
+  perspective: 1000px; transform-style: preserve-3d;
+}
+.grid-floor::before {
+  content: ""; position: absolute; inset: 0;
+  background-image:
+    linear-gradient(var(--grid-color, rgba(0, 243, 255, 0.08)) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color, rgba(0, 243, 255, 0.08)) 1px, transparent 1px);
+  background-size: 48px 48px;
+  transform: rotateX(75deg) translateY(-50%) translateZ(-160px);
+  transform-origin: 50% 30%;
+  mask-image: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 45%, transparent 95%);
+  animation: grid-drift 18s linear infinite;
+}
+@keyframes grid-drift {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 48px; }
+}
+
+/* Cyber Horizon Laser Beam */
+.cyber-horizon {
+  position: fixed;
+  top: 48%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, rgba(var(--accent-rgb), 0.2) 20%, var(--accent) 50%, rgba(var(--accent-rgb), 0.2) 80%, transparent 100%);
+  box-shadow: 0 0 20px 2px var(--accent-glow);
+  opacity: 0.35;
+  pointer-events: none;
+  z-index: -10;
+  animation: horizon-pulse 4s ease-in-out infinite alternate;
+}
+@keyframes horizon-pulse {
+  0% { opacity: 0.2; transform: scaleY(0.8); }
+  100% { opacity: 0.45; transform: scaleY(1.3); }
+}
+
+@keyframes float-particle {
+  0% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  50% { transform: translate3d(24px, -32px, 15px) rotate(180deg); }
+  100% { transform: translate3d(-18px, -64px, 30px) rotate(360deg); }
+}
+
+/* Mobile: flatten grid floor to save GPU */
+@media (max-width: 768px) {
+  .grid-floor::before {
+    transform: rotateX(60deg) translateY(-35%) translateZ(-80px);
+    animation: none;
+  }
+}
+
+/* ---------- 3D Lifted Gaming Card System ---------- */
+.card-3d {
+  position: relative;
+  transform-style: preserve-3d;
+  perspective: 1200px;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.45s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
+  will-change: transform, box-shadow;
+}
+.card-3d::before {
+  content: ""; position: absolute; inset: 0; z-index: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.015) 100%);
+  pointer-events: none;
+}
+.card-3d::after {
+  content: ""; position: absolute; inset: 0; z-index: 15;
+  border-radius: inherit;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.16) 48%, rgba(255, 255, 255, 0.24) 52%, transparent 68%);
+  background-size: 250% 250%;
+  background-position: 200% 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: background-position 0.8s ease, opacity 0.3s ease;
+}
+.card-3d:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 24px 50px -12px var(--accent-glow), 0 0 0 1px var(--border-highlight), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  border-color: rgba(var(--accent-rgb), 0.6) !important;
+  z-index: 10;
+}
+.card-3d:hover::after {
+  background-position: -50% 100%;
+  opacity: 1;
+}
+.card-3d:active {
+  transform: translateY(-2px) scale(0.985);
+  transition-duration: 0.1s;
+}
+
+/* Layered 3D Z-Depth classes */
+.lift-z-1 { transform: translateZ(12px); transform-style: preserve-3d; }
+.lift-z-2 { transform: translateZ(24px); transform-style: preserve-3d; }
+.lift-z-3 { transform: translateZ(36px); transform-style: preserve-3d; }
+
+/* ---------- 3D Game Tile Tilt Engine ---------- */
+.game-tile {
+  --rx: 0deg; --ry: 0deg; --mx: 50%; --my: 50%;
+  transform: perspective(1000px) rotateX(var(--rx)) rotateY(var(--ry));
+  transform-style: preserve-3d;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.3s ease;
+  box-shadow: 0 12px 30px -16px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  will-change: transform;
+}
+.game-tile:hover {
+  transform: perspective(1000px) rotateX(var(--rx)) rotateY(var(--ry)) translateY(-8px) scale(1.03);
+  border-color: rgba(var(--accent-rgb), 0.7) !important;
+  box-shadow: 0 28px 56px -16px var(--accent-glow), 0 0 20px -2px rgba(var(--accent-rgb), 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  z-index: 12;
+}
+.game-tile:active {
+  transform: perspective(1000px) scale(0.97);
+  transition-duration: 0.08s;
+}
+.game-tile::after {
+  content: ""; position: absolute; inset: 0; z-index: 25; pointer-events: none; opacity: 0;
+  background: radial-gradient(400px circle at var(--mx) var(--my), rgba(255, 255, 255, 0.22), transparent 60%);
+  transition: opacity 0.3s ease;
+}
+.game-tile:hover::after { opacity: 1; }
+
+/* 3D internal popouts inside game tiles */
+.game-tile .tile-badge { transform: translateZ(28px); transition: transform 0.3s ease; }
+.game-tile .tile-play-orb { transform: translateZ(42px); transition: transform 0.3s ease, opacity 0.3s ease, scale 0.3s ease; }
+.game-tile .tile-title-plate { transform: translateZ(20px); transition: transform 0.3s ease; }
+
+@media (hover: none) {
+  .game-tile:hover { transform: none; box-shadow: 0 10px 28px -16px rgba(0, 0, 0, 0.9); }
+  .game-tile:hover::after { opacity: 0; }
+  .game-tile:active { transform: scale(0.975); }
+}
+
+/* ---------- 3D Mechanical Gaming Buttons ---------- */
+.btn-gaming {
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 800; letter-spacing: 0.04em;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%);
+  color: #06070b;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 0 #05070f, 0 12px 28px -6px var(--accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  transform: translateY(0);
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s cubic-bezier(0.16, 1, 0.3, 1), filter 0.2s ease;
+  overflow: hidden;
+}
+.btn-gaming::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(110deg, transparent 25%, rgba(255, 255, 255, 0.5) 50%, transparent 75%);
+  transform: translateX(-150%);
+  transition: transform 0.65s ease;
+}
+.btn-gaming:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+  box-shadow: 0 6px 0 #05070f, 0 18px 36px -8px var(--accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+.btn-gaming:hover::after {
+  transform: translateX(150%);
+}
+.btn-gaming:active {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 #05070f, 0 4px 12px -2px var(--accent-glow);
+  transition-duration: 0.05s;
+}
+
+/* 3D Push button variant */
+.btn-3d {
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 0.85rem;
+  box-shadow: 0 4px 0 #05070f, 0 10px 20px -8px rgba(0, 0, 0, 0.8);
+  transform: translateY(0);
+  transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-3d:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 #05070f, 0 14px 26px -8px var(--accent-glow);
+}
+.btn-3d:active {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 #05070f;
+}
+
+/* Neon Glow Button */
+.btn-neon {
+  position: relative; overflow: hidden;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%);
+  color: #06070b; font-weight: 800;
+  box-shadow: 0 4px 0 #05070f, 0 12px 28px -6px var(--accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  transition: filter 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+.btn-neon::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.6) 50%, transparent 70%);
+  transform: translateX(-150%); transition: transform 0.6s ease;
+}
+.btn-neon:hover {
+  filter: brightness(1.15);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 #05070f, 0 18px 36px -6px var(--accent-glow);
+}
+.btn-neon:hover::after { transform: translateX(150%); }
+.btn-neon:active {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 #05070f;
+}
+
+/* ---------- 3D Gaming Icon Box & Badges ---------- */
+.gaming-icon-box {
+  display: inline-flex; align-items: center; justify-content: center;
+  position: relative;
+  border-radius: 0.85rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.02) 100%), var(--card-bg);
+  border: 1px solid rgba(var(--accent-rgb), 0.45);
+  box-shadow: 0 6px 16px -4px var(--accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  color: var(--accent);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.gaming-icon-box:hover {
+  transform: scale(1.12) rotate(4deg);
+  border-color: var(--accent);
+  box-shadow: 0 10px 24px 0 var(--accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.icon-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: rgba(var(--accent-rgb), 0.14); border: 1px solid rgba(var(--accent-rgb), 0.4);
+  color: var(--accent); box-shadow: 0 0 14px var(--accent-glow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.icon-badge:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 22px var(--accent-glow);
+}
+
+.icon-badge-pulse { animation: badge-pulse 2.2s ease-in-out infinite; }
+@keyframes badge-pulse {
+  0%, 100% { box-shadow: 0 0 12px var(--accent-glow); transform: scale(1); }
+  50% { box-shadow: 0 0 24px var(--accent-glow); transform: scale(1.06); }
+}
+
+/* ---------- Perfect Alignment & HUD Header System ---------- */
+.section-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  margin-bottom: 1.25rem; flex-wrap: wrap;
+}
+.section-head .diamond {
+  width: 10px; height: 10px; flex-shrink: 0;
+  box-shadow: 0 0 12px currentColor;
+}
+
+.hud-bracket {
+  position: relative;
+  padding: 0 0.5rem;
+}
+.hud-bracket::before {
+  content: "["; font-weight: 300; opacity: 0.4; margin-right: 0.35rem; color: var(--accent);
+}
+.hud-bracket::after {
+  content: "]"; font-weight: 300; opacity: 0.4; margin-left: 0.35rem; color: var(--accent);
+}
+
+/* ---------- Glass Drawer & Neon Panels ---------- */
+.drawer-neon {
+  background: var(--card-bg);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transition: background 0.4s ease, border-color 0.4s ease;
+}
+
+.panel-neon {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)), var(--card-bg);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 20px 44px -16px rgba(0, 0, 0, 0.9);
+  transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+/* Dynamic text gradient derived from current theme */
+.text-neon {
+  color: var(--accent);
+  text-shadow: 0 0 14px var(--accent-glow), 0 0 28px rgba(var(--accent-rgb), 0.25);
+}
+
+.text-gradient {
+  background: linear-gradient(100deg, var(--accent) 0%, #ffffff 40%, var(--accent-secondary) 80%, var(--accent) 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: gild 8s linear infinite;
+}
+
+/* Transparent body when gaming bg is active */
+html.gaming-bg { background: transparent !important; }
+body.gaming-bg { background: transparent !important; }

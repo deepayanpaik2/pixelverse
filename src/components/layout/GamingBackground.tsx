@@ -1,0 +1,100 @@
+'use client';
+
+import React, { useEffect, useMemo } from 'react';
+import { useAuth } from '@/features/auth/AuthContext';
+
+/**
+ * GamingBackground — AAA Cyber Gaming Cosmos
+ * Features:
+ * - Dynamic theme-reactive cosmic nebula
+ * - 3D perspective drifting cyberpunk grid floor
+ * - Laser horizon beam
+ * - Floating 3D holographic gaming particles (crosshairs, digital runes, glowing particles)
+ * Respects animation intensity & reduced-motion.
+ */
+export function GamingBackground() {
+  const { preferences } = useAuth();
+  const intensity = preferences?.animation_intensity ?? 'full';
+
+  useEffect(() => {
+    if (intensity === 'minimal') return;
+    const root = document.documentElement;
+    root.classList.add('gaming-bg');
+    return () => root.classList.remove('gaming-bg');
+  }, [intensity]);
+
+  // Generate lightweight deterministic floating cyber particles
+  const particles = useMemo(() => {
+    return Array.from({ length: 18 }, (_, i) => ({
+      id: i,
+      x: (i * 19.3) % 100,
+      y: (i * 23.7) % 100,
+      size: 2 + (i % 3) * 2,
+      duration: 18 + (i % 5) * 6,
+      delay: -(i * 2.3),
+      type: i % 4 === 0 ? 'cross' : i % 4 === 1 ? 'diamond' : 'dot',
+      opacity: 0.15 + (i % 3) * 0.12,
+    }));
+  }, []);
+
+  if (intensity === 'minimal') return null;
+
+  return (
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-[-12]" aria-hidden="true">
+      {/* Dynamic Cosmic Nebula */}
+      <div className="nebula">
+        <span />
+        <span />
+        <span />
+      </div>
+
+      {/* Cyber 3D Grid Floor */}
+      <div className="grid-floor" />
+
+      {/* Laser Horizon Beam */}
+      <div className="cyber-horizon" />
+
+      {/* Floating 3D Gaming HUD Particles */}
+      {intensity !== 'reduced' && (
+        <div className="absolute inset-0">
+          {particles.map((p) => (
+            <div
+              key={p.id}
+              className="absolute pointer-events-none"
+              style={{
+                left: `${p.x}%`,
+                top: `${p.y}%`,
+                opacity: p.opacity,
+                animation: `float-particle ${p.duration}s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate`,
+                animationDelay: `${p.delay}s`,
+              }}
+            >
+              {p.type === 'cross' ? (
+                <svg width="12" height="12" viewBox="0 0 12 12" className="text-[var(--accent)] drop-shadow-[0_0_8px_var(--accent)]">
+                  <path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                </svg>
+              ) : p.type === 'diamond' ? (
+                <div
+                  className="w-2 h-2 rotate-45 border border-[var(--accent)] bg-[var(--accent-glow)] drop-shadow-[0_0_6px_var(--accent)]"
+                />
+              ) : (
+                <div
+                  className="rounded-full bg-[var(--accent)] drop-shadow-[0_0_8px_var(--accent)]"
+                  style={{ width: `${p.size}px`, height: `${p.size}px` }}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Ambient Radial Vignette for cinema depth */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'radial-gradient(circle at 50% 35%, transparent 20%, rgba(0, 0, 0, 0.45) 80%, rgba(0, 0, 0, 0.75) 100%)',
+        }}
+      />
+    </div>
+  );
+}

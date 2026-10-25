@@ -1,0 +1,141 @@
+{
+ "items": [
+  {
+   "id": "737HCH",
+   "title": "Prism Match 3D",
+   "namespace": "prism-match-3d",
+   "category": "match-3",
+   "orientation": "all",
+   "quality_score": 0.98390304,
+   "width": 800,
+   "height": 600,
+   "date_published": "Wed, 12 Nov 2025 12:34:52 GMT",
+   "description": "Dive into a mesmerizing 3D cube universe where vibrant prisms challenge your logic and timing. Rotate and explore intricately designed levels while relaxing your mind. Perfect your skills to conquer endless creative stages, offering a refreshing blend of relaxation and mental exercise."
+  },
+  {
+   "id": "401685",
+   "title": "Drop Planets",
+   "namespace": "drop-planets",
+   "category": "puzzle",
+   "orientation": "portrait",
+   "quality_score": 0.97625831,
+   "width": 600,
+   "height": 800,
+   "date_published": "Thu, 21 May 2026 08:01:51 GMT"
+  },
+  {
+   "id": "EE5DCF",
+   "title": "Defend the Castle",
+   "namespace": "defend-the-castle",
+   "category": "strategy",
+   "orientation": "portrait",
+   "quality_score": 0.96371553,
+   "width": 600,
+   "height": 800,
+   "date_published": "Tue, 08 Jul 2025 10:03:21 GMT",
+   "description": "Fortify your kingdom in Defend the Castle! Strategically build and upgrade defenses with gold and wood to resist relentless enemy waves. Deploy cunning tactics with cannons and archers. Can you protect the King and let your stronghold stand the test of time?"
+  },
+  {
+   "id": "5G91RE",
+   "title": "Garden Master",
+   "namespace": "garden-master",
+   "category": "farming",
+   "orientation": "portrait",
+   "quality_score": 0.96240602,
+   "width": 600,
+   "height": 800,
+   "date_published": "Fri, 04 Jul 2025 12:06:06 GMT",
+   "description": "Step into the shoes of a industrious gnome in Garden Master! Nurture your plants with care, fend off mischievous gophers, and gather golden seeds to unlock exciting upgrades. Cultivate a lush paradise and prove your gardening prowess in this delightful and challenging adventure."
+  },
+  {
+   "id": "B6BTZI",
+   "title": "Quarantine Zombies",
+   "namespace": "quarantine-zombies",
+   "category": "zombie",
+   "orientation": "all",
+   "quality_score": 0.95812395,
+   "width": 800,
+   "height": 600,
+   "date_published": "Mon, 18 May 2026 12:14:09 GMT"
+  },
+  {
+   "id": "A311T3",
+   "title": "Stack Rocket",
+   "namespace": "stack-rocket",
+   "category": "building",
+   "orientation": "portrait",
+   "quality_score": 0.9551167,
+   "width": 600,
+   "height": 800,
+   "date_published": "Fri, 08 May 2026 13:48:55 GMT"
+  },
+  {
+   "id": "O1H119",
+   "title": "Nova Hop",
+   "namespace": "nova-hop",
+   "category": "hyper-casual",
+   "orientation": "portrait",
+   "quality_score": 0.95344507,
+   "width": 600,
+   "height": 800,
+   "date_published": "Tue, 14 Jul 2026 10:00:13 GMT"
+  },
+  {
+   "id": "1BA572",
+   "title": "Boost Balloon",
+   "namespace": "boost-balloon",
+   "category": "casual",
+   "orientation": "portrait",
+   "quality_score": 0.95309568,
+   "width": 600,
+   "height": 800,
+   "date_published": "Fri, 08 May 2026 13:41:36 GMT"
+  },
+  {
+   "id": "A97NE0",
+   "title": "Billiards on Ice",
+   "namespace": "billiards-on-ice",
+   "category": "sports",
+   "orientation": "all",
+   "quality_score": 0.95238095,
+   "width": 800,
+   "height": 600,
+   "date_published": "Tue, 28 Jul 2026 08:01:22 GMT"
+  },
+  {
+   "id": "7DO9L8",
+   "title": "Combat Landing",
+   "namespace": "combat-landing",
+   "category": "airplane",
+   "orientation": "all",
+   "quality_score": 0.95201536,
+   "width": 800,
+   "height": 600,
+   "date_published": "Thu, 07 May 2026 08:25:56 GMT"
+  },
+  {
+   "id": "T59T15",
+   "title": "Vegan Quest",
+   "namespace": "vegan-quest",
+   "category": "arcade",
+   "orientation": "portrait",
+   "quality_score": 0.95201088,
+   "width": 600,
+   "height": 800,
+   "date_published": "Fri, 09 Aug 2024 10:37:37 GMT",
+   "description": "Guide your vegan hero through a cascade of food in Vegan Quest! Collect delicious vegan treats to boost your score, while dodging non-vegan pitfalls. With straightforward controls and ever-increasing challenges, this arcade adventure delivers endless entertainment, demanding precision and quick decision-making as obstacles intensify."
+  },
+  {
+   "id": "M46I6",
+   "title": "Kobadoo Emojis",
+   "namespace": "kobadoo-emojis",
+   "category": "trivia",
+   "orientation": "portrait",
+   "quality_score": 0.95020238,
+   "width": 600,
+   "height": 800,
+   "date_published": "Tue, 01 Feb 2022 15:58:56 GMT",
+   "description": "Kobadoo Emojis invites you into a delightful memory challenge with amusing emojis to sequence. As you advance, the complexity grows, enhancing your cognitive skills while you enjoy the easy controls. Focus, observe, and test your brain in this engaging and laughter-filled experience."
+  }
+ ]
+}
