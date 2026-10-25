@@ -70,9 +70,9 @@ function GameTileBase({ game, size = '1x1', priority = false }: GameTileProps) {
         <div className="absolute -inset-2 rounded-[1.6rem] blur-2xl opacity-40 bg-gradient-to-tr from-[var(--accent)] to-[var(--accent-secondary)]" />
       </div>
 
-      {/* Upper Image Frame (Pure Unobstructed Artwork) */}
+      {/* Upper Image Frame (100% Whole Uncropped Artwork) */}
       <div
-        className={`relative w-full rounded-[1.1rem] overflow-hidden bg-black/60 border border-white/10 shrink-0 ${
+        className={`relative w-full rounded-[1.1rem] overflow-hidden bg-[#060812] border border-white/10 shrink-0 flex items-center justify-center ${
           size === 'wide'
             ? 'aspect-[16/7]'
             : size === '2x2'
@@ -87,29 +87,41 @@ function GameTileBase({ game, size = '1x1', priority = false }: GameTileProps) {
             <span className="font-display text-4xl font-black text-white/70 drop-shadow-lg">{game.title.charAt(0)}</span>
           </div>
         ) : (
-          <img
-            ref={imgRef}
-            src={game.thumbnail_url}
-            width={big ? 520 : 260}
-            height={big ? 390 : 195}
-            sizes={
-              big
-                ? '(min-width: 640px) 42vw, 100vw'
-                : '(min-width: 1536px) 14vw, (min-width: 1024px) 18vw, (min-width: 640px) 24vw, 48vw'
-            }
-            alt={game.title}
-            loading={priority ? 'eager' : 'lazy'}
-            decoding="async"
-            onLoad={() => setLoaded(true)}
-            onError={() => setBroken(true)}
-            className={`w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110 ${
-              loaded ? 'opacity-100' : 'opacity-0'
-            }`}
-          />
+          <>
+            {/* Ambient artwork backdrop softly filling the frame */}
+            <img
+              src={game.thumbnail_url}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 w-full h-full object-cover blur-md opacity-25 scale-125 pointer-events-none select-none"
+            />
+            <div className="absolute inset-0 bg-[#060812]/50 pointer-events-none" />
+
+            {/* Whole, 100% Uncropped, Perfectly Fitted Game Photo */}
+            <img
+              ref={imgRef}
+              src={game.thumbnail_url}
+              width={big ? 520 : 260}
+              height={big ? 390 : 195}
+              sizes={
+                big
+                  ? '(min-width: 640px) 42vw, 100vw'
+                  : '(min-width: 1536px) 14vw, (min-width: 1024px) 18vw, (min-width: 640px) 24vw, 48vw'
+              }
+              alt={game.title}
+              loading={priority ? 'eager' : 'lazy'}
+              decoding="async"
+              onLoad={() => setLoaded(true)}
+              onError={() => setBroken(true)}
+              className={`relative z-10 w-full h-full object-contain p-1 rounded-xl transition-transform duration-300 ease-out group-hover:scale-105 drop-shadow-md ${
+                loaded ? 'opacity-100' : 'opacity-0'
+              }`}
+            />
+          </>
         )}
 
         {/* Subtle top/bottom sheen */}
-        <div className="absolute inset-0 z-20 bg-gradient-to-t from-black/60 via-transparent to-black/30 opacity-70 group-hover:opacity-40 transition-opacity pointer-events-none" />
+        <div className="absolute inset-0 z-20 bg-gradient-to-t from-black/50 via-transparent to-black/20 opacity-60 group-hover:opacity-30 transition-opacity pointer-events-none" />
 
         {/* Top Badges Strip inside Image Frame */}
         <div className="tile-badge absolute top-2.5 left-2.5 right-2.5 z-30 flex items-start justify-between gap-1.5 pointer-events-none">

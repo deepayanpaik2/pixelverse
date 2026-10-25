@@ -149,11 +149,21 @@ export function SpotlightHero({ games }: SpotlightHeroProps) {
               {/* Backlight Glow */}
               <div className="absolute -inset-4 rounded-[2.5rem] blur-[50px] opacity-50 bg-gradient-to-tr from-[var(--accent)] to-[var(--accent-secondary)] pointer-events-none group-hover/cover:opacity-80 transition-opacity duration-500" />
 
-              <img
-                src={current.banner_url || current.thumbnail_url}
-                alt={current.title}
-                className="relative w-full aspect-[4/3] object-cover rounded-[1.75rem] shadow-2xl drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)]"
-              />
+              {/* Whole Uncropped Spotlight Artwork */}
+              <div className="relative w-full aspect-[4/3] rounded-[1.75rem] overflow-hidden bg-[#060812] border border-white/10 shadow-2xl flex items-center justify-center p-2">
+                <img
+                  src={current.thumbnail_url}
+                  alt=""
+                  aria-hidden
+                  className="absolute inset-0 w-full h-full object-cover blur-xl opacity-35 scale-125"
+                />
+                <div className="absolute inset-0 bg-[#060812]/40" />
+                <img
+                  src={current.banner_url || current.thumbnail_url}
+                  alt={current.title}
+                  className="relative z-10 w-full h-full object-contain rounded-xl drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)] transition-transform duration-300 group-hover/cover:scale-105"
+                />
+              </div>
 
               {/* 3D Floating Top Rated Badge */}
               <div className="absolute -top-3 -right-3 bg-gradient-to-r from-amber-400 to-amber-600 text-black rounded-full px-3.5 py-1.5 text-[11px] font-black shadow-[0_6px_20px_rgba(245,158,11,0.5)] flex items-center gap-1.5 border border-amber-300/60 lift-z-2">

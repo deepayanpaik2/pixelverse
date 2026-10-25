@@ -325,7 +325,9 @@ export default function PublicProfilePage() {
                     href={`/game/${game.slug}`}
                     className="p-3 rounded-2xl bg-black/40 border border-white/10 hover:border-[var(--accent)] hover:scale-[1.02] transition-all flex items-center gap-3.5 group shadow-lg"
                   >
-                    <img src={game.thumbnail_url} alt="" className="w-14 h-14 rounded-xl object-cover border border-white/10 group-hover:scale-105 transition-transform" />
+                    <div className="w-14 h-14 rounded-xl overflow-hidden bg-black/60 border border-white/10 flex items-center justify-center p-1 shrink-0">
+                      <img src={game.thumbnail_url} alt="" className="w-full h-full object-contain group-hover:scale-105 transition-transform" />
+                    </div>
                     <div className="truncate">
                       <div className="text-xs font-bold text-white group-hover:text-[var(--accent)] transition-colors truncate">{game.title}</div>
                       <div className="text-[10px] text-[var(--accent)] font-semibold mt-0.5">{game.category}</div>

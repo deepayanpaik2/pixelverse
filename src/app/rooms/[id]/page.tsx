@@ -360,7 +360,9 @@ function RoomView({ room, client, onLeft }: { room: PartyRoom; client: PartyRoom
           {game && tab === 'lobby' && (
             <div className="glass-panel p-4 rounded-2xl border border-arcade-border flex items-center justify-between gap-4">
               <div className="flex items-center gap-3 min-w-0">
-                <img src={game.thumbnail_url} alt={game.title} className="w-14 h-14 rounded-xl object-cover border border-arcade-border" />
+                <div className="w-14 h-14 rounded-xl overflow-hidden bg-black/60 border border-arcade-border flex items-center justify-center p-1 shrink-0">
+                  <img src={game.thumbnail_url} alt={game.title} className="w-full h-full object-contain" />
+                </div>
                 <div className="min-w-0">
                   <span className="text-[10px] font-bold text-arcade-champagne uppercase tracking-wider">Party Game</span>
                   <h3 className="text-base font-bold text-white truncate">{game.title}</h3>

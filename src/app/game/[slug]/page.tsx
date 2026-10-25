@@ -267,11 +267,19 @@ export default function GamePlayerPage() {
               <div className="relative z-10 flex flex-col sm:flex-row items-center gap-6 sm:gap-10 px-6 py-8 max-w-3xl w-full justify-center">
                 <div className="relative shrink-0">
                   <div className="absolute -inset-3 rounded-[2rem] bg-gradient-to-br from-[var(--accent)] to-[var(--accent-secondary)] blur-xl opacity-60" />
-                  <img
-                    src={game.thumbnail_url}
-                    alt={game.title}
-                    className="relative w-36 h-36 sm:w-52 sm:h-52 rounded-[1.75rem] object-cover border-2 border-white/20 shadow-2xl"
-                  />
+                  <div className="relative w-36 h-36 sm:w-52 sm:h-52 rounded-[1.75rem] overflow-hidden bg-[#060812] border-2 border-white/20 shadow-2xl flex items-center justify-center p-2">
+                    <img
+                      src={game.thumbnail_url}
+                      alt=""
+                      aria-hidden
+                      className="absolute inset-0 w-full h-full object-cover blur-md opacity-35 scale-125"
+                    />
+                    <img
+                      src={game.thumbnail_url}
+                      alt={game.title}
+                      className="relative z-10 w-full h-full object-contain rounded-xl drop-shadow-md"
+                    />
+                  </div>
                 </div>
 
                 <div className="flex flex-col items-center sm:items-start text-center sm:text-left gap-4 min-w-0">
@@ -324,8 +332,8 @@ export default function GamePlayerPage() {
               {/* Background loader: behind iframe (z-0), non-blocking, fades out when iframe loads */}
               {!iframeLoaded && (
                 <div className="absolute inset-0 z-0 flex flex-col items-center justify-center gap-3 bg-[#060810] text-center pointer-events-none select-none">
-                  <div className="w-16 h-16 rounded-2xl overflow-hidden border border-white/20 shadow-xl opacity-75">
-                    <img src={game.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                  <div className="w-16 h-16 rounded-2xl overflow-hidden border border-white/20 shadow-xl opacity-75 bg-black/60 flex items-center justify-center p-1">
+                    <img src={game.thumbnail_url} alt="" className="w-full h-full object-contain" />
                   </div>
                   <div className="launch-bar" />
                   <p className="text-xs text-slate-300 font-semibold tracking-wide">Connecting to game engine…</p>

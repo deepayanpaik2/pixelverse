@@ -209,7 +209,7 @@ function RoomsContent() {
 
                 {game && (
                   <div className="flex items-center gap-2 p-2 rounded-lg bg-arcade-midnight border border-arcade-border/60">
-                    <img src={game.thumbnail_url} alt={game.title} className="w-7 h-7 rounded object-cover" />
+                    <img src={game.thumbnail_url} alt={game.title} className="w-7 h-7 rounded object-contain bg-black/60 p-0.5" />
                     <div className="truncate">
                       <div className="text-[10px] uppercase font-bold text-slate-400">Featured Game</div>
                       <div className="text-xs font-bold text-arcade-champagne truncate">{game.title}</div>

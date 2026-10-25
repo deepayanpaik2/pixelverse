@@ -258,11 +258,13 @@ export function Navbar() {
                   }}
                   className="flex items-center gap-3 p-2.5 hover:bg-white/[0.08] hover:border-l-2 hover:border-l-[var(--accent)] transition-all group"
                 >
-                  <img
-                    src={game.thumbnail_url}
-                    alt=""
-                    className="w-10 h-10 rounded-xl object-cover border border-white/15 group-hover:scale-105 transition-transform"
-                  />
+                  <div className="w-10 h-10 rounded-xl overflow-hidden bg-black/60 border border-white/15 flex items-center justify-center p-0.5 shrink-0">
+                    <img
+                      src={game.thumbnail_url}
+                      alt=""
+                      className="w-full h-full object-contain group-hover:scale-105 transition-transform"
+                    />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-xs font-bold text-white group-hover:text-[var(--accent)] truncate transition-colors">
                       {game.title}
