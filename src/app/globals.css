@@ -309,6 +309,33 @@ h1[class*="font-"] { font-weight: 750; letter-spacing: -0.025em; }
     width: 90vw !important;
     height: 90vw !important;
   }
+  .nebula span {
+    filter: none !important;
+    animation: none !important;
+    opacity: 0.15 !important;
+    width: 90vw !important;
+    height: 90vw !important;
+    will-change: auto !important;
+  }
+  .card-3d {
+    will-change: auto !important;
+    transform: none !important;
+    perspective: none !important;
+    transform-style: flat !important;
+  }
+  .card-3d:hover {
+    transform: none !important;
+    box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.7) !important;
+  }
+  .drawer-neon {
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    background: rgba(9, 12, 21, 0.95) !important;
+  }
+  .panel-neon {
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+  }
 }
 
 /* ---------- Falling glitter canvas ---------- */
@@ -378,6 +405,10 @@ html[data-playing="true"] .glitter { opacity: 0; }
   .game-tile:active {
     transform: scale(0.98) !important;
     transition-duration: 0.08s !important;
+  }
+  /* Remove duplicate blurred background image in tiles on mobile to save GPU fill rate */
+  .game-tile img[aria-hidden="true"] {
+    display: none !important;
   }
 }
 

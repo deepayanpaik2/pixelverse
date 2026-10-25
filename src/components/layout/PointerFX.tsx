@@ -63,13 +63,14 @@ export function PointerFX() {
     };
 
     const onDown = (e: PointerEvent) => {
-      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      // Mobile touch: completely silent and zero DOM particle overhead for instant 60/120fps taps
+      if (e.pointerType !== 'mouse' || window.innerWidth < 768) return;
+      if (e.button !== 0) return;
       unlockSfx();
       const t = e.target instanceof Element ? e.target : null;
       const name = soundFor(t);
       playSfx(name);
-      // Only spawn animated particles on mouse clicks to keep mobile touch scrolling 100% lag-free
-      if (!reduce && e.pointerType === 'mouse') {
+      if (!reduce) {
         spawn(layer, e.clientX, e.clientY, name === 'launch' || name === 'open');
       }
     };

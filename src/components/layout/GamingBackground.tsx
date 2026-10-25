@@ -54,9 +54,9 @@ export function GamingBackground() {
       {/* Laser Horizon Beam */}
       <div className="cyber-horizon" />
 
-      {/* Floating 3D Gaming HUD Particles */}
+      {/* Floating 3D Gaming HUD Particles (desktop only) */}
       {intensity !== 'reduced' && (
-        <div className="absolute inset-0">
+        <div className="absolute inset-0 hidden sm:block">
           {particles.map((p) => (
             <div
               key={p.id}

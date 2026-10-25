@@ -184,9 +184,9 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full drawer-neon border-b border-white/[0.12] px-3 sm:px-6 py-2.5 pt-[calc(0.625rem+env(safe-area-inset-top))] backdrop-blur-2xl">
-      <div className="max-w-[1920px] mx-auto flex items-center justify-between gap-3 sm:gap-6">
+      <div className="max-w-[1920px] mx-auto flex items-center justify-between gap-2 sm:gap-6">
         {/* Left Section: Mobile Menu Button & Brand Logo */}
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+        <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 shrink-0">
           <button
             onClick={() => setMobileMenu(!mobileMenu)}
             className="sm:hidden p-2 rounded-xl bg-black/50 border border-white/15 text-white hover:border-[var(--accent)] active:scale-95 transition-all shadow-md shrink-0"
@@ -198,17 +198,17 @@ export function Navbar() {
           {/* Holographic 3D Brand Mark */}
           <Link
             href="/"
-            className="flex items-center gap-2.5 sm:gap-3 group shrink-0 min-w-0"
+            className="flex items-center gap-2 sm:gap-3 group shrink-0 min-w-0"
             aria-label="Pixelverse home"
             onClick={() => playSfx('tap')}
           >
             <div className="relative shrink-0">
               <div className="absolute -inset-1 rounded-xl bg-[var(--accent)] opacity-20 blur-md group-hover:opacity-60 transition-opacity duration-300" />
-              <BrandMark className="relative w-8 h-8 sm:w-10 sm:h-10 drop-shadow-[0_0_12px_var(--accent-glow)] group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300" />
+              <BrandMark className="relative w-7 h-7 sm:w-10 sm:h-10 drop-shadow-[0_0_12px_var(--accent-glow)] group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300 shrink-0" />
             </div>
-            <div className="flex flex-col leading-none min-w-0">
+            <div className="flex flex-col leading-none min-w-0 shrink-0">
               <div className="flex items-center gap-1.5 sm:gap-2">
-                <span className="font-display text-[1.15rem] sm:text-[1.4rem] font-black tracking-tight text-gradient">
+                <span className="font-display text-base sm:text-[1.4rem] font-black tracking-tight text-gradient whitespace-nowrap">
                   Pixelverse
                 </span>
                 <span className="hidden sm:inline-block px-1.5 py-0.5 rounded-full text-[9px] font-mono font-bold tracking-wider bg-white/5 border border-white/10 text-slate-300 group-hover:border-[var(--accent)]/50 group-hover:text-[var(--accent)] group-hover:shadow-[0_0_8px_var(--accent-glow)] transition-all">
@@ -291,7 +291,7 @@ export function Navbar() {
               setShowMobileSearch(!showMobileSearch);
               playSfx('tap');
             }}
-            className="sm:hidden p-2 rounded-xl bg-black/60 border border-white/15 text-slate-200 hover:text-[var(--accent)] hover:border-[var(--accent)]/50 active:scale-95 transition-all shadow-sm"
+            className="sm:hidden p-2 rounded-xl bg-black/60 border border-white/15 text-slate-200 hover:text-[var(--accent)] hover:border-[var(--accent)]/50 active:scale-95 transition-all shadow-sm shrink-0"
             title="Search Games"
             aria-label="Search Games"
           >
@@ -304,7 +304,7 @@ export function Navbar() {
               setKidsMode(!kidsMode);
               playSfx('toggle');
             }}
-            className={`hidden sm:flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-black transition-all btn-3d ${
+            className={`hidden sm:flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-black transition-all btn-3d shrink-0 ${
               kidsMode
                 ? 'bg-emerald-400 text-black shadow-[0_4px_16px_rgba(52,211,153,0.5)] border border-emerald-300'
                 : 'bg-black/50 border border-white/15 text-slate-300 hover:text-white hover:border-white/30'
@@ -324,16 +324,19 @@ export function Navbar() {
           <Link
             href="/submit"
             onClick={() => playSfx('tap')}
-            className="hidden lg:flex items-center gap-2 px-3.5 py-2 rounded-xl bg-black/50 border border-white/15 text-xs font-black text-slate-200 hover:text-[var(--accent)] hover:border-[var(--accent)]/50 transition-all btn-3d"
+            className="hidden lg:flex items-center gap-2 px-3.5 py-2 rounded-xl bg-black/50 border border-white/15 text-xs font-black text-slate-200 hover:text-[var(--accent)] hover:border-[var(--accent)]/50 transition-all btn-3d shrink-0"
           >
             <Upload className="w-3.5 h-3.5 text-[var(--accent)]" />
             <span>Submit</span>
           </Link>
 
-          <SoundToggle />
+          {/* Sound Toggle (PC only — sound is completely silenced on mobile view) */}
+          <div className="hidden sm:block shrink-0">
+            <SoundToggle />
+          </div>
 
           {/* 3D THEME CUSTOMIZER BUTTON & MENU */}
-          <div className="relative" ref={themeRef}>
+          <div className="relative shrink-0" ref={themeRef}>
             <button
               onClick={() => {
                 setShowThemeMenu(!showThemeMenu);
@@ -341,7 +344,7 @@ export function Navbar() {
                 setShowUserMenu(false);
                 playSfx('tap');
               }}
-              className={`p-2 sm:px-3 sm:py-2 rounded-xl bg-black/60 border text-xs font-black transition-all flex items-center gap-2 btn-3d ${
+              className={`p-2 sm:px-3 sm:py-2 rounded-xl bg-black/60 border text-xs font-black transition-all flex items-center gap-2 btn-3d shrink-0 ${
                 showThemeMenu
                   ? 'border-[var(--accent)] text-[var(--accent)] shadow-[0_0_16px_var(--accent-glow)]'
                   : 'border-white/15 text-slate-200 hover:text-white hover:border-[var(--accent)]/60'
@@ -349,13 +352,13 @@ export function Navbar() {
               title="Select Gaming Theme"
               aria-label="Select Gaming Theme"
             >
-              <Palette className="w-4 h-4 text-[var(--accent)] drop-shadow-[0_0_8px_var(--accent)]" />
+              <Palette className="w-4 h-4 text-[var(--accent)] drop-shadow-[0_0_8px_var(--accent)] shrink-0" />
               <span className="hidden xl:inline text-[11px] uppercase tracking-wide">Theme</span>
             </button>
 
             {/* Luxurious 3D Theme Customizer Dropdown Drawer */}
             {showThemeMenu && (
-              <div className="absolute right-0 mt-3 w-80 sm:w-96 drawer-neon rounded-2xl border border-white/20 p-3.5 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.95)] z-50 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="absolute right-0 mt-3 w-[calc(100vw-1.5rem)] max-w-sm sm:w-96 drawer-neon rounded-2xl border border-white/20 p-3.5 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.95)] z-50 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
                 {/* Header Strip */}
                 <div className="flex items-center justify-between pb-2.5 border-b border-white/10">
                   <div className="flex items-center gap-2">
@@ -469,11 +472,11 @@ export function Navbar() {
             )}
           </div>
 
-          {/* Favorites Pill */}
+          {/* Favorites Pill (Desktop only; mobile already has primary favorites in sticky bottom bar) */}
           <Link
             href="/favorites"
             onClick={() => playSfx('tap')}
-            className="p-2 sm:px-3 sm:py-2 rounded-xl bg-black/50 border border-white/15 text-slate-300 hover:text-white hover:border-white/30 transition-all relative flex items-center gap-1.5 btn-3d"
+            className="hidden sm:flex p-2 sm:px-3 sm:py-2 rounded-xl bg-black/50 border border-white/15 text-slate-300 hover:text-white hover:border-white/30 transition-all relative items-center gap-1.5 btn-3d shrink-0"
             title="Saved Favorites"
           >
             <Heart className="w-4 h-4 text-rose-400" />
@@ -486,7 +489,7 @@ export function Navbar() {
 
           {/* User Account / Sign In */}
           {user ? (
-            <div className="relative" ref={userRef}>
+            <div className="relative shrink-0" ref={userRef}>
               <button
                 onClick={() => {
                   setShowUserMenu(!showUserMenu);
@@ -494,12 +497,12 @@ export function Navbar() {
                   setShowLangMenu(false);
                   playSfx('tap');
                 }}
-                className="flex items-center gap-2 p-1.5 rounded-xl bg-black/60 border border-white/15 hover:border-[var(--accent)] transition-all btn-3d"
+                className="flex items-center gap-2 p-1.5 rounded-xl bg-black/60 border border-white/15 hover:border-[var(--accent)] transition-all btn-3d shrink-0"
               >
                 <img
                   src={user.avatar_url}
                   alt=""
-                  className="w-8 h-8 rounded-lg object-cover border border-white/20"
+                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg object-cover border border-white/20 shrink-0"
                 />
                 <span className="text-xs font-black text-white hidden md:block max-w-[85px] truncate pr-1">
                   {user.display_name}
@@ -559,9 +562,10 @@ export function Navbar() {
             <Link
               href="/auth/sign-in"
               onClick={() => playSfx('tap')}
-              className="btn-gaming px-5 py-2.5 rounded-full font-black text-xs whitespace-nowrap shadow-[0_4px_16px_var(--accent-glow)] flex items-center gap-1.5"
+              className="btn-gaming px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-full font-black text-xs whitespace-nowrap shadow-[0_4px_16px_var(--accent-glow)] flex items-center gap-1.5 shrink-0"
             >
-              <Gamepad2 className="w-4 h-4 fill-current" /> Sign In
+              <Gamepad2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current shrink-0" />
+              <span>Sign In</span>
             </Link>
           )}
         </div>
@@ -610,6 +614,41 @@ export function Navbar() {
             >
               🚀 Submit Game
             </Link>
+          </div>
+
+          {/* Mobile Kids Mode & Language Row */}
+          <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/10">
+            <button
+              onClick={() => {
+                setKidsMode(!kidsMode);
+                playSfx('toggle');
+              }}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-black transition-all ${
+                kidsMode
+                  ? 'bg-emerald-400 text-black shadow-md'
+                  : 'bg-white/5 border border-white/10 text-slate-300'
+              }`}
+            >
+              <Baby className="w-4 h-4" />
+              <span>Kids Mode {kidsMode ? 'ON' : 'OFF'}</span>
+            </button>
+            <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-xl p-1 shrink-0">
+              {languages.map((l) => (
+                <button
+                  key={l.code}
+                  onClick={() => {
+                    setLanguage(l.code);
+                    playSfx('toggle');
+                  }}
+                  className={`px-2 py-1 rounded-lg text-xs font-bold transition-all ${
+                    language === l.code ? 'bg-[var(--accent)] text-black' : 'text-slate-400 hover:text-white'
+                  }`}
+                  title={l.label}
+                >
+                  {l.flag}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}

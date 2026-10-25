@@ -16,8 +16,19 @@ let bus: GainNode | null = null;   // dry
 let echo: GainNode | null = null;  // send into the shimmer delay
 const lastPlayed: Record<string, number> = {};
 
+export function isMobileDevice(): boolean {
+  if (typeof window === 'undefined') return false;
+  return (
+    window.innerWidth < 768 ||
+    (typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches) ||
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || '')
+  );
+}
+
 export function isSfxOn(): boolean {
   if (typeof window === 'undefined') return false;
+  // Sound is completely off on mobile devices as requested (lag-free silent taps)
+  if (isMobileDevice()) return false;
   try { return window.localStorage.getItem(KEY) !== 'off'; } catch { return true; }
 }
 
@@ -57,7 +68,10 @@ function audio(): AudioContext | null {
 }
 
 /** Call from the first user gesture so the browser lets sound play. */
-export function unlockSfx() { audio(); }
+export function unlockSfx() {
+  if (isMobileDevice()) return;
+  audio();
+}
 
 function bell(freq: number, at: number, dur: number, vol: number, send = 0.45) {
   const c = ctx!; if (!bus || !echo) return;
@@ -113,6 +127,7 @@ const N = { C5: 523.25, D5: 587.33, E5: 659.25, G5: 783.99, A5: 880, C6: 1046.5,
 const MIN_GAP: Record<SfxName, number> = { tap: 30, soft: 30, hover: 70, open: 120, launch: 400, like: 120, toggle: 80 };
 
 export function playSfx(name: SfxName) {
+  if (isMobileDevice()) return;
   if (!isSfxOn()) return;
   const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
   if (now - (lastPlayed[name] || 0) < MIN_GAP[name]) return;
