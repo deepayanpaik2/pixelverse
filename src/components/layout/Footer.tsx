@@ -142,8 +142,12 @@ export function Footer() {
         </div>
 
         <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-          <div className="text-slate-400">
-            © {new Date().getFullYear()} Pixelverse Gaming Universe. All game trademarks and assets belong to their respective creators.
+          <div className="flex flex-col sm:flex-row items-center gap-2 text-slate-400 text-center sm:text-left">
+            <span>© {new Date().getFullYear()} Pixelverse Gaming Universe.</span>
+            <span className="hidden sm:inline text-slate-600">•</span>
+            <span className="flex items-center gap-1.5 text-slate-300 font-semibold">
+              Crafted with <Heart className="w-3.5 h-3.5 fill-rose-500 text-rose-500 inline animate-pulse" /> by <a href="https://github.com/deepayanpaik2" target="_blank" rel="noopener noreferrer" className="text-[var(--accent)] hover:underline font-bold">Deepayan</a>
+            </span>
           </div>
           <div className="flex items-center gap-2 text-slate-400">
             <Shield className="w-4 h-4 text-[var(--accent)] drop-shadow-sm" />

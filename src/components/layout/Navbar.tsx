@@ -205,13 +205,18 @@ export function Navbar() {
               <div className="absolute -inset-1 rounded-xl bg-[var(--accent)] opacity-20 blur-md group-hover:opacity-60 transition-opacity duration-300" />
               <BrandMark className="relative w-9 h-9 sm:w-10 sm:h-10 drop-shadow-[0_0_12px_var(--accent-glow)] group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300" />
             </div>
-            <div className="hidden sm:flex flex-col leading-none">
-              <span className="font-display text-[1.4rem] font-black tracking-tight text-gradient">
-                Pixelverse
-              </span>
-              <span className="text-[10px] text-slate-400 mt-0.5 tracking-wider font-semibold uppercase flex items-center gap-1">
+            <div className="flex flex-col leading-none">
+              <div className="flex items-center gap-2">
+                <span className="font-display text-[1.25rem] sm:text-[1.4rem] font-black tracking-tight text-gradient">
+                  Pixelverse
+                </span>
+                <span className="px-1.5 py-0.5 rounded-full text-[9px] font-mono font-bold tracking-wider bg-white/5 border border-white/10 text-slate-300 group-hover:border-[var(--accent)]/50 group-hover:text-[var(--accent)] group-hover:shadow-[0_0_8px_var(--accent-glow)] transition-all">
+                  by Deepayan
+                </span>
+              </div>
+              <span className="text-[9px] sm:text-[10px] text-slate-400 mt-0.5 tracking-wider font-semibold uppercase flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
-                Next-Gen Gaming
+                14,000+ Online Games
               </span>
             </div>
           </Link>

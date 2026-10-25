@@ -285,6 +285,10 @@ export default function GamePlayerPage() {
                     <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-black">
                       Free to play
                     </span>
+                    <span className="px-3 py-1 rounded-full bg-white/5 text-slate-300 border border-white/10 text-[10px] font-mono font-bold flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
+                      Crafted by Deepayan
+                    </span>
                     {onSite && (
                       <span className="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 flex items-center gap-1 font-black">
                         <Zap className="w-3 h-3" /> Runs on Pixelverse

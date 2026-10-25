@@ -157,11 +157,17 @@ export function Sidebar() {
 
         {/* Bottom Hub Tag */}
         <div className="hidden lg:block pt-3 border-t border-white/10 px-2 text-[10px] text-slate-400 space-y-0.5">
-          <div className="font-extrabold text-white flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-[var(--accent)] animate-pulse" />
-            Pixelverse Games
+          <div className="font-extrabold text-white flex items-center justify-between gap-1.5">
+            <div className="flex items-center gap-1.5 truncate">
+              <span className="w-2 h-2 rounded-full bg-[var(--accent)] animate-pulse" />
+              <span>Pixelverse Arcade</span>
+            </div>
+            <span className="text-[9px] font-mono font-bold text-[var(--accent)] opacity-80">v1.0</span>
           </div>
-          <div className="text-slate-500">Play instant in browser</div>
+          <div className="text-slate-400 font-medium flex items-center gap-1">
+            <span>Crafted by</span>
+            <span className="text-[var(--accent)] font-bold">Deepayan</span>
+          </div>
         </div>
       </aside>
 

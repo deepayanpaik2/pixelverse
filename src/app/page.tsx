@@ -180,9 +180,15 @@ export default function HomePage() {
               <p className="text-xs text-slate-400 font-medium">Keep scrolling — the entire universe streams as you explore</p>
             </div>
           </div>
-          <span className="glass-chip px-4 py-2 rounded-full text-xs font-black tabular-nums text-[var(--accent)] shadow-sm font-mono">
-            {games.length.toLocaleString()} games online
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="hidden sm:inline-flex glass-chip px-3 py-1.5 rounded-full text-[11px] font-mono font-bold text-slate-300 border border-white/10 items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
+              Engineered by Deepayan
+            </span>
+            <span className="glass-chip px-4 py-2 rounded-full text-xs font-black tabular-nums text-[var(--accent)] shadow-sm font-mono">
+              {games.length.toLocaleString()} games online
+            </span>
+          </div>
         </div>
         <GameGrid games={games} mosaic />
       </section>

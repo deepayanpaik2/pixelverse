@@ -18,7 +18,9 @@ export const metadata: Metadata = {
   description: 'Play thousands of free online games instantly. No downloads, no login required. Discover high-performance HTML5, WebGL, and retro arcade titles.',
   manifest: '/manifest.json',
   keywords: ['online games', 'free games', 'browser games', 'instant play', 'html5 games', 'poki alternative', 'arcade'],
-  authors: [{ name: 'Pixelverse Team' }],
+  authors: [{ name: 'Deepayan', url: 'https://github.com/deepayanpaik2' }],
+  creator: 'Deepayan',
+  publisher: 'Deepayan',
   openGraph: {
     type: 'website',
     locale: 'en_US',
