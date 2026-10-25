@@ -18,11 +18,12 @@ export function ProfileCover({ bannerUrl, seed, className = '' }: { bannerUrl?: 
         src={src}
         alt=""
         onError={() => setBroken(true)}
-        className="absolute inset-0 w-full h-full object-cover"
+        className="absolute inset-0 w-full h-full object-cover select-none"
         draggable={false}
       />
-      {/* gentle fade into the card so the avatar and name always read clearly */}
-      <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#10131c] via-[#10131c]/55 to-transparent" />
+      {/* Seamless unified ambient vignette */}
+      <div className="absolute inset-0 bg-gradient-to-t from-[#090b14] via-[#090b14]/30 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-black/40 pointer-events-none" />
     </div>
   );
 }
