@@ -1,14 +1,15 @@
 'use client';
 
-import React, { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useSyncExternalStore, Suspense } from 'react';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import {
   Tv,
   Mic,
   MicOff,
   Video,
   VideoOff,
+  SwitchCamera,
   MonitorUp,
   MonitorOff,
   Headphones,
@@ -42,7 +43,17 @@ import { PartyRoomClient, type PeerState } from '@/lib/party/rtc';
 /* ------------------------------------------------------------------ */
 /* Participant tile                                                    */
 /* ------------------------------------------------------------------ */
-function Tile({ p, deafened, compact }: { p: PeerState; deafened: boolean; compact?: boolean }) {
+function Tile({
+  p,
+  deafened,
+  compact,
+  onFlipCamera,
+}: {
+  p: PeerState;
+  deafened: boolean;
+  compact?: boolean;
+  onFlipCamera?: () => void;
+}) {
   const ref = useRef<HTMLVideoElement>(null);
   const showVideo = p.videoOn || p.screenOn;
 
@@ -76,8 +87,25 @@ function Tile({ p, deafened, compact }: { p: PeerState; deafened: boolean; compa
         playsInline
         className={`absolute inset-0 w-full h-full ${p.screenOn ? 'object-contain bg-black' : 'object-cover'} ${
           showVideo ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        } ${p.isLocal && p.videoOn && !p.screenOn ? '-scale-x-100' : ''}`}
+        } ${p.isLocal && p.videoOn && !p.screenOn && p.cameraFacing !== 'environment' ? '-scale-x-100' : ''}`}
       />
+
+      {/* Floating Flip Camera button on local tile for mobile & touch users */}
+      {p.isLocal && p.videoOn && !p.screenOn && onFlipCamera && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onFlipCamera();
+          }}
+          className="absolute top-2 left-2 z-20 flex items-center gap-1 px-2 py-1 rounded-lg bg-black/75 hover:bg-black text-white hover:text-arcade-champagne border border-white/20 transition-all shadow-md active:scale-90 text-[10px] font-bold backdrop-blur-sm"
+          title="Flip camera (Front / Back)"
+          aria-label="Flip camera"
+        >
+          <SwitchCamera className="w-3.5 h-3.5 text-arcade-champagne" />
+          <span className="capitalize">{p.cameraFacing === 'environment' ? 'Back' : 'Front'}</span>
+        </button>
+      )}
 
       {!showVideo && (
         <div className="absolute inset-0 flex items-center justify-center">
@@ -276,7 +304,7 @@ function RoomView({ room, client, onLeft }: { room: PartyRoom; client: PartyRoom
             <div className="glass-panel p-4 sm:p-5 rounded-2xl border border-arcade-border space-y-4">
               <div className={`grid gap-3 ${gridCols(snap.peers.length)}`}>
                 {snap.peers.map((p) => (
-                  <Tile key={p.id} p={p} deafened={me.deafened} />
+                  <Tile key={p.id} p={p} deafened={me.deafened} onFlipCamera={() => client.flipCamera()} />
                 ))}
               </div>
               {snap.peers.length === 1 && (
@@ -289,7 +317,7 @@ function RoomView({ room, client, onLeft }: { room: PartyRoom; client: PartyRoom
             <div className="space-y-3">
               <div className="flex gap-2 overflow-x-auto pb-1">
                 {snap.peers.map((p) => (
-                  <Tile key={p.id} p={p} deafened={me.deafened} compact />
+                  <Tile key={p.id} p={p} deafened={me.deafened} compact onFlipCamera={() => client.flipCamera()} />
                 ))}
               </div>
               <div className="glass-panel rounded-2xl overflow-hidden border border-arcade-border h-[62vh] min-h-[420px] flex flex-col">
@@ -323,6 +351,19 @@ function RoomView({ room, client, onLeft }: { room: PartyRoom; client: PartyRoom
               {me.videoOn ? <Video className="w-4 h-4 text-arcade-champagne" /> : <VideoOff className="w-4 h-4" />}
               <span className="hidden sm:inline">{me.videoOn ? 'Camera off' : 'Camera on'}</span>
             </button>
+            {me.videoOn && (
+              <button
+                onClick={() => client.flipCamera()}
+                className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-all border bg-arcade-surface border-arcade-border text-slate-100 hover:border-arcade-champagne hover:text-arcade-champagne active:scale-95 shadow-sm"
+                title="Flip camera (Front / Back for mobiles)"
+              >
+                <SwitchCamera className="w-4 h-4 text-arcade-champagne" />
+                <span className="hidden sm:inline">Flip camera</span>
+                <span className="text-[9px] uppercase font-mono px-1.5 py-0.5 rounded bg-black/50 text-arcade-champagne border border-arcade-champagne/30">
+                  {me.cameraFacing === 'environment' ? 'Back' : 'Front'}
+                </span>
+              </button>
+            )}
             <button onClick={() => client.toggleScreen()} className={btn(true)} title="Share your screen">
               {me.screenOn ? <MonitorOff className="w-4 h-4 text-arcade-rose" /> : <MonitorUp className="w-4 h-4 text-arcade-orchid" />}
               <span className="hidden sm:inline">{me.screenOn ? 'Stop sharing' : 'Share screen'}</span>
@@ -428,21 +469,73 @@ function RoomView({ room, client, onLeft }: { room: PartyRoom; client: PartyRoom
 /* ------------------------------------------------------------------ */
 /* Page: load room -> join gate -> room                                */
 /* ------------------------------------------------------------------ */
-export default function RoomPage() {
+function RoomPageContent() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const code = normalizeCode((params?.id as string) || '');
   const { user } = useAuth();
+
+  const urlCam = searchParams?.get('cam');
+  const urlFacing = searchParams?.get('facing') as 'user' | 'environment' | null;
+  const urlMic = searchParams?.get('mic');
 
   const [room, setRoom] = useState<PartyRoom | null>(null);
   const [loadState, setLoadState] = useState<'loading' | 'ready' | 'notfound' | 'error'>('loading');
   const [loadError, setLoadError] = useState('');
   const [name, setName] = useState('');
-  const [wantMic, setWantMic] = useState(true);
-  const [wantCam, setWantCam] = useState(false);
+  const [wantMic, setWantMic] = useState(urlMic !== '0');
+  const [wantCam, setWantCam] = useState(urlCam === '1');
+  const [cameraFacing, setCameraFacing] = useState<'user' | 'environment'>(
+    urlFacing === 'environment' ? 'environment' : 'user'
+  );
   const [joining, setJoining] = useState(false);
   const [client, setClient] = useState<PartyRoomClient | null>(null);
   const [endedMsg, setEndedMsg] = useState('');
+
+  const joinPreviewRef = useRef<HTMLVideoElement>(null);
+
+  const stopJoinPreview = useCallback(() => {
+    if (joinPreviewRef.current?.srcObject) {
+      const stream = joinPreviewRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach((t) => t.stop());
+      joinPreviewRef.current.srcObject = null;
+    }
+  }, []);
+
+  // Pre-join camera live preview with flip camera for mobiles
+  useEffect(() => {
+    if (client || !wantCam) {
+      stopJoinPreview();
+      return;
+    }
+    let active = true;
+    if (!navigator.mediaDevices?.getUserMedia) return;
+    navigator.mediaDevices
+      .getUserMedia({
+        video: {
+          facingMode: { ideal: cameraFacing },
+          width: { ideal: 640 },
+          height: { ideal: 360 },
+        },
+      })
+      .then((stream) => {
+        if (!active) {
+          stream.getTracks().forEach((t) => t.stop());
+          return;
+        }
+        if (joinPreviewRef.current) {
+          joinPreviewRef.current.srcObject = stream;
+          joinPreviewRef.current.play().catch(() => {});
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      active = false;
+      stopJoinPreview();
+    };
+  }, [client, wantCam, cameraFacing, stopJoinPreview]);
 
   useEffect(() => {
     if (!roomsBackendReady()) {
@@ -481,6 +574,7 @@ export default function RoomPage() {
   const join = async () => {
     if (!room || joining) return;
     setJoining(true);
+    stopJoinPreview();
     const finalName = (name.trim() || 'Guest').slice(0, 24);
     if (!user) saveGuestName(finalName);
     const identity = { ...getIdentity(user?.display_name), name: user?.display_name || finalName };
@@ -490,7 +584,7 @@ export default function RoomPage() {
       maxParticipants: room.max_participants,
       hostClientId: room.host_client_id,
     });
-    await c.join({ audio: wantMic, video: wantCam });
+    await c.join({ audio: wantMic, video: wantCam, facingMode: cameraFacing });
     setClient(c);
     setJoining(false);
   };
@@ -572,6 +666,35 @@ export default function RoomPage() {
           </button>
         </div>
 
+        {/* Live Camera Preview with Flip Camera Option */}
+        {wantCam && (
+          <div className="relative aspect-video rounded-xl overflow-hidden bg-black border border-arcade-border/80 flex items-center justify-center">
+            <video
+              ref={joinPreviewRef}
+              autoPlay
+              playsInline
+              muted
+              className={`w-full h-full object-cover ${cameraFacing !== 'environment' ? '-scale-x-100' : ''}`}
+            />
+            <button
+              type="button"
+              onClick={() => {
+                stopJoinPreview();
+                setCameraFacing((prev) => (prev === 'user' ? 'environment' : 'user'));
+              }}
+              className="absolute top-2 right-2 flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-black/80 hover:bg-black text-white hover:text-arcade-champagne border border-white/20 text-xs font-bold transition-all shadow-lg active:scale-95"
+              title="Flip camera between front (selfie) and back (environment)"
+            >
+              <SwitchCamera className="w-3.5 h-3.5 text-arcade-champagne" />
+              <span>Flip ({cameraFacing === 'environment' ? 'Back' : 'Front'})</span>
+            </button>
+            <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 text-[10px] text-slate-300 font-mono flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>{cameraFacing === 'environment' ? 'Back Camera (Rear)' : 'Front Camera (Selfie)'}</span>
+            </div>
+          </div>
+        )}
+
         <button
           onClick={join}
           disabled={joining}
@@ -596,5 +719,13 @@ export default function RoomPage() {
         router.prefetch('/rooms');
       }}
     />
+  );
+}
+
+export default function RoomPage() {
+  return (
+    <Suspense fallback={<div className="py-24 text-center text-xs text-slate-400">Loading room party...</div>}>
+      <RoomPageContent />
+    </Suspense>
   );
 }

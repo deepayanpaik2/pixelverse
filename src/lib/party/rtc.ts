@@ -22,6 +22,7 @@ export interface PeerState {
   audioOn: boolean;
   videoOn: boolean; // camera on
   screenOn: boolean; // sharing screen
+  cameraFacing?: 'user' | 'environment'; // camera facing direction (mobile flip)
   deafened: boolean;
   speaking: boolean;
   isLocal: boolean;
@@ -60,6 +61,7 @@ type Meta = {
   audioOn: boolean;
   videoOn: boolean;
   screenOn: boolean;
+  cameraFacing?: 'user' | 'environment';
   deafened: boolean;
   isHost: boolean;
   joinedAt: number;
@@ -111,6 +113,7 @@ export class PartyRoomClient {
 
   private audioTrack: MediaStreamTrack | null = null;
   private cameraTrack: MediaStreamTrack | null = null;
+  private cameraFacing: 'user' | 'environment' = 'user';
   private screenTrack: MediaStreamTrack | null = null;
   private outVideo: MediaStreamTrack | null = null;
   private localStream: MediaStream | null = null;
@@ -139,6 +142,7 @@ export class PartyRoomClient {
       audioOn: false,
       videoOn: false,
       screenOn: false,
+      cameraFacing: 'user',
       deafened: false,
       isHost: opts.identity.clientId === opts.hostClientId,
       joinedAt: Date.now(),
@@ -175,6 +179,7 @@ export class PartyRoomClient {
         audioOn: m.audioOn,
         videoOn: m.videoOn,
         screenOn: m.screenOn,
+        cameraFacing: m.cameraFacing || 'user',
         deafened: m.deafened,
         speaking: !!this.meters.get(m.id)?.speaking && m.audioOn,
         isLocal,
@@ -203,8 +208,12 @@ export class PartyRoomClient {
   }
 
   // ---------- Joining / leaving ----------
-  async join(media: { audio: boolean; video: boolean }) {
+  async join(media: { audio: boolean; video: boolean; facingMode?: 'user' | 'environment' }) {
     this.status = 'connecting';
+    if (media.facingMode) {
+      this.cameraFacing = media.facingMode;
+      this.me.cameraFacing = media.facingMode;
+    }
     this.emit();
 
     try {
@@ -503,11 +512,20 @@ export class PartyRoomClient {
     }
   }
 
-  private async acquireCamera(): Promise<void> {
+  private async acquireCamera(facingMode?: 'user' | 'environment'): Promise<void> {
+    if (facingMode) {
+      this.cameraFacing = facingMode;
+      this.me.cameraFacing = facingMode;
+    }
     if (!navigator.mediaDevices?.getUserMedia) return;
     try {
       const s = await navigator.mediaDevices.getUserMedia({
-        video: { width: { ideal: 640 }, height: { ideal: 360 }, frameRate: { ideal: 24, max: 30 } },
+        video: {
+          facingMode: { ideal: this.cameraFacing },
+          width: { ideal: 640 },
+          height: { ideal: 360 },
+          frameRate: { ideal: 24, max: 30 },
+        },
       });
       this.cameraTrack = s.getVideoTracks()[0];
       this.cameraTrack.onended = () => {
@@ -525,6 +543,7 @@ export class PartyRoomClient {
     this.outVideo = track;
     this.me.videoOn = !!this.cameraTrack;
     this.me.screenOn = !!this.screenTrack;
+    this.me.cameraFacing = this.cameraFacing;
     this.localStream = track ? new MediaStream([track]) : null;
     this.conns.forEach((c) => c.videoSender?.replaceTrack(track).catch(() => {}));
     this.publish();
@@ -555,6 +574,20 @@ export class PartyRoomClient {
     } else {
       await this.acquireCamera();
     }
+  }
+
+  async flipCamera(): Promise<'user' | 'environment'> {
+    this.cameraFacing = this.cameraFacing === 'user' ? 'environment' : 'user';
+    this.me.cameraFacing = this.cameraFacing;
+    if (this.cameraTrack) {
+      this.cameraTrack.stop();
+      this.cameraTrack = null;
+      await this.acquireCamera();
+    } else {
+      this.publish();
+      this.emit();
+    }
+    return this.cameraFacing;
   }
 
   async toggleScreen() {

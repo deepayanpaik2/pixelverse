@@ -13,7 +13,12 @@ import {
   Gamepad2, 
   Search,
   LogIn,
-  Loader2
+  Loader2,
+  SwitchCamera,
+  Video,
+  VideoOff,
+  Mic,
+  MicOff
 } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { FEATURED_GAMES } from '@/lib/games';
@@ -51,6 +56,67 @@ function RoomsContent() {
   const [selectedGameId, setSelectedGameId] = useState(preselectedGame || FEATURED_GAMES[0].id);
   const [maxParticipants, setMaxParticipants] = useState(8);
 
+  // Camera & Mic setup with Flip Camera for Mobile
+  const [wantCam, setWantCam] = useState(false);
+  const [wantMic, setWantMic] = useState(true);
+  const [cameraFacing, setCameraFacing] = useState<'user' | 'environment'>('user');
+  const [camError, setCamError] = useState<string | null>(null);
+  const previewVideoRef = React.useRef<HTMLVideoElement>(null);
+
+  const stopPreviewStream = useCallback(() => {
+    if (previewVideoRef.current?.srcObject) {
+      const stream = previewVideoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach((t) => t.stop());
+      previewVideoRef.current.srcObject = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!showCreateModal || !wantCam) {
+      stopPreviewStream();
+      return;
+    }
+
+    let active = true;
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCamError('Camera not supported in this browser.');
+      return;
+    }
+
+    setCamError(null);
+    navigator.mediaDevices
+      .getUserMedia({
+        video: {
+          facingMode: { ideal: cameraFacing },
+          width: { ideal: 640 },
+          height: { ideal: 360 },
+        },
+      })
+      .then((stream) => {
+        if (!active) {
+          stream.getTracks().forEach((t) => t.stop());
+          return;
+        }
+        if (previewVideoRef.current) {
+          previewVideoRef.current.srcObject = stream;
+          previewVideoRef.current.play().catch(() => {});
+        }
+      })
+      .catch(() => {
+        if (active) setCamError('Camera access denied or unavailable.');
+      });
+
+    return () => {
+      active = false;
+      stopPreviewStream();
+    };
+  }, [showCreateModal, wantCam, cameraFacing, stopPreviewStream]);
+
+  const handleFlipCamera = () => {
+    stopPreviewStream();
+    setCameraFacing((prev) => (prev === 'user' ? 'environment' : 'user'));
+  };
+
   const refresh = useCallback(async () => {
     if (!roomsBackendReady()) {
       setLoadError('Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to .env.local.');
@@ -87,7 +153,8 @@ function RoomsContent() {
         gameId: selectedGameId || null,
         identity: getIdentity(user?.display_name),
       });
-      router.push(`/rooms/${room.code}`);
+      stopPreviewStream();
+      router.push(`/rooms/${room.code}?cam=${wantCam ? '1' : '0'}&facing=${cameraFacing}&mic=${wantMic ? '1' : '0'}`);
     } catch (err: any) {
       setCreateError(err?.message || 'Could not create the room.');
       setCreating(false);
@@ -321,6 +388,89 @@ function RoomsContent() {
                   ))}
                 </div>
               </div>
+
+              {/* Camera & Microphone Setup with Flip Camera Option for Mobiles */}
+              <div className="p-3 rounded-xl bg-black/40 border border-arcade-border/70 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-slate-300 font-bold flex items-center gap-1.5">
+                    <Video className="w-3.5 h-3.5 text-arcade-champagne" /> Camera & Mic (Mobile Ready)
+                  </label>
+                  {wantCam && (
+                    <button
+                      type="button"
+                      onClick={handleFlipCamera}
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-arcade-surface hover:bg-arcade-border text-white text-[11px] font-bold border border-arcade-champagne/40 transition-colors shadow-sm active:scale-95"
+                      title="Flip camera between front selfie and rear environment"
+                    >
+                      <SwitchCamera className="w-3.5 h-3.5 text-arcade-champagne animate-pulse" />
+                      <span>Flip Camera</span>
+                      <span className="text-[9px] uppercase font-mono px-1 rounded bg-arcade-champagne/20 text-arcade-champagne">
+                        {cameraFacing === 'environment' ? 'Back' : 'Front'}
+                      </span>
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setWantMic(!wantMic)}
+                    className={`flex items-center justify-center gap-2 p-2 rounded-lg border font-bold text-xs transition-colors ${
+                      wantMic
+                        ? 'bg-arcade-sage/15 border-arcade-sage text-arcade-sage'
+                        : 'bg-arcade-midnight border-arcade-border text-slate-400'
+                    }`}
+                  >
+                    {wantMic ? <Mic className="w-3.5 h-3.5" /> : <MicOff className="w-3.5 h-3.5" />}
+                    <span>{wantMic ? 'Mic On' : 'Mic Off'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setWantCam(!wantCam)}
+                    className={`flex items-center justify-center gap-2 p-2 rounded-lg border font-bold text-xs transition-colors ${
+                      wantCam
+                        ? 'bg-arcade-champagne/15 border-arcade-champagne text-arcade-champagne'
+                        : 'bg-arcade-midnight border-arcade-border text-slate-400'
+                    }`}
+                  >
+                    {wantCam ? <Video className="w-3.5 h-3.5" /> : <VideoOff className="w-3.5 h-3.5" />}
+                    <span>{wantCam ? 'Camera On' : 'Camera Off'}</span>
+                  </button>
+                </div>
+
+                {wantCam && (
+                  <div className="relative aspect-video rounded-lg overflow-hidden bg-black border border-arcade-border/80 flex items-center justify-center">
+                    <video
+                      ref={previewVideoRef}
+                      autoPlay
+                      playsInline
+                      muted
+                      className={`w-full h-full object-cover ${cameraFacing !== 'environment' ? '-scale-x-100' : ''}`}
+                    />
+                    {camError ? (
+                      <span className="absolute inset-0 flex items-center justify-center p-2 text-center text-[11px] text-arcade-rose bg-black/80">
+                        {camError}
+                      </span>
+                    ) : (
+                      <div className="absolute top-2 right-2 flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={handleFlipCamera}
+                          className="flex items-center gap-1 px-2 py-1 rounded-md bg-black/80 hover:bg-black text-white hover:text-arcade-champagne border border-white/20 text-[10px] font-bold shadow-md active:scale-95 transition-all"
+                        >
+                          <SwitchCamera className="w-3 h-3 text-arcade-champagne" />
+                          <span>Flip ({cameraFacing === 'environment' ? 'Rear' : 'Selfie'})</span>
+                        </button>
+                      </div>
+                    )}
+                    <div className="absolute bottom-1.5 left-2 px-1.5 py-0.5 rounded bg-black/70 text-[9px] text-slate-300 font-mono flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      <span>Live Preview • {cameraFacing === 'environment' ? 'Back Camera' : 'Front Camera'}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             {createError && (
@@ -332,7 +482,10 @@ function RoomsContent() {
             <div className="flex justify-end gap-2 pt-3 border-t border-arcade-border">
               <button
                 type="button"
-                onClick={() => setShowCreateModal(false)}
+                onClick={() => {
+                  stopPreviewStream();
+                  setShowCreateModal(false);
+                }}
                 className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:bg-arcade-surface"
               >
                 Cancel
