@@ -119,7 +119,16 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="block text-slate-300 font-bold mb-1.5">Avatar Image URL</label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-slate-300 font-bold">Avatar Image URL</label>
+                <Link
+                  href="/avatar"
+                  className="inline-flex items-center gap-1.5 text-[11px] font-black text-pink-400 hover:text-pink-300 transition-colors"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Customize in Avatar Studio</span>
+                </Link>
+              </div>
               <input
                 type="text"
                 value={avatarUrl}

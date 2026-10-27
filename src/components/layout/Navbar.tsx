@@ -129,6 +129,7 @@ const THEME_OPTIONS: ThemeOption[] = [
 
 const MOBILE_NAV_LINKS = [
   { label: 'Home', href: '/', icon: Home },
+  { label: 'Avatar Studio', href: '/avatar', icon: Sparkles, badge: 'HOT' },
   { label: 'Recently Played', href: '/history', icon: Clock },
   { label: 'New Releases', href: '/new', icon: Sparkles },
   { label: 'Hot Games', href: '/trending', icon: Flame },
@@ -371,6 +372,20 @@ export function Navbar() {
             <span>Submit</span>
           </Link>
 
+          {/* Avatar Studio Link */}
+          <Link
+            href="/avatar"
+            onClick={() => playSfx('tap')}
+            className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-pink-500/15 via-purple-500/15 to-cyan-500/15 border border-pink-500/30 hover:border-pink-400 text-xs font-black text-white hover:shadow-[0_0_15px_rgba(236,72,153,0.35)] transition-all btn-3d shrink-0"
+            title="Custom Roblox & Cyberpunk Avatar Studio"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-pink-400 animate-pulse" />
+            <span>Avatar Studio</span>
+            <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-mono shadow-sm">
+              HOT
+            </span>
+          </Link>
+
           {/* Sound Toggle (Available on both mobile and PC) */}
           <div className="shrink-0">
             <SoundToggle />
@@ -562,6 +577,19 @@ export function Navbar() {
                     className="block px-3 py-2 rounded-xl hover:bg-white/10 text-slate-200 hover:text-white font-bold"
                   >
                     My Profile
+                  </Link>
+                  <Link
+                    href="/avatar"
+                    onClick={() => setShowUserMenu(false)}
+                    className="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-white/10 text-slate-200 hover:text-white font-bold"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Sparkles className="w-3.5 h-3.5 text-pink-400" />
+                      <span>Avatar Studio</span>
+                    </span>
+                    <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-mono">
+                      HOT
+                    </span>
                   </Link>
                   <Link
                     href="/history"

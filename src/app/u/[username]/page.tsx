@@ -256,12 +256,21 @@ export default function PublicProfilePage() {
             )}
 
             {isMe && (
-              <Link
-                href="/settings"
-                className="btn-gaming px-5 py-2.5 rounded-xl text-xs font-black text-black flex items-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_var(--accent-glow)]"
-              >
-                <span>Edit Profile</span>
-              </Link>
+              <>
+                <Link
+                  href="/avatar"
+                  className="px-4 py-2.5 rounded-xl text-xs font-black bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 text-white flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all shadow-[0_0_18px_rgba(236,72,153,0.45)]"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Customize Avatar</span>
+                </Link>
+                <Link
+                  href="/settings"
+                  className="glass-chip px-4 py-2.5 rounded-xl text-xs font-bold text-slate-200 hover:text-white flex items-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-md"
+                >
+                  <span>Edit Profile</span>
+                </Link>
+              </>
             )}
           </div>
         </div>
