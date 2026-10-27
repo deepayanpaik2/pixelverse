@@ -65,7 +65,6 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
             <a href="#main-content" className="skip-link">
               Skip to main content
             </a>
-            <div className="aurora" aria-hidden="true"><span /><span /><span /></div>
             <GamingBackground />
             <FallingGlitter />
             <PointerFX />

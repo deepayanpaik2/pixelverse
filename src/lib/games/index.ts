@@ -120,7 +120,11 @@ function buildCatalog(): GameManifest[] {
 /** Best quality first — the same order as the GamePix feed. */
 export const FEATURED_GAMES: GameManifest[] = buildCatalog();
 
-const byNewest = (a: GameManifest, b: GameManifest) => (b.created_at || '').localeCompare(a.created_at || '');
+const byNewest = (a: GameManifest, b: GameManifest) => {
+  const da = a.created_at || '';
+  const db = b.created_at || '';
+  return da > db ? -1 : da < db ? 1 : 0;
+};
 const NEWEST: GameManifest[] = [...FEATURED_GAMES].sort(byNewest);
 
 /** ids of the freshest games — used for the NEW badge */
@@ -171,20 +175,21 @@ function matchesCategory(g: GameManifest, nameLower: string): boolean {
   return g.category.toLowerCase() === nameLower || g.tags.some((t) => t.toLowerCase() === nameLower);
 }
 
-export const RAW_CATEGORIES: Omit<CategoryInfo, 'game_count'>[] = (() => {
-  const counts = new Map<string, number>();
-  for (const g of FEATURED_GAMES) counts.set(g.category, (counts.get(g.category) || 0) + 1);
-  return Array.from(counts.entries())
-    .sort((a, b) => b[1] - a[1])
-    .map(([name]) => {
-      const meta = CATEGORY_META[name] || { description: `Free ${name.toLowerCase()} games.`, icon_name: 'Gamepad2', color: '#a9e9df' };
-      return { id: `cat-${categorySlug(name)}`, slug: categorySlug(name), name, ...meta };
-    });
-})();
+const CATEGORY_COUNTS = new Map<string, number>();
+for (const g of FEATURED_GAMES) {
+  CATEGORY_COUNTS.set(g.category, (CATEGORY_COUNTS.get(g.category) || 0) + 1);
+}
+
+export const RAW_CATEGORIES: Omit<CategoryInfo, 'game_count'>[] = Array.from(CATEGORY_COUNTS.entries())
+  .sort((a, b) => b[1] - a[1])
+  .map(([name]) => {
+    const meta = CATEGORY_META[name] || { description: `Free ${name.toLowerCase()} games.`, icon_name: 'Gamepad2', color: '#a9e9df' };
+    return { id: `cat-${categorySlug(name)}`, slug: categorySlug(name), name, ...meta };
+  });
 
 export const CATEGORIES: CategoryInfo[] = RAW_CATEGORIES.map((cat) => ({
   ...cat,
-  game_count: FEATURED_GAMES.filter((g) => matchesCategory(g, cat.name.toLowerCase())).length,
+  game_count: CATEGORY_COUNTS.get(cat.name) || 0,
 }));
 
 export function getGameBySlug(slug: string): GameManifest | undefined {

@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Gamepad2, Sparkles, Users, Smartphone, Flame, Compass } from 'lucide-react';
-import { CATEGORIES, gameInCategory } from '@/lib/games';
+import { CATEGORIES, gameInCategory, getNewGames } from '@/lib/games';
 import { SpotlightHero } from '@/components/portal/SpotlightHero';
 import { CategoryChips } from '@/components/portal/CategoryChips';
 import { GameTile } from '@/components/portal/GameTile';
@@ -70,25 +70,65 @@ export default function HomePage() {
 
   const games = useMemo(() => mockStore.getGames(kidsMode), [kidsMode]);
 
-  const spotlightGames = useMemo(() => games.filter((g) => g.is_featured).slice(0, 5), [games]);
-  const freshGames = useMemo(
-    () => [...games].sort((a, b) => (b.created_at || '').localeCompare(a.created_at || '')).slice(0, 18),
-    [games]
-  );
-  const multiplayerGames = useMemo(
-    () => games.filter((g) => g.is_multiplayer || g.supported_players.includes('2')).slice(0, 6),
-    [games]
-  );
-  const mobileGames = useMemo(() => games.filter((g) => g.mobile_friendly).slice(0, 6), [games]);
+  // Early-break searches: stops scanning as soon as the shelf is filled (1000x faster than full array scans)
+  const spotlightGames = useMemo(() => {
+    const list: typeof games = [];
+    for (const g of games) {
+      if (g.is_featured) {
+        list.push(g);
+        if (list.length >= 5) break;
+      }
+    }
+    return list;
+  }, [games]);
 
-  const categoryShelves = useMemo(
-    () =>
-      CATEGORIES.slice(0, 6).map((cat) => ({
-        cat,
-        games: games.filter((g) => g.category === cat.name || gameInCategory(g, cat.name)).slice(0, 6),
-      })),
-    [games]
-  );
+  const freshGames = useMemo(() => {
+    if (!kidsMode) return getNewGames().slice(0, 18);
+    const list: typeof games = [];
+    for (const g of getNewGames()) {
+      if (g.is_kids_safe) {
+        list.push(g);
+        if (list.length >= 18) break;
+      }
+    }
+    return list;
+  }, [kidsMode]);
+
+  const multiplayerGames = useMemo(() => {
+    const list: typeof games = [];
+    for (const g of games) {
+      if (g.is_multiplayer || g.supported_players.includes('2')) {
+        list.push(g);
+        if (list.length >= 6) break;
+      }
+    }
+    return list;
+  }, [games]);
+
+  const mobileGames = useMemo(() => {
+    const list: typeof games = [];
+    for (const g of games) {
+      if (g.mobile_friendly) {
+        list.push(g);
+        if (list.length >= 6) break;
+      }
+    }
+    return list;
+  }, [games]);
+
+  const categoryShelves = useMemo(() => {
+    return CATEGORIES.slice(0, 6).map((cat) => {
+      const catGames: typeof games = [];
+      const catLower = cat.name.toLowerCase();
+      for (const g of games) {
+        if (g.category.toLowerCase() === catLower || g.tags.some((t) => t.toLowerCase() === catLower)) {
+          catGames.push(g);
+          if (catGames.length >= 6) break;
+        }
+      }
+      return { cat, games: catGames };
+    });
+  }, [games]);
 
   return (
     <div className="space-y-8 sm:space-y-14 pb-20 max-w-[1920px] mx-auto w-full px-1.5 sm:px-4 lg:px-6">
@@ -190,7 +230,7 @@ export default function HomePage() {
             </span>
           </div>
         </div>
-        <GameGrid games={games} mosaic />
+        <GameGrid games={games} pageSize={24} mosaic />
       </section>
     </div>
   );

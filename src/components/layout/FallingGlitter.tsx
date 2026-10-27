@@ -128,8 +128,8 @@ export function FallingGlitter() {
     };
 
     const targetCount = () => {
-      let n = Math.round((w * h) / 24000);
-      n = Math.max(22, Math.min(64, n));
+      let n = Math.round((w * h) / 60000);
+      n = Math.max(10, Math.min(22, n));
       if (intensity === 'reduced') n = Math.round(n * 0.45);
       if (saveData) n = Math.round(n * 0.5);
       return n;
@@ -173,6 +173,11 @@ export function FallingGlitter() {
           last = performance.now();
           raf = requestAnimationFrame(frame);
         }, 400);
+        return;
+      }
+      // Frame-rate throttle to ~30 FPS for laptop battery and thermal safety
+      if (now - last < 32) {
+        raf = requestAnimationFrame(frame);
         return;
       }
       const dt = Math.min((now - last) / 1000, 0.05);

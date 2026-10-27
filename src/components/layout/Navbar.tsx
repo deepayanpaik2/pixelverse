@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -206,14 +206,21 @@ export function Navbar() {
     router.push(`/arcade?search=${encodeURIComponent(searchQuery.trim())}`);
   };
 
-  const suggestions =
-    searchQuery.trim().length > 1
-      ? FEATURED_GAMES.filter(
-          (g) =>
-            g.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            g.category.toLowerCase().includes(searchQuery.toLowerCase())
-        ).slice(0, 5)
-      : [];
+  const suggestions = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (q.length <= 1) return [];
+    const list: typeof FEATURED_GAMES = [];
+    for (const g of FEATURED_GAMES) {
+      if (
+        g.title.toLowerCase().includes(q) ||
+        g.category.toLowerCase().includes(q)
+      ) {
+        list.push(g);
+        if (list.length >= 5) break;
+      }
+    }
+    return list;
+  }, [searchQuery]);
 
   const languages: { code: LanguageCode; label: string; flag: string }[] = [
     { code: 'en', label: 'English', flag: '🇺🇸' },

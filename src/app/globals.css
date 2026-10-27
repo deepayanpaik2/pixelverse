@@ -366,6 +366,8 @@ html[data-playing="true"] .glitter { opacity: 0; }
   transition: transform .55s cubic-bezier(.2, .8, .2, 1), box-shadow .45s ease, border-color .45s ease;
   box-shadow: 0 10px 28px -16px rgba(0, 0, 0, 0.9);
   will-change: transform;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 240px;
 }
 .game-tile:hover {
   transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry)) translateY(-5px) scale(1.012);
@@ -644,37 +646,20 @@ button, a[role="button"], [data-sfx] {
 /* ---------- Nebula background: cosmic clouds reacting to theme ---------- */
 .nebula {
   position: fixed; inset: 0; z-index: -11; overflow: hidden; pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 60% at 15% 10%, var(--nebula-1, rgba(0, 243, 255, 0.16)) 0%, transparent 60%),
+    radial-gradient(ellipse 65% 55% at 85% 25%, var(--nebula-2, rgba(192, 132, 252, 0.18)) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 60% at 50% 90%, var(--nebula-3, rgba(255, 42, 133, 0.14)) 0%, transparent 65%),
+    var(--background);
 }
 .nebula::after {
-  content: ""; position: absolute; inset: 0;
-  background: radial-gradient(ellipse 100% 85% at 50% 0%, rgba(6,7,11,0) 0%, var(--background) 100%);
-  transition: background 0.5s ease;
+  display: none;
 }
 .nebula span {
-  position: absolute; width: 75vmax; height: 75vmax; border-radius: 50%;
-  filter: blur(110px); opacity: 0.42; will-change: transform;
-  transition: background 0.7s ease;
+  display: none;
 }
-.nebula span:nth-child(1) {
-  background: var(--nebula-1, rgba(0, 243, 255, 0.25));
-  top: -24vmax; left: -14vmax;
-  animation: nebula-a 38s ease-in-out infinite alternate;
-}
-.nebula span:nth-child(2) {
-  background: var(--nebula-2, rgba(192, 132, 252, 0.28));
-  top: 8vmax; right: -22vmax;
-  animation: nebula-b 44s ease-in-out infinite alternate;
-}
-.nebula span:nth-child(3) {
-  background: var(--nebula-3, rgba(255, 42, 133, 0.22));
-  bottom: -32vmax; left: 18vmax;
-  animation: nebula-c 52s ease-in-out infinite alternate;
-}
-@keyframes nebula-a { to { transform: translate3d(20vmax, 14vmax, 0) scale(1.18); } }
-@keyframes nebula-b { to { transform: translate3d(-20vmax, 16vmax, 0) scale(1.12); } }
-@keyframes nebula-c { to { transform: translate3d(-14vmax, -18vmax, 0) scale(1.22); } }
 
-/* ---------- Cyberpunk 3D perspective grid floor with drifting animation ---------- */
+/* ---------- Cyberpunk 3D perspective grid floor (ultra-lightweight static GPU layer) ---------- */
 .grid-floor {
   position: fixed; inset: 0; z-index: -11; overflow: hidden; pointer-events: none;
   perspective: 1000px; transform-style: preserve-3d;
@@ -688,11 +673,6 @@ button, a[role="button"], [data-sfx] {
   transform: rotateX(75deg) translateY(-50%) translateZ(-160px);
   transform-origin: 50% 30%;
   mask-image: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 45%, transparent 95%);
-  animation: grid-drift 18s linear infinite;
-}
-@keyframes grid-drift {
-  0% { background-position: 0 0; }
-  100% { background-position: 0 48px; }
 }
 
 /* Cyber Horizon Laser Beam */
@@ -707,11 +687,6 @@ button, a[role="button"], [data-sfx] {
   opacity: 0.35;
   pointer-events: none;
   z-index: -10;
-  animation: horizon-pulse 4s ease-in-out infinite alternate;
-}
-@keyframes horizon-pulse {
-  0% { opacity: 0.2; transform: scaleY(0.8); }
-  100% { opacity: 0.45; transform: scaleY(1.3); }
 }
 
 @keyframes float-particle {

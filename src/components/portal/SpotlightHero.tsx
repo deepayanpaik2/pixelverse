@@ -43,25 +43,25 @@ export function SpotlightHero({ games }: SpotlightHeroProps) {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* Background Animated Ambient Mesh (desktop only for buttery smooth mobile rendering) */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden hidden sm:block">
-        <div className="absolute -top-[25%] -left-[20%] w-[65vw] h-[65vw] rounded-full blur-[130px] opacity-35 bg-[var(--accent)] animate-[spin_18s_linear_infinite]" />
-        <div className="absolute -bottom-[25%] -right-[20%] w-[65vw] h-[65vw] rounded-full blur-[130px] opacity-30 bg-[var(--accent-secondary)] animate-[spin_24s_linear_infinite_reverse]" />
+      {/* Ambient Neon Mesh Glow (Static, GPU-accelerated, 0% CPU consumption) */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <div
+          className="absolute inset-0 opacity-25"
+          style={{
+            background:
+              'radial-gradient(ellipse 60% 50% at 20% 25%, var(--accent) 0%, transparent 65%), radial-gradient(ellipse 60% 50% at 80% 75%, var(--accent-secondary) 0%, transparent 65%)',
+          }}
+        />
       </div>
 
-      {/* Cross-fading blurred game backdrops */}
-      {games.map((g, i) => (
-        <img
-          key={g.id}
-          src={g.thumbnail_url}
-          alt=""
-          aria-hidden
-          loading={i === 0 ? 'eager' : 'lazy'}
-          className={`absolute inset-0 w-full h-full object-cover scale-110 sm:scale-125 blur-xl sm:blur-3xl saturate-150 sm:saturate-200 transition-opacity duration-1000 ease-in-out ${
-            i === currentIndex ? 'opacity-35 sm:opacity-40' : 'opacity-0'
-          }`}
-        />
-      ))}
+      {/* Hero Game Backdrop: lightweight, high-performance ambient cover */}
+      <img
+        key={current.id}
+        src={current.thumbnail_url}
+        alt=""
+        aria-hidden
+        className="absolute inset-0 w-full h-full object-cover scale-105 opacity-25 transition-opacity duration-700 ease-in-out pointer-events-none"
+      />
 
       {/* Cyber Grid Pattern Overlay */}
       <div

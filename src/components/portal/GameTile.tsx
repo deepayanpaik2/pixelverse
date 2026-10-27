@@ -100,14 +100,8 @@ function GameTileBase({ game, size = '1x1', priority = false }: GameTileProps) {
           </div>
         ) : (
           <>
-            {/* Ambient artwork backdrop softly filling the frame */}
-            <img
-              src={game.thumbnail_url}
-              alt=""
-              aria-hidden="true"
-              className="absolute inset-0 w-full h-full object-cover blur-md opacity-25 scale-125 pointer-events-none select-none"
-            />
-            <div className="absolute inset-0 bg-[#060812]/50 pointer-events-none" />
+            {/* Ambient backdrop gradient */}
+            <div className="absolute inset-0 bg-gradient-to-b from-[#11162b]/40 via-[#060812] to-[#04050a] pointer-events-none" />
 
             {/* Whole, 100% Uncropped, Perfectly Fitted Game Photo */}
             <img
@@ -125,7 +119,7 @@ function GameTileBase({ game, size = '1x1', priority = false }: GameTileProps) {
               decoding="async"
               onLoad={() => setLoaded(true)}
               onError={() => setBroken(true)}
-              className={`relative z-10 w-full h-full object-contain p-2 rounded-xl transition-transform duration-300 ease-out group-hover:scale-105 drop-shadow-md ${
+              className={`relative z-10 w-full h-full object-contain p-2 rounded-xl transition-transform duration-300 ease-out group-hover:scale-105 ${
                 loaded ? 'opacity-100' : 'opacity-0'
               }`}
             />

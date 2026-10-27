@@ -23,17 +23,17 @@ export function GamingBackground() {
     return () => root.classList.remove('gaming-bg');
   }, [intensity]);
 
-  // Generate lightweight deterministic floating cyber particles
+  // Generate lightweight deterministic floating cyber particles (lean count for zero thermal overhead)
   const particles = useMemo(() => {
-    return Array.from({ length: 18 }, (_, i) => ({
+    return Array.from({ length: 8 }, (_, i) => ({
       id: i,
-      x: (i * 19.3) % 100,
-      y: (i * 23.7) % 100,
-      size: 2 + (i % 3) * 2,
-      duration: 18 + (i % 5) * 6,
-      delay: -(i * 2.3),
-      type: i % 4 === 0 ? 'cross' : i % 4 === 1 ? 'diamond' : 'dot',
-      opacity: 0.15 + (i % 3) * 0.12,
+      x: (i * 24.3) % 100,
+      y: (i * 29.7) % 100,
+      size: 2 + (i % 2) * 2,
+      duration: 22 + (i % 3) * 8,
+      delay: -(i * 3.1),
+      type: i % 2 === 0 ? 'diamond' : 'dot',
+      opacity: 0.12 + (i % 2) * 0.1,
     }));
   }, []);
 
@@ -69,17 +69,13 @@ export function GamingBackground() {
                 animationDelay: `${p.delay}s`,
               }}
             >
-              {p.type === 'cross' ? (
-                <svg width="12" height="12" viewBox="0 0 12 12" className="text-[var(--accent)] drop-shadow-[0_0_8px_var(--accent)]">
-                  <path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-                </svg>
-              ) : p.type === 'diamond' ? (
+              {p.type === 'diamond' ? (
                 <div
-                  className="w-2 h-2 rotate-45 border border-[var(--accent)] bg-[var(--accent-glow)] drop-shadow-[0_0_6px_var(--accent)]"
+                  className="w-2 h-2 rotate-45 border border-[var(--accent)] bg-[var(--accent-glow)]"
                 />
               ) : (
                 <div
-                  className="rounded-full bg-[var(--accent)] drop-shadow-[0_0_8px_var(--accent)]"
+                  className="rounded-full bg-[var(--accent)]"
                   style={{ width: `${p.size}px`, height: `${p.size}px` }}
                 />
               )}
