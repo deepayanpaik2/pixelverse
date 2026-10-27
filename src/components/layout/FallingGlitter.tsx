@@ -78,7 +78,11 @@ export function FallingGlitter() {
     if (!canvas || intensity === 'minimal') return;
 
     // On mobile touch devices, disable the continuous canvas animation loop to eliminate scroll lag and conserve mobile battery
-    if (window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches) {
+    if (
+      window.innerWidth < 768 ||
+      (typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches) ||
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || '')
+    ) {
       return;
     }
 
@@ -212,5 +216,5 @@ export function FallingGlitter() {
   }, [intensity]);
 
   if (intensity === 'minimal') return null;
-  return <canvas ref={canvasRef} className="glitter" aria-hidden="true" />;
+  return <canvas ref={canvasRef} className="glitter hidden md:block" aria-hidden="true" />;
 }

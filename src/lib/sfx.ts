@@ -27,9 +27,16 @@ export function isMobileDevice(): boolean {
 
 export function isSfxOn(): boolean {
   if (typeof window === 'undefined') return false;
-  // Sound is completely off on mobile devices as requested (lag-free silent taps)
-  if (isMobileDevice()) return false;
-  try { return window.localStorage.getItem(KEY) !== 'off'; } catch { return true; }
+  try {
+    const val = window.localStorage.getItem(KEY);
+    if (val !== null) return val === 'on';
+    // By default on mobile devices: sound is muted to prevent heating and click lag.
+    // However, users can freely enable it anytime using the Sound Toggle option!
+    // On PC: sound is enabled by default.
+    return !isMobileDevice();
+  } catch {
+    return !isMobileDevice();
+  }
 }
 
 export function setSfxOn(on: boolean) {
@@ -69,7 +76,7 @@ function audio(): AudioContext | null {
 
 /** Call from the first user gesture so the browser lets sound play. */
 export function unlockSfx() {
-  if (isMobileDevice()) return;
+  if (!isSfxOn()) return;
   audio();
 }
 
@@ -127,7 +134,6 @@ const N = { C5: 523.25, D5: 587.33, E5: 659.25, G5: 783.99, A5: 880, C6: 1046.5,
 const MIN_GAP: Record<SfxName, number> = { tap: 30, soft: 30, hover: 70, open: 120, launch: 400, like: 120, toggle: 80 };
 
 export function playSfx(name: SfxName) {
-  if (isMobileDevice()) return;
   if (!isSfxOn()) return;
   const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
   if (now - (lastPlayed[name] || 0) < MIN_GAP[name]) return;

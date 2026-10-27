@@ -302,20 +302,18 @@ h1[class*="font-"] { font-weight: 750; letter-spacing: -0.025em; }
 @keyframes aurora-c { to { transform: translate3d(-10vmax, -14vmax, 0) scale(1.2); } }
 
 @media (max-width: 768px), (hover: none) {
-  .aurora span {
-    filter: none !important;
-    animation: none !important;
-    opacity: 0.22 !important;
-    width: 90vw !important;
-    height: 90vw !important;
+  /* Phone battery & thermal optimization: hide overlapping 3D perspective layers and infinite loops */
+  .grid-floor,
+  .cyber-horizon,
+  .aurora {
+    display: none !important;
   }
   .nebula span {
-    filter: none !important;
+    display: none !important;
     animation: none !important;
-    opacity: 0.15 !important;
-    width: 90vw !important;
-    height: 90vw !important;
-    will-change: auto !important;
+  }
+  .nebula::after {
+    background: radial-gradient(ellipse 100% 70% at 50% 15%, rgba(var(--accent-rgb), 0.14) 0%, transparent 65%), var(--background) !important;
   }
   .card-3d {
     will-change: auto !important;

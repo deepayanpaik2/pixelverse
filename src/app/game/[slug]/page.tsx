@@ -165,11 +165,34 @@ export default function GamePlayerPage() {
     const el = containerRef.current;
     if (!el) return;
     if (pseudoFs) { setPseudoFs(false); return; }
-    if (document.fullscreenElement) { document.exitFullscreen().catch(() => {}); return; }
-    if (el.requestFullscreen) {
-      el.requestFullscreen().catch(() => setPseudoFs(true));
+
+    // iPhone and iOS devices: Apple restricts standard Element.requestFullscreen() on mobile WebKit.
+    // Use seamless, edge-to-edge CSS pseudo-fullscreen that works flawlessly on every iPhone and iPad.
+    const isIOS =
+      typeof navigator !== 'undefined' &&
+      (/iPad|iPhone|iPod/.test(navigator.userAgent || '') ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
+
+    if (isIOS) {
+      setPseudoFs(true);
+      return;
+    }
+
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+      return;
+    }
+
+    const request =
+      el.requestFullscreen ||
+      (el as any).webkitRequestFullscreen ||
+      (el as any).mozRequestFullScreen ||
+      (el as any).msRequestFullscreen;
+
+    if (request) {
+      request.call(el).catch(() => setPseudoFs(true));
     } else {
-      setPseudoFs(true); // iPhone Safari has no element fullscreen: fill the viewport instead
+      setPseudoFs(true);
     }
   };
 
@@ -235,21 +258,34 @@ export default function GamePlayerPage() {
 
       {/* Main Game Player Viewport with 3D Cyber Bezel & Ambient Glow */}
       <div className="relative group">
-        <div className="absolute -inset-3 rounded-[2.5rem] blur-2xl opacity-25 bg-gradient-to-r from-[var(--accent)] to-[var(--accent-secondary)] pointer-events-none transition-opacity duration-500 group-hover:opacity-45" />
+        {!(pseudoFs || isFullscreen) && (
+          <div className="absolute -inset-3 rounded-[2.5rem] blur-2xl opacity-25 bg-gradient-to-r from-[var(--accent)] to-[var(--accent-secondary)] pointer-events-none transition-opacity duration-500 group-hover:opacity-45" />
+        )}
         <div
           ref={containerRef}
-          className={`stage-open opal-edge [--edge-opacity:.6] relative flex flex-col glass-panel overflow-hidden border border-white/20 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.95)] transition-[max-width,height] duration-300 ${
-            pseudoFs
-              ? 'fixed inset-0 z-[100] rounded-none w-full h-[100dvh] bg-black'
-              : isFullscreen
-              ? 'rounded-none w-screen h-screen bg-black'
-              : isFitScreen
-              ? 'rounded-3xl h-[92dvh] min-h-[480px] w-full'
-              : game.orientation === 'portrait'
-              ? 'rounded-2xl sm:rounded-3xl h-[78dvh] min-h-[440px] max-w-2xl mx-auto w-full'
-              : 'rounded-2xl sm:rounded-3xl h-[68dvh] sm:h-[78dvh] min-h-[420px] sm:min-h-[520px] w-full'
+          className={`flex flex-col overflow-hidden ${
+            pseudoFs || isFullscreen
+              ? 'fixed inset-0 z-[99999] w-screen h-[100dvh] bg-black m-0 p-0 rounded-none border-0'
+              : `stage-open opal-edge [--edge-opacity:.6] relative glass-panel border border-white/20 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.95)] ${
+                  isFitScreen
+                    ? 'rounded-3xl h-[88vh] min-h-[480px] w-full transition-[height] duration-300'
+                    : game.orientation === 'portrait'
+                    ? 'rounded-2xl sm:rounded-3xl h-[68svh] min-h-[420px] max-h-[620px] max-w-2xl mx-auto w-full'
+                    : 'rounded-2xl sm:rounded-3xl h-[54svh] min-h-[320px] max-h-[560px] sm:h-[76vh] sm:min-h-[520px] sm:max-h-none w-full'
+                }`
           }`}
         >
+          {/* Floating Exit Button for iPhone & Pseudo Fullscreen */}
+          {pseudoFs && (
+            <button
+              onClick={() => setPseudoFs(false)}
+              className="fixed top-[calc(env(safe-area-inset-top,12px)+8px)] right-4 z-[100000] flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-black/85 hover:bg-black border border-white/30 text-white font-extrabold text-xs shadow-2xl backdrop-blur-md active:scale-95 transition-all"
+              aria-label="Exit fullscreen"
+            >
+              <Minimize2 className="w-4 h-4 text-[var(--accent)]" />
+              <span>Exit</span>
+            </button>
+          )}
           {/* Loading / Play Screen Overlay */}
           {!isPlaying ? (
             <div className="relative flex-1 min-h-0 w-full overflow-hidden bg-arcade-midnight flex items-center justify-center">

@@ -17,6 +17,22 @@ import {
   Sparkles,
   Zap,
   SlidersHorizontal,
+  Home,
+  Clock,
+  Flame,
+  Users,
+  Trophy,
+  Settings,
+  Radio,
+  Car,
+  Crosshair,
+  Grid,
+  Layers,
+  Smile,
+  Compass,
+  Puzzle,
+  LogOut,
+  User,
 } from 'lucide-react';
 import { BrandMark } from './BrandMark';
 import { SoundToggle } from './SoundToggle';
@@ -111,6 +127,31 @@ const THEME_OPTIONS: ThemeOption[] = [
   },
 ];
 
+const MOBILE_NAV_LINKS = [
+  { label: 'Home', href: '/', icon: Home },
+  { label: 'Recently Played', href: '/history', icon: Clock },
+  { label: 'New Releases', href: '/new', icon: Sparkles },
+  { label: 'Hot Games', href: '/trending', icon: Flame },
+  { label: 'Multiplayer', href: '/category/multiplayer', icon: Users },
+  { label: 'Party Rooms', href: '/rooms', icon: Radio, badge: 'VOICE' },
+  { label: 'Leaderboards', href: '/top-rated', icon: Trophy },
+  { label: 'Saved Favorites', href: '/favorites', icon: Heart },
+  { label: 'Submit Game', href: '/submit', icon: Upload },
+  { label: 'Settings', href: '/settings', icon: Settings },
+];
+
+const MOBILE_CATEGORIES = [
+  { name: 'Action', slug: 'action', icon: Zap },
+  { name: 'Adventure', slug: 'adventure', icon: Compass },
+  { name: 'Arcade', slug: 'arcade', icon: Gamepad2 },
+  { name: 'Board', slug: 'board', icon: Grid },
+  { name: 'Card', slug: 'card', icon: Layers },
+  { name: 'Driving', slug: 'driving', icon: Car },
+  { name: 'Shooting', slug: 'shooting', icon: Crosshair },
+  { name: 'Puzzle', slug: 'puzzle', icon: Puzzle },
+  { name: 'Casual', slug: 'casual', icon: Smile },
+];
+
 export function Navbar() {
   const router = useRouter();
   const {
@@ -183,7 +224,7 @@ export function Navbar() {
   const currentTheme = preferences?.theme || 'dark';
 
   return (
-    <header className="sticky top-0 z-50 w-full drawer-neon border-b border-white/[0.12] px-3 sm:px-6 py-2.5 pt-[calc(0.625rem+env(safe-area-inset-top))] backdrop-blur-2xl">
+    <header className="sticky top-0 z-50 w-full drawer-neon border-b border-white/[0.12] px-3 sm:px-6 py-2.5 pt-[calc(0.625rem+env(safe-area-inset-top))] sm:backdrop-blur-2xl">
       <div className="max-w-[1920px] mx-auto flex items-center justify-between gap-2 sm:gap-6">
         {/* Left Section: Mobile Menu Button & Brand Logo */}
         <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 shrink-0">
@@ -330,8 +371,8 @@ export function Navbar() {
             <span>Submit</span>
           </Link>
 
-          {/* Sound Toggle (PC only — sound is completely silenced on mobile view) */}
-          <div className="hidden sm:block shrink-0">
+          {/* Sound Toggle (Available on both mobile and PC) */}
+          <div className="shrink-0">
             <SoundToggle />
           </div>
 
@@ -571,9 +612,66 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Drawer Navigation */}
+      {/* Mobile Drawer Navigation — Full Portal Command Hub */}
       {mobileMenu && (
-        <div className="sm:hidden mt-3 pt-3 border-t border-white/10 drawer-neon rounded-2xl p-4 space-y-3">
+        <div className="sm:hidden mt-3 pt-3 border-t border-white/10 drawer-neon rounded-2xl p-4 space-y-4 max-h-[82vh] overflow-y-auto scrollbar-none animate-in fade-in slide-in-from-top-2 duration-200">
+          {/* User Account / Welcome Header */}
+          {user ? (
+            <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.04] border border-white/10">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <img
+                  src={user.avatar_url}
+                  alt=""
+                  className="w-10 h-10 rounded-xl object-cover border border-white/20 shrink-0"
+                />
+                <div className="min-w-0">
+                  <div className="text-xs font-black text-white truncate">{user.display_name}</div>
+                  <div className="text-[10px] text-[var(--accent)] font-mono">@{user.username}</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <Link
+                  href={`/u/${user.username}`}
+                  onClick={() => setMobileMenu(false)}
+                  className="p-1.5 rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:text-white"
+                  title="Profile"
+                >
+                  <User className="w-4 h-4" />
+                </Link>
+                <button
+                  onClick={() => {
+                    signOut();
+                    setMobileMenu(false);
+                    playSfx('launch');
+                  }}
+                  className="p-1.5 rounded-lg bg-rose-500/20 text-rose-400 hover:bg-rose-500/30"
+                  title="Sign Out"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.04] border border-white/10">
+              <div>
+                <div className="text-xs font-black text-white">Welcome, Gamer!</div>
+                <div className="text-[10px] text-slate-400">Join to save progress & compete</div>
+              </div>
+              <Link
+                href="/auth/sign-in"
+                onClick={() => {
+                  setMobileMenu(false);
+                  playSfx('tap');
+                }}
+                className="btn-gaming px-4 py-2 rounded-xl text-xs font-black flex items-center gap-1.5"
+              >
+                <Gamepad2 className="w-3.5 h-3.5" />
+                <span>Sign In</span>
+              </Link>
+            </div>
+          )}
+
+          {/* Quick Search */}
           <form onSubmit={handleSearchSubmit} className="relative w-full">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
@@ -585,39 +683,8 @@ export function Navbar() {
             />
           </form>
 
-          <div className="grid grid-cols-2 gap-2 text-xs font-bold text-slate-200 pt-1">
-            <Link
-              href="/trending"
-              onClick={() => setMobileMenu(false)}
-              className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-center"
-            >
-              🔥 Trending
-            </Link>
-            <Link
-              href="/new"
-              onClick={() => setMobileMenu(false)}
-              className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-center"
-            >
-              ✨ New Releases
-            </Link>
-            <Link
-              href="/categories"
-              onClick={() => setMobileMenu(false)}
-              className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-center"
-            >
-              🎮 Categories
-            </Link>
-            <Link
-              href="/submit"
-              onClick={() => setMobileMenu(false)}
-              className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-center text-[var(--accent)]"
-            >
-              🚀 Submit Game
-            </Link>
-          </div>
-
-          {/* Mobile Kids Mode & Language Row */}
-          <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/10">
+          {/* Controls: Kids Mode & Language */}
+          <div className="flex items-center justify-between gap-2">
             <button
               onClick={() => {
                 setKidsMode(!kidsMode);
@@ -649,6 +716,107 @@ export function Navbar() {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* 10 Theme Switcher Chips */}
+          <div className="space-y-1.5">
+            <div className="text-[10px] font-mono font-bold tracking-wider uppercase text-slate-400 flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <Palette className="w-3 h-3 text-[var(--accent)]" />
+                Themes
+              </span>
+              <span className="text-[9px] text-[var(--accent)]">10 Presets</span>
+            </div>
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+              {THEME_OPTIONS.map((th) => {
+                const isActive = currentTheme === th.id;
+                return (
+                  <button
+                    key={th.id}
+                    onClick={() => {
+                      updatePreferences({ theme: th.id as any });
+                      playSfx('launch');
+                    }}
+                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-[11px] font-extrabold whitespace-nowrap shrink-0 transition-all ${
+                      isActive
+                        ? 'bg-white/15 border-[var(--accent)] text-white shadow-sm'
+                        : 'bg-black/40 border-white/10 text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    <span className="w-2.5 h-2.5 rounded-full border border-white/30" style={{ backgroundColor: th.primary }} />
+                    <span>{th.name.split(' ')[0]}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Main Portal Navigation (Every Single PC Option) */}
+          <div className="space-y-1.5">
+            <div className="text-[10px] font-mono font-bold tracking-wider uppercase text-slate-400">
+              Navigation
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs font-bold text-slate-200">
+              {MOBILE_NAV_LINKS.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileMenu(false)}
+                    className="flex items-center gap-2 p-2.5 rounded-xl bg-white/5 border border-white/10 hover:border-[var(--accent)]/50 transition-all active:scale-95"
+                  >
+                    <Icon className="w-4 h-4 text-[var(--accent)] shrink-0" />
+                    <span className="truncate">{item.label}</span>
+                    {item.badge && (
+                      <span className="ml-auto text-[8px] font-mono font-black px-1.5 py-0.5 rounded bg-[var(--accent)] text-black">
+                        {item.badge}
+                      </span>
+                    )}
+                    {item.label === 'Saved Favorites' && favorites.length > 0 && (
+                      <span className="ml-auto text-[9px] font-mono font-black px-1.5 py-0.5 rounded-full bg-rose-500 text-white">
+                        {favorites.length}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 9 Game Categories */}
+          <div className="space-y-1.5">
+            <div className="text-[10px] font-mono font-bold tracking-wider uppercase text-slate-400">
+              Game Categories
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-[11px] font-bold text-slate-300">
+              {MOBILE_CATEGORIES.map((cat) => {
+                const Icon = cat.icon;
+                return (
+                  <Link
+                    key={cat.slug}
+                    href={`/category/${cat.slug}`}
+                    onClick={() => setMobileMenu(false)}
+                    className="flex flex-col items-center justify-center p-2 rounded-xl bg-white/[0.03] border border-white/10 hover:border-white/25 active:scale-95 transition-all text-center gap-1"
+                  >
+                    <Icon className="w-4 h-4 text-[var(--accent)]" />
+                    <span className="truncate w-full">{cat.name}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Platform Footer strip */}
+          <div className="pt-2 border-t border-white/10 flex flex-wrap items-center justify-between text-[10px] text-slate-400 gap-2">
+            <div className="flex items-center gap-2">
+              <Link href="/community" onClick={() => setMobileMenu(false)} className="hover:text-white">Community</Link>
+              <span>•</span>
+              <Link href="/dmca" onClick={() => setMobileMenu(false)} className="hover:text-white">DMCA</Link>
+              <span>•</span>
+              <Link href="/privacy" onClick={() => setMobileMenu(false)} className="hover:text-white">Privacy</Link>
+            </div>
+            <span className="text-[9px] text-[var(--accent)] font-semibold">Crafted by Deepayan</span>
           </div>
         </div>
       )}
