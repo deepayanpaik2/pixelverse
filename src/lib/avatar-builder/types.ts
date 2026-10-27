@@ -105,7 +105,6 @@ export interface OptionItem<T extends string> {
   tagline?: string;
   previewColor?: string;
   previewSecondary?: string;
-  icon?: string;
   isNew?: boolean;
 }
 
@@ -135,76 +134,76 @@ export const HAIR_COLORS: OptionItem<HairColorId>[] = [
 ];
 
 export const HAIR_STYLES: OptionItem<HairStyleId>[] = [
-  { id: 'anime-spiky', name: 'Anime Spiky', tagline: 'Protagonist power', icon: '⚡' },
-  { id: 'cyber-fade', name: 'Cyber Fade', tagline: 'Crisp gamer taper', icon: '✂️' },
-  { id: 'wolf-cut', name: 'Neon Wolf Cut', tagline: 'Layered cyberpunk', icon: '🐺' },
-  { id: 'dreadlocks', name: 'Cyber Dreads', tagline: 'High-top dreads', icon: '🔥' },
-  { id: 'punk-mohawk', name: 'Plasma Mohawk', tagline: 'Street rebel punk', icon: '🎸' },
-  { id: 'flowing-locks', name: 'Flowing Waves', tagline: 'Silky anime locks', icon: '🌊' },
-  { id: 'side-swept', name: 'Side Swept Undercut', tagline: 'Sleek & charismatic', icon: '✨' },
-  { id: 'afro-puff', name: 'Afro Crown', tagline: 'Bold royal volume', icon: '👑' },
-  { id: 'curly-top', name: 'Curly Top Fade', tagline: 'Bouncy street curls', icon: '🌀' },
-  { id: 'twin-tails', name: 'Twin Tails', tagline: 'Cute anime twin pigtails', icon: '🎀' },
-  { id: 'bald-clean', name: 'Clean Shaved', tagline: 'Pure chrome finish', icon: '✨' },
+  { id: 'anime-spiky', name: 'Anime Spiky', tagline: 'Protagonist power' },
+  { id: 'cyber-fade', name: 'Cyber Fade', tagline: 'Crisp gamer taper' },
+  { id: 'wolf-cut', name: 'Neon Wolf Cut', tagline: 'Layered cyberpunk' },
+  { id: 'dreadlocks', name: 'Cyber Dreads', tagline: 'High-top dreads' },
+  { id: 'punk-mohawk', name: 'Plasma Mohawk', tagline: 'Street rebel punk' },
+  { id: 'flowing-locks', name: 'Flowing Waves', tagline: 'Silky anime locks' },
+  { id: 'side-swept', name: 'Side Swept Undercut', tagline: 'Sleek & charismatic' },
+  { id: 'afro-puff', name: 'Afro Crown', tagline: 'Bold royal volume' },
+  { id: 'curly-top', name: 'Curly Top Fade', tagline: 'Bouncy street curls' },
+  { id: 'twin-tails', name: 'Twin Tails', tagline: 'Cute anime twin pigtails' },
+  { id: 'bald-clean', name: 'Clean Shaved', tagline: 'Pure chrome finish' },
 ];
 
 export const FACES: OptionItem<FaceId>[] = [
-  { id: 'gamer-smile', name: 'Confident Smile', tagline: 'Ready for action', icon: '😎' },
-  { id: 'cool-smirk', name: 'Cyber Smirk', tagline: 'Playful challenger', icon: '😏' },
-  { id: 'anime-eyes', name: 'Anime Sparkle', tagline: 'Heroic starry eyes', icon: '✨' },
-  { id: 'cyber-visor', name: 'Neon Visor HUD', tagline: 'Tactical holographic scanner', icon: '🥽', isNew: true },
-  { id: 'pixel-shades', name: 'Deal With It Shades', tagline: '8-Bit pixel sunglasses', icon: '🕶️' },
-  { id: 'cat-face', name: 'Neko Whiskers', tagline: 'Cute blushing gamer', icon: '🐱' },
-  { id: 'ninja-mask', name: 'Shadow Shinobi Mask', tagline: 'Silent stealth veil', icon: '🥷' },
-  { id: 'cyber-eye', name: 'Cyborg Glowing Eye', tagline: 'Target-locked laser vision', icon: '👁️', isNew: true },
-  { id: 'fire-eyes', name: 'Flame Passion', tagline: 'Fiery blazing gaze', icon: '🔥' },
+  { id: 'gamer-smile', name: 'Confident Smile', tagline: 'Ready for action' },
+  { id: 'cool-smirk', name: 'Cyber Smirk', tagline: 'Playful challenger' },
+  { id: 'anime-eyes', name: 'Anime Sparkle', tagline: 'Heroic starry eyes' },
+  { id: 'cyber-visor', name: 'Neon Visor HUD', tagline: 'Tactical holographic scanner', isNew: true },
+  { id: 'pixel-shades', name: 'Deal With It Shades', tagline: '8-Bit pixel sunglasses' },
+  { id: 'cat-face', name: 'Neko Whiskers', tagline: 'Cute blushing gamer' },
+  { id: 'ninja-mask', name: 'Shadow Shinobi Mask', tagline: 'Silent stealth veil' },
+  { id: 'cyber-eye', name: 'Cyborg Glowing Eye', tagline: 'Target-locked laser vision', isNew: true },
+  { id: 'fire-eyes', name: 'Flame Passion', tagline: 'Fiery blazing gaze' },
 ];
 
 export const OUTFITS: OptionItem<OutfitId>[] = [
-  { id: 'neon-hoodie', name: 'Cyber Neon Hoodie', tagline: 'Classic oversized gamer streetwear', icon: '🧥', isNew: true },
-  { id: 'mecha-armor', name: 'Titan Mecha Exosuit', tagline: 'Heavy power core titanium chest', icon: '🦾', isNew: true },
-  { id: 'ninja-shinobi', name: 'Shadow Shinobi Robes', tagline: 'Black silk assassin vest & cords', icon: '🥷' },
-  { id: 'royal-emperor', name: 'Golden Emperor Cloak', tagline: 'Velvet royal robes with gold trim', icon: '👑' },
-  { id: 'space-suit', name: 'Cosmic Astro Suit', tagline: 'NASA pressurized deep space rig', icon: '🚀' },
-  { id: 'esports-pro', name: 'Champion Esports Jersey', tagline: 'Pixelverse Pro League uniform', icon: '🎮' },
-  { id: 'cyber-jacket', name: 'Neo-Tokyo Street Jacket', tagline: 'High collar bomber with neon patches', icon: '⚡' },
-  { id: 'matrix-coat', name: 'Matrix Trenchcoat', tagline: 'Sleek black hacker leather duster', icon: '🕶️' },
-  { id: 'stealth-vest', name: 'Tactical Recon Vest', tagline: 'MOLLE pouches & holographic badge', icon: '🛡️' },
-  { id: 'dragon-kimono', name: 'Dragon Flame Kimono', tagline: 'Silk haori with golden flame trims', icon: '🐉' },
-  { id: 'vaporwave-tracksuit', name: 'Vaporwave Tracksuit', tagline: 'Retro 80s pink & teal retro windbreaker', icon: '🌴' },
-  { id: 'reaper-cloak', name: 'Void Reaper Shroud', tagline: 'Ethereal dark cloaked silhouette', icon: '🖤' },
+  { id: 'neon-hoodie', name: 'Cyber Neon Hoodie', tagline: 'Classic oversized gamer streetwear', isNew: true },
+  { id: 'mecha-armor', name: 'Titan Mecha Exosuit', tagline: 'Heavy power core titanium chest', isNew: true },
+  { id: 'ninja-shinobi', name: 'Shadow Shinobi Robes', tagline: 'Black silk assassin vest & cords' },
+  { id: 'royal-emperor', name: 'Golden Emperor Cloak', tagline: 'Velvet royal robes with gold trim' },
+  { id: 'space-suit', name: 'Cosmic Astro Suit', tagline: 'NASA pressurized deep space rig' },
+  { id: 'esports-pro', name: 'Champion Esports Jersey', tagline: 'Pixelverse Pro League uniform' },
+  { id: 'cyber-jacket', name: 'Neo-Tokyo Street Jacket', tagline: 'High collar bomber with neon patches' },
+  { id: 'matrix-coat', name: 'Matrix Trenchcoat', tagline: 'Sleek black hacker leather duster' },
+  { id: 'stealth-vest', name: 'Tactical Recon Vest', tagline: 'MOLLE pouches & holographic badge' },
+  { id: 'dragon-kimono', name: 'Dragon Flame Kimono', tagline: 'Silk haori with golden flame trims' },
+  { id: 'vaporwave-tracksuit', name: 'Vaporwave Tracksuit', tagline: 'Retro 80s pink & teal retro windbreaker' },
+  { id: 'reaper-cloak', name: 'Void Reaper Shroud', tagline: 'Ethereal dark cloaked silhouette' },
 ];
 
 export const HEADWEAR: OptionItem<HeadwearId>[] = [
-  { id: 'none', name: 'None', tagline: 'Show natural hair', icon: '🚫' },
-  { id: 'rgb-headset', name: 'RGB Pro Gamer Headset', tagline: 'Pulsing LED earcups & boom mic', icon: '🎧', isNew: true },
-  { id: 'cat-headset', name: 'Cute Cat Ear Headset', tagline: 'Glowing kawaii cat ears', icon: '🐱', isNew: true },
-  { id: 'cyber-crown', name: 'Holographic Crown', tagline: 'Floating neon royal tiara', icon: '👑' },
-  { id: 'neon-horns', name: 'Cyber Demon Horns', tagline: 'Molten plasma curved horns', icon: '😈' },
-  { id: 'cyber-halo', name: 'Angel Cyber Halo', tagline: 'Floating golden ring of light', icon: '😇' },
-  { id: 'ninja-band', name: 'Shinobi Headband', tagline: 'Polished metal symbol plate', icon: '🥷' },
-  { id: 'pixel-cap', name: 'Pixelverse Snapback', tagline: 'Backwards flat-brim street cap', icon: '🧢' },
-  { id: 'cyber-goggles', name: 'Night-Vision Goggles', tagline: 'Triple-lens tactical optic visor', icon: '🥽' },
+  { id: 'none', name: 'None', tagline: 'Show natural hair' },
+  { id: 'rgb-headset', name: 'RGB Pro Gamer Headset', tagline: 'Pulsing LED earcups & boom mic', isNew: true },
+  { id: 'cat-headset', name: 'Cute Cat Ear Headset', tagline: 'Glowing kawaii cat ears', isNew: true },
+  { id: 'cyber-crown', name: 'Holographic Crown', tagline: 'Floating neon royal tiara' },
+  { id: 'neon-horns', name: 'Cyber Demon Horns', tagline: 'Molten plasma curved horns' },
+  { id: 'cyber-halo', name: 'Angel Cyber Halo', tagline: 'Floating golden ring of light' },
+  { id: 'ninja-band', name: 'Shinobi Headband', tagline: 'Polished metal symbol plate' },
+  { id: 'pixel-cap', name: 'Pixelverse Snapback', tagline: 'Backwards flat-brim street cap' },
+  { id: 'cyber-goggles', name: 'Night-Vision Goggles', tagline: 'Triple-lens tactical optic visor' },
 ];
 
 export const BACK_GEAR: OptionItem<BackGearId>[] = [
-  { id: 'none', name: 'None', tagline: 'Clean silhouette', icon: '🚫' },
-  { id: 'cyber-wings', name: 'Holographic Cyber Wings', tagline: 'Hardlight feather flight wings', icon: '🪽', isNew: true },
-  { id: 'dual-katanas', name: 'Crossed Dual Katanas', tagline: 'Twin samurai swords on scabbards', icon: '⚔️' },
-  { id: 'plasma-jetpack', name: 'Twin Jetpack Thrusters', tagline: 'High-velocity ion boost engines', icon: '🚀' },
-  { id: 'cyber-ring', name: 'Floating Arcane Ring', tagline: 'Spinning digital runic halo', icon: '💫' },
-  { id: 'thunder-aura', name: 'Lightning Thunder Aura', tagline: 'Crackling electric blue sparks', icon: '⚡' },
-  { id: 'angel-wings', name: 'Golden Seraph Wings', tagline: 'Luminous feathered archangel wings', icon: '🌟' },
+  { id: 'none', name: 'None', tagline: 'Clean silhouette' },
+  { id: 'cyber-wings', name: 'Holographic Cyber Wings', tagline: 'Hardlight feather flight wings', isNew: true },
+  { id: 'dual-katanas', name: 'Crossed Dual Katanas', tagline: 'Twin samurai swords on scabbards' },
+  { id: 'plasma-jetpack', name: 'Twin Jetpack Thrusters', tagline: 'High-velocity ion boost engines' },
+  { id: 'cyber-ring', name: 'Floating Arcane Ring', tagline: 'Spinning digital runic halo' },
+  { id: 'thunder-aura', name: 'Lightning Thunder Aura', tagline: 'Crackling electric blue sparks' },
+  { id: 'angel-wings', name: 'Golden Seraph Wings', tagline: 'Luminous feathered archangel wings' },
 ];
 
 export const BACKGROUND_STAGES: OptionItem<BackgroundStageId>[] = [
-  { id: 'neon-city', name: 'Neo Tokyo City', previewColor: '#0f172a', previewSecondary: '#00f3ff', icon: '🏙️' },
-  { id: 'cyber-grid', name: 'Synthwave 80s Grid', previewColor: '#1e1035', previewSecondary: '#ff2a85', icon: '🌆' },
-  { id: 'cosmic-stars', name: 'Deep Cosmic Nebula', previewColor: '#050816', previewSecondary: '#a855f7', icon: '🌌' },
-  { id: 'bloodforge', name: 'Bloodforge Mecha', previewColor: '#200508', previewSecondary: '#ff1e42', icon: '🔥' },
-  { id: 'emerald-matrix', name: 'Emerald Matrix', previewColor: '#021f14', previewSecondary: '#10b981', icon: '💚' },
-  { id: 'deep-void', name: 'Arcane Obsidian Void', previewColor: '#0a0a0c', previewSecondary: '#ffffff', icon: '🖤' },
-  { id: 'golden-hall', name: 'Celestial Golden Hall', previewColor: '#1c1503', previewSecondary: '#facc15', icon: '🏛️' },
+  { id: 'neon-city', name: 'Neo Tokyo City', previewColor: '#0f172a', previewSecondary: '#00f3ff' },
+  { id: 'cyber-grid', name: 'Synthwave 80s Grid', previewColor: '#1e1035', previewSecondary: '#ff2a85' },
+  { id: 'cosmic-stars', name: 'Deep Cosmic Nebula', previewColor: '#050816', previewSecondary: '#a855f7' },
+  { id: 'bloodforge', name: 'Bloodforge Mecha', previewColor: '#200508', previewSecondary: '#ff1e42' },
+  { id: 'emerald-matrix', name: 'Emerald Matrix', previewColor: '#021f14', previewSecondary: '#10b981' },
+  { id: 'deep-void', name: 'Arcane Obsidian Void', previewColor: '#0a0a0c', previewSecondary: '#ffffff' },
+  { id: 'golden-hall', name: 'Celestial Golden Hall', previewColor: '#1c1503', previewSecondary: '#facc15' },
 ];
 
 export const DEFAULT_AVATAR_CONFIG: AvatarConfig = {

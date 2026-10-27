@@ -430,7 +430,7 @@ function RoomView({ room, client, onLeft }: { room: PartyRoom; client: PartyRoom
           </div>
 
           <div className="flex-1 p-4 overflow-y-auto space-y-3">
-            {snap.messages.length === 0 && <p className="text-xs text-slate-500 text-center pt-6">No messages yet. Say hi 👋</p>}
+            {snap.messages.length === 0 && <p className="text-xs text-slate-500 text-center pt-6">No messages yet.</p>}
             {snap.messages.map((m) => (
               <div key={m.id} className="text-xs space-y-0.5">
                 <div className="flex items-center gap-2">

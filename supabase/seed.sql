@@ -6,10 +6,10 @@
 -- 1. Insert Seed Profiles
 INSERT INTO public.profiles (id, username, display_name, avatar_url, banner_url, bio, status, custom_status, favorite_categories, level, xp, is_admin, is_moderator)
 VALUES
-    ('11111111-1111-1111-1111-111111111111', 'pixelmaster', 'Pixel Master', 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150', 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=1200', 'Chief Arcade Architect & High-Score Champion 👾 Playing since 1999.', 'online', 'Building next-gen arcade experiences', ARRAY['Arcade', 'Action', 'Puzzle'], 42, 18450, TRUE, TRUE),
-    ('22222222-2222-2222-2222-222222222222', 'neon_rider', 'Neon Rider', 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150', 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1200', 'Speedrunner | Synthwave enthusiast | 2048 Grandmaster ⚡', 'online', 'Grinding sub-1min 2048 speedrun', ARRAY['Strategy', 'Puzzle', 'Arcade'], 28, 9200, FALSE, FALSE),
-    ('33333333-3333-3333-3333-333333333333', 'cyber_valkyrie', 'Cyber Valkyrie', 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150', 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1200', 'Live streamer & multiplayer tactician. Voice chat always open! 🎧', 'dnd', 'In competitive voice room', ARRAY['Multiplayer', 'Action', 'Platformer'], 35, 14200, FALSE, TRUE),
-    ('44444444-4444-4444-4444-444444444444', 'glitch_hunter', 'Glitch Hunter', 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150', 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200', 'Finding secrets, bugs, and speed tech in classic HTML5 games 🕹️', 'idle', 'AFK taking coffee', ARRAY['Experimental', 'Puzzle', 'Platformer'], 19, 5800, FALSE, FALSE),
+    ('11111111-1111-1111-1111-111111111111', 'pixelmaster', 'Pixel Master', 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150', 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=1200', 'Chief Arcade Architect and High-Score Champion. Playing since 1999.', 'online', 'Building next-gen arcade experiences', ARRAY['Arcade', 'Action', 'Puzzle'], 42, 18450, TRUE, TRUE),
+    ('22222222-2222-2222-2222-222222222222', 'neon_rider', 'Neon Rider', 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150', 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1200', 'Speedrunner and Synthwave enthusiast. 2048 Grandmaster.', 'online', 'Grinding sub-1min 2048 speedrun', ARRAY['Strategy', 'Puzzle', 'Arcade'], 28, 9200, FALSE, FALSE),
+    ('33333333-3333-3333-3333-333333333333', 'cyber_valkyrie', 'Cyber Valkyrie', 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150', 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1200', 'Live streamer and multiplayer tactician. Voice chat always open.', 'dnd', 'In competitive voice room', ARRAY['Multiplayer', 'Action', 'Platformer'], 35, 14200, FALSE, TRUE),
+    ('44444444-4444-4444-4444-444444444444', 'glitch_hunter', 'Glitch Hunter', 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150', 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200', 'Finding secrets, bugs, and speed tech in classic HTML5 games.', 'idle', 'AFK taking coffee', ARRAY['Experimental', 'Puzzle', 'Platformer'], 19, 5800, FALSE, FALSE),
     ('55555555-5555-5555-5555-555555555555', 'pixel_artisan', 'Pixel Artisan', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150', 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1200', 'Chiptune composer and pixel artist. Let''s co-op!', 'offline', '', ARRAY['Casual', 'Arcade', 'Board games'], 14, 3900, FALSE, FALSE)
 ON CONFLICT (id) DO NOTHING;
 
@@ -40,7 +40,7 @@ VALUES
     (
         'b1111111-1111-1111-1111-111111111111',
         'NEON-99',
-        '⚡ Neon Velocity Lounge',
+        'Neon Velocity Lounge',
         'Chill high-energy arcade room. Voice chat open for chill coop & high score hunting.',
         '11111111-1111-1111-1111-111111111111',
         'public',
@@ -51,7 +51,7 @@ VALUES
     (
         'b2222222-2222-2222-2222-222222222222',
         'HEXA-42',
-        '🔷 High Score Tournament Lobby',
+        'High Score Tournament Lobby',
         'Who can top the leaderboard? Join the party, voice is required!',
         '22222222-2222-2222-2222-222222222222',
         'public',
@@ -62,7 +62,7 @@ VALUES
     (
         'b3333333-3333-3333-3333-333333333333',
         'VALK-07',
-        '🎙️ Valkyrie Strategy Hub',
+        'Valkyrie Strategy Hub',
         'Multiplayer tactics, speedrun strategies, and chiptune listening session.',
         '33333333-3333-3333-3333-333333333333',
         'public',

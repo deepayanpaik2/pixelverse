@@ -18,7 +18,8 @@ import {
   Video,
   VideoOff,
   Mic,
-  MicOff
+  MicOff,
+  X
 } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { FEATURED_GAMES } from '@/lib/games';
@@ -317,8 +318,9 @@ function RoomsContent() {
                 type="button"
                 onClick={() => setShowCreateModal(false)}
                 className="text-slate-400 hover:text-white"
+                aria-label="Close"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 

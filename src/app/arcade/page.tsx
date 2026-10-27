@@ -115,7 +115,7 @@ function ArcadeContent() {
           data-active={selectedCategory === 'All'}
           className="glass-chip px-5 py-2.5 rounded-full text-xs font-extrabold whitespace-nowrap text-slate-200"
         >
-          🎮 All Games ({FEATURED_GAMES.length})
+          All Games ({FEATURED_GAMES.length})
         </button>
         {categories.map((cat) => (
           <button

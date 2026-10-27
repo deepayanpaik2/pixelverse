@@ -546,7 +546,7 @@ function runImporter() {
   report += `| :--- | :--- | :--- | :--- | :--- | :--- |\n`;
 
   for (const g of verified) {
-    report += `| **${g.title}** | \`${g.source_type}\` | ${g.category} | ${g.orientation} | ${g.license} | ✅ Published |\n`;
+    report += `| **${g.title}** | \`${g.source_type}\` | ${g.category} | ${g.orientation} | ${g.license} | Published |\n`;
   }
 
   if (blocked.length > 0) {

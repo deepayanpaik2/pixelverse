@@ -24,7 +24,7 @@ export default function CommunitiesPage() {
   const [selectedCommunityId, setSelectedCommunityId] = useState(communities[0]?.id || '');
   const [selectedChannelId, setSelectedChannelId] = useState(communities[0]?.channels?.[0]?.id || '');
   const [channelMessages, setChannelMessages] = useState<any[]>([
-    { id: '1', user: 'Neon Rider', text: 'Just found a new favorite in the Puzzles category — anyone want to try it with me? ⚡', time: '14:20' },
+    { id: '1', user: 'Neon Rider', text: 'Just found a new favorite in the Puzzles category, anyone want to try it with me?', time: '14:20' },
     { id: '2', user: 'Cyber Valkyrie', text: 'Congrats! We have a tournament run starting in 20 minutes.', time: '14:24' }
   ]);
   const [inputMessage, setInputMessage] = useState('');

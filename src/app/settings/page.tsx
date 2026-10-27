@@ -165,10 +165,10 @@ export default function SettingsPage() {
                 onChange={(e) => setStatus(e.target.value as any)}
                 className="w-full bg-[#060810]/80 border border-white/15 rounded-xl p-3 text-white focus:outline-none focus:border-[var(--accent)] transition-all font-semibold"
               >
-                <option value="online">🟢 Online (Available)</option>
-                <option value="idle">🟡 Idle (Away)</option>
-                <option value="dnd">🔴 Do Not Disturb (Gaming)</option>
-                <option value="offline">⚪ Invisible (Offline)</option>
+                <option value="online">Online (Available)</option>
+                <option value="idle">Idle (Away)</option>
+                <option value="dnd">Do Not Disturb (Gaming)</option>
+                <option value="offline">Invisible (Offline)</option>
               </select>
             </div>
 
