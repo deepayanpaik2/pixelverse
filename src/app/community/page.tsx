@@ -50,7 +50,7 @@ export default function CommunitiesPage() {
 
   return (
     <div className="glass-panel rounded-2xl border border-arcade-border h-[calc(100vh-140px)] flex overflow-hidden shadow-2xl">
-      {/* 1. Community Server Hub Sidebar */}
+      {/* Server sidebar */}
       <div className="w-16 flex-shrink-0 bg-arcade-midnight border-r border-arcade-border flex flex-col items-center py-4 gap-3">
         {communities.map((c) => {
           const isActive = c.id === currentCommunity?.id;
@@ -82,7 +82,7 @@ export default function CommunitiesPage() {
         })}
       </div>
 
-      {/* 2. Channels Sidebar */}
+      {/* Channels sidebar */}
       <div className="w-60 flex-shrink-0 bg-arcade-dark/80 border-r border-arcade-border flex flex-col">
         <div className="p-4 border-b border-arcade-border">
           <h2 className="text-sm font-black text-white truncate">{currentCommunity?.name}</h2>
@@ -126,7 +126,7 @@ export default function CommunitiesPage() {
         </div>
       </div>
 
-      {/* 3. Main Channel Chat */}
+      {/* Channel chat */}
       <div className="flex-1 flex flex-col bg-arcade-dark min-w-0">
         {/* Header */}
         <div className="h-14 px-6 border-b border-arcade-border bg-arcade-midnight/70 flex items-center justify-between">
@@ -177,7 +177,7 @@ export default function CommunitiesPage() {
         </form>
       </div>
 
-      {/* 4. Community Members Roster */}
+      {/* Member roster */}
       <div className="w-52 flex-shrink-0 bg-arcade-midnight/90 border-l border-arcade-border hidden lg:flex flex-col p-3 space-y-3">
         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2">
           Online Members ({members.length})

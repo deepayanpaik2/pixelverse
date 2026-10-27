@@ -40,9 +40,7 @@ import {
 } from '@/lib/party/rooms';
 import { PartyRoomClient, type PeerState } from '@/lib/party/rtc';
 
-/* ------------------------------------------------------------------ */
-/* Participant tile                                                    */
-/* ------------------------------------------------------------------ */
+// Participant tile
 function Tile({
   p,
   deafened,
@@ -162,9 +160,7 @@ function gridCols(n: number) {
   return 'grid-cols-2 lg:grid-cols-4';
 }
 
-/* ------------------------------------------------------------------ */
-/* In-room experience                                                  */
-/* ------------------------------------------------------------------ */
+// In-room view
 function RoomView({ room, client, onLeft }: { room: PartyRoom; client: PartyRoomClient; onLeft: () => void }) {
   const snap = useSyncExternalStore(client.subscribe, client.getSnapshot, client.getSnapshot);
   const [tab, setTab] = useState<'lobby' | 'game'>('lobby');
@@ -466,9 +462,7 @@ function RoomView({ room, client, onLeft }: { room: PartyRoom; client: PartyRoom
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Page: load room -> join gate -> room                                */
-/* ------------------------------------------------------------------ */
+// Room page wrapper
 function RoomPageContent() {
   const params = useParams();
   const searchParams = useSearchParams();

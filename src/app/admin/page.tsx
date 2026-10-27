@@ -236,7 +236,7 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* TAB 1: Developer Submissions Queue */}
+      {/* Developer submissions */}
       {activeTab === 'submissions' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -371,7 +371,7 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* TAB 2: DMCA Takedown Queue */}
+      {/* DMCA takedowns */}
       {activeTab === 'dmca' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -460,7 +460,7 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* TAB 3: Game Catalog & Quarantine Controls */}
+      {/* Catalog and quarantine */}
       {activeTab === 'games' && (
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -566,7 +566,7 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* TAB 4: Publisher Feeds Status */}
+      {/* Publisher feeds */}
       {activeTab === 'feeds' && (
         <div className="space-y-5">
           <div>
@@ -631,7 +631,7 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* TAB 5: Safety Infractions Review Queue */}
+      {/* Moderation reports */}
       {activeTab === 'reports' && (
         <div className="space-y-4">
           <h2 className="text-base font-bold text-white">Player Safety & Infraction Review Queue</h2>
@@ -684,7 +684,7 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* TAB 6: Users Management */}
+      {/* Users */}
       {activeTab === 'users' && (
         <div className="glass-panel rounded-2xl border border-arcade-border overflow-hidden">
           <div className="p-4 bg-arcade-midnight border-b border-arcade-border">
@@ -718,7 +718,7 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* TAB 7: System Status & Telemetry */}
+      {/* Telemetry */}
       {activeTab === 'telemetry' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           <div className="glass-panel p-5 rounded-2xl border border-arcade-border space-y-2">

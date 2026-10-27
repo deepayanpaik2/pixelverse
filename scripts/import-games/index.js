@@ -16,7 +16,7 @@ const REPORT_PATH = path.join(__dirname, '../../IMPORT_REPORT.md');
 
 // Complete catalog including In-House, Open Source, and Licensed Publisher Feeds
 const CATALOG_MANIFESTS = [
-  // --- IN-HOUSE ORIGINALS ---
+  // In-house games
   {
     id: "inhouse-001",
     slug: "cyber-runner",
@@ -200,7 +200,7 @@ const CATALOG_MANIFESTS = [
     status: "published"
   },
 
-  // --- OPEN SOURCE VERIFIED BROWSER GAMES ---
+  // Open source browser games
   {
     id: "oss-001",
     slug: "hextris",
@@ -326,7 +326,7 @@ const CATALOG_MANIFESTS = [
     status: "published"
   },
 
-  // --- LICENSED PUBLISHER FEEDS INTEGRATIONS ---
+  // Publisher feeds
   {
     id: "feed-001",
     slug: "moto-x3m",

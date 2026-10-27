@@ -65,10 +65,6 @@ export function SpotlightHero({ games }: SpotlightHeroProps) {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* =========================================================================
-          CLEAN LUXURY CYBER ARENA BACKGROUND (NO BLURRED / STRETCHED GAME IMAGES)
-          ========================================================================= */}
-      {/* 1. Deep Celestial Starfield & Vignette */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -77,7 +73,6 @@ export function SpotlightHero({ games }: SpotlightHeroProps) {
         }}
       />
 
-      {/* 2. Ambient Neon Stage Spotlights */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         <div
           className="absolute inset-0 opacity-30"
@@ -88,7 +83,6 @@ export function SpotlightHero({ games }: SpotlightHeroProps) {
         />
       </div>
 
-      {/* 3. Cyber Isometric Grid Pattern Overlay */}
       <div
         className="absolute inset-0 z-10 opacity-15 pointer-events-none"
         style={{
@@ -98,16 +92,10 @@ export function SpotlightHero({ games }: SpotlightHeroProps) {
         }}
       />
 
-      {/* 4. Luxury Vignette Edge Gradients */}
       <div className="absolute inset-0 z-10 bg-gradient-to-t from-[#06070b] via-[#06070b]/35 to-transparent pointer-events-none" />
       <div className="absolute inset-0 z-10 bg-gradient-to-r from-[#06070b]/80 via-transparent to-[#06070b]/60 pointer-events-none" />
 
-      {/* =========================================================================
-          CONTENT CONTAINER (PREVIOUS ORIENTATION: COCKPIT CARD ON LEFT, 3D ART ON RIGHT)
-          ========================================================================= */}
       <div className="relative z-30 h-full flex flex-col md:flex-row items-stretch md:items-center justify-between gap-6 sm:gap-8 p-4 sm:p-10 lg:p-16">
-        
-        {/* FROSTED 3D HUD INFORMATION COCKPIT PANEL (LEFT) */}
         <div
           key={current.id}
           className="fade-up glass-panel rounded-2xl sm:rounded-[2rem] p-4 sm:p-8 lg:p-10 max-w-xl w-full space-y-4 sm:space-y-5 border border-white/15 shadow-[0_20px_50px_-10px_rgba(0,0,0,0.85)] relative overflow-hidden"
@@ -194,7 +182,6 @@ export function SpotlightHero({ games }: SpotlightHeroProps) {
           </div>
         </div>
 
-        {/* FLOATING 3D INTERACTIVE HOLOGRAM COVER ART (RIGHT) */}
         <div key={`${current.id}-art`} className="hidden md:block flex-1 max-w-md w-full fade-in">
           <Link
             href={`/game/${current.slug}`}
@@ -207,10 +194,8 @@ export function SpotlightHero({ games }: SpotlightHeroProps) {
               ref={coverRef}
               className="relative rounded-[2.25rem] p-2 border border-white/20 bg-white/[0.04] backdrop-blur-md shadow-[0_30px_60px_-15px_rgba(0,0,0,0.9)] transition-transform duration-300 ease-out [transform:rotateY(-8deg)_rotateX(4deg)] group-hover/cover:border-[var(--accent)]"
             >
-              {/* Backlight Glow */}
               <div className="absolute -inset-4 rounded-[2.5rem] blur-[50px] opacity-50 bg-gradient-to-tr from-[var(--accent)] to-[var(--accent-secondary)] pointer-events-none group-hover/cover:opacity-80 transition-opacity duration-500" />
 
-              {/* Whole Uncropped Spotlight Artwork (No Blurry Duplicate Image) */}
               <div className="relative w-full aspect-[4/3] rounded-[1.75rem] overflow-hidden bg-[#060812] border border-white/10 shadow-2xl flex items-center justify-center p-3">
                 <img
                   src={current.banner_url || current.thumbnail_url}
@@ -219,12 +204,10 @@ export function SpotlightHero({ games }: SpotlightHeroProps) {
                 />
               </div>
 
-              {/* 3D Floating Top Rated Badge */}
               <div className="absolute -top-3 -right-3 bg-gradient-to-r from-amber-400 to-amber-600 text-black rounded-full px-3.5 py-1.5 text-[11px] font-black shadow-[0_6px_20px_rgba(245,158,11,0.5)] flex items-center gap-1.5 border border-amber-300/60 lift-z-2">
                 <Crown className="w-3.5 h-3.5 fill-black" /> TOP RATED
               </div>
 
-              {/* Quick Play Floating Overlay */}
               <div className="absolute inset-2 rounded-[1.75rem] bg-black/40 backdrop-blur-[2px] opacity-0 group-hover/cover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                 <div className="w-16 h-16 rounded-full btn-gaming flex items-center justify-center shadow-[0_0_30px_var(--accent)]">
                   <Play className="w-7 h-7 fill-current ml-1" />
@@ -235,9 +218,6 @@ export function SpotlightHero({ games }: SpotlightHeroProps) {
         </div>
       </div>
 
-      {/* =========================================================================
-          PREV / NEXT 3D CIRCULAR NAV BUTTONS (LEFT & RIGHT EDGES)
-          ========================================================================= */}
       {games.length > 1 && (
         <>
           <button
@@ -259,9 +239,6 @@ export function SpotlightHero({ games }: SpotlightHeroProps) {
         </>
       )}
 
-      {/* =========================================================================
-          PAGINATION INDICATORS WITH GLOWING NEON BAR (BOTTOM CENTER)
-          ========================================================================= */}
       <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 p-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10">
         {games.map((g, idx) => (
           <button

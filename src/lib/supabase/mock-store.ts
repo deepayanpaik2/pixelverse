@@ -139,7 +139,7 @@ class MockPixelverseStore {
     }
   }
 
-  // --- Games Catalog & Status ---
+  // Games catalog and status
   getGames(kidsMode: boolean = false): GameManifest[] {
     let list = this.games.filter(g => g.status === 'published');
     if (kidsMode) {
@@ -164,7 +164,7 @@ class MockPixelverseStore {
     }
   }
 
-  // --- Ratings ---
+  // Ratings
   rateGame(gameId: string, isLike: boolean, userId?: string, guestId: string = 'guest'): { likes: number; dislikes: number; userRating: boolean } {
     const actorKey = userId || guestId;
     const existing = this.ratings.findIndex(r => r.game_id === gameId && (r.user_id === actorKey || r.guest_id === actorKey));
@@ -204,7 +204,7 @@ class MockPixelverseStore {
     return r ? r.is_like : null;
   }
 
-  // --- Favorites & History (with Guest support) ---
+  // Favorites and history (with guest support)
   getFavorites(actorId: string = 'guest'): string[] {
     return this.favorites[actorId] || [];
   }
@@ -254,7 +254,7 @@ class MockPixelverseStore {
     return slugs.map(s => this.games.find(g => g.slug === s)).filter(Boolean) as GameManifest[];
   }
 
-  // --- Developer Submissions ---
+  // Developer submissions
   createSubmission(sub: Omit<GameSubmission, 'id' | 'status' | 'created_at'>): GameSubmission {
     const newSub: GameSubmission = {
       ...sub,
@@ -320,7 +320,7 @@ class MockPixelverseStore {
     return true;
   }
 
-  // --- DMCA / Takedowns ---
+  // DMCA takedowns
   createTakedown(notice: Omit<TakedownNotice, 'id' | 'status' | 'created_at'>): TakedownNotice {
     const newNotice: TakedownNotice = {
       ...notice,
@@ -351,7 +351,7 @@ class MockPixelverseStore {
     return true;
   }
 
-  // --- Profiles & Friends ---
+  // Profiles and friends
   getProfiles(): Profile[] { return [...this.profiles]; }
 
   getProfileById(id: string): Profile | undefined {
@@ -385,7 +385,7 @@ class MockPixelverseStore {
     );
   }
 
-  // --- Reports ---
+  // Reports
   createReport(report: Omit<Report, 'id' | 'status' | 'created_at'>): Report {
     const r: Report = {
       ...report,
@@ -414,7 +414,7 @@ class MockPixelverseStore {
     return false;
   }
 
-  // --- Friendships & Rooms ---
+  // Friendships and rooms
   getFriendships(userId: string): Profile[] {
     return this.profiles.filter(p => p.id !== userId);
   }

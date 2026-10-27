@@ -145,7 +145,7 @@ export default function OnboardingPage() {
 
         <AnimatePresence mode="wait">
           {step === 2 ? (
-            /* STEP 2: AVATAR STUDIO CUSTOMIZER */
+            /* Avatar customizer */
             <motion.div
               key="step-2"
               initial={{ opacity: 0, x: -16 }}
@@ -191,7 +191,7 @@ export default function OnboardingPage() {
               </div>
             </motion.div>
           ) : (
-            /* STEP 3: PLAYER PROFILE DETAILS */
+            /* Profile details */
             <motion.div
               key="step-3"
               initial={{ opacity: 0, x: 16 }}
