@@ -288,32 +288,27 @@ export default function GamePlayerPage() {
           )}
           {/* Loading / Play Screen Overlay */}
           {!isPlaying ? (
-            <div className="relative flex-1 min-h-0 w-full overflow-hidden bg-arcade-midnight flex items-center justify-center">
-              {/* Blurred backdrop */}
-              <img
-                src={game.thumbnail_url}
-                alt=""
-                className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-50 scale-125"
+            <div className="relative flex-1 min-h-0 w-full overflow-hidden bg-[#060812] flex items-center justify-center">
+              {/* Deep Cyber Arena Stage Backdrop (Clean, unblurred, luxury gaming space) */}
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background: 'radial-gradient(circle at 50% 20%, #0d1226 0%, #060812 70%, #020306 100%)',
+                }}
               />
-              <div className="absolute inset-0 bg-gradient-to-br from-black/85 via-black/70 to-black/90" />
-              <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-[var(--accent)] opacity-20 blur-3xl" />
-              <div className="absolute -bottom-24 -right-24 w-80 h-80 rounded-full bg-[var(--accent-secondary)] opacity-20 blur-3xl" />
+              <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-transparent to-black/80 pointer-events-none" />
+              <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-[var(--accent)] opacity-20 blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-24 -right-24 w-80 h-80 rounded-full bg-[var(--accent-secondary)] opacity-20 blur-3xl pointer-events-none" />
 
               {/* Content card */}
               <div className="relative z-10 flex flex-col sm:flex-row items-center gap-6 sm:gap-10 px-6 py-8 max-w-3xl w-full justify-center">
                 <div className="relative shrink-0">
                   <div className="absolute -inset-3 rounded-[2rem] bg-gradient-to-br from-[var(--accent)] to-[var(--accent-secondary)] blur-xl opacity-60" />
-                  <div className="relative w-36 h-36 sm:w-52 sm:h-52 rounded-[1.75rem] overflow-hidden bg-[#060812] border-2 border-white/20 shadow-2xl flex items-center justify-center p-2">
-                    <img
-                      src={game.thumbnail_url}
-                      alt=""
-                      aria-hidden
-                      className="absolute inset-0 w-full h-full object-cover blur-md opacity-35 scale-125"
-                    />
+                  <div className="relative w-36 h-36 sm:w-52 sm:h-52 rounded-[1.75rem] overflow-hidden bg-[#060812] border-2 border-white/20 shadow-2xl flex items-center justify-center p-3">
                     <img
                       src={game.thumbnail_url}
                       alt={game.title}
-                      className="relative z-10 w-full h-full object-contain rounded-xl drop-shadow-md"
+                      className="relative z-10 w-full h-full object-contain rounded-xl drop-shadow-2xl"
                     />
                   </div>
                 </div>
