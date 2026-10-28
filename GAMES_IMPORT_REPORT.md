@@ -1,4 +1,4 @@
-# PIXELVERSE — OPEN SOURCE GAME IMPORT REPORT
+# Pixelverse: Open Source Game Import Report
 
 Generated: 2026-10-24T13:38:49.767Z
 Source Discovery: [GitHub Web Games Collection](https://github.com/collections/web-games)

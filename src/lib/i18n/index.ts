@@ -31,7 +31,7 @@ export interface Translations {
 export const TRANSLATIONS: Record<LanguageCode, Translations> = {
   en: {
     appName: "Pixelverse",
-    tagline: "Free Online Games — Instant Play, No Downloads",
+    tagline: "Free Online Games: Instant Play, No Downloads",
     searchPlaceholder: "Search thousands of free games...",
     home: "Home",
     trending: "Trending",
@@ -58,7 +58,7 @@ export const TRANSLATIONS: Record<LanguageCode, Translations> = {
   },
   hi: {
     appName: "प्लेवर्स",
-    tagline: "मुफ्त ऑनलाइन गेम्स — तुरंत खेलें, बिना डाउनलोड के",
+    tagline: "मुफ्त ऑनलाइन गेम्स: तुरंत खेलें, बिना डाउनलोड के",
     searchPlaceholder: "हजारों मुफ्त गेम्स खोजें...",
     home: "होम",
     trending: "ट्रेंडिंग",
@@ -85,7 +85,7 @@ export const TRANSLATIONS: Record<LanguageCode, Translations> = {
   },
   bn: {
     appName: "প্লেভার্স",
-    tagline: "ফ্রি অনলাইন গেমস — তাত্ক্ষণিক খেলুন, ডাউনলোড ছাড়াই",
+    tagline: "ফ্রি অনলাইন গেমস: তাত্ক্ষণিক খেলুন, ডাউনলোড ছাড়াই",
     searchPlaceholder: "হাজার হাজার ফ্রি গেম খুঁজুন...",
     home: "হোম",
     trending: "ট্রেন্ডিং",
@@ -112,7 +112,7 @@ export const TRANSLATIONS: Record<LanguageCode, Translations> = {
   },
   es: {
     appName: "Pixelverse",
-    tagline: "Juegos Gratis en Línea — Juega al Instante Sin Descargas",
+    tagline: "Juegos Gratis en Línea: Juega al Instante Sin Descargas",
     searchPlaceholder: "Buscar miles de juegos gratis...",
     home: "Inicio",
     trending: "Tendencias",

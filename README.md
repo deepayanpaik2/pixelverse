@@ -1,64 +1,63 @@
-# Pixelverse - Web Games Portal
+# Pixelverse
 
-> Browser-game portal combining HTML5 games, WebRTC rooms, user profiles, and messaging.
+Pixelverse is a web portal for browser games. It includes an HTML5 game catalog, WebRTC voice and video rooms, user profiles, and direct messaging.
 
----
+## Requirements
 
-## Features
+- Node.js 18.17 or later
+- npm 9 or later
 
-### 1. Game Arcade
-- **Thumbnail Grid**: Mosaic arrangement (`1x1`, `2x2`, `wide`) with category filters and search.
-- **Game Player (`/game/[slug]`)**:
-  - Sandboxed HTML5 embeds.
-  - Fullscreen, audio mute, and aspect ratio controls.
-  - Ratings and favorites.
-  - Party rooms support.
+## Setup
 
-### 2. Catalog
-- Catalog feed integration via `scripts/sync-games/gamepix-feed.js`.
-- Run `npm run sync:feed` to refresh `src/lib/games/registry.json`.
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-### 3. Social Features
-- **WebRTC Voice Rooms (`/rooms/[id]`)**: Device selection, mute controls, and shared room games.
-- **Messaging (`/messages`)**: Direct and group conversations.
-- **Communities (`/community`)**: Text and voice channels.
-- **User Profiles (`/u/[username]`)**: Avatars, levels, and favorites.
-- **Friends (`/friends`)**: Requests, presence, and blocking.
-- **Moderation (`/admin`)**: Submissions and catalog management.
+2. Configure environment variables (optional):
+   ```bash
+   cp .env.example .env.local
+   ```
+   If environment variables are not configured, the app runs in demo mode using local storage.
 
----
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+   The application runs on [http://localhost:3000](http://localhost:3000).
 
-## Publisher Notes
+## Testing and Type Checking
 
-1. Keep your publisher account in good standing and ensure your live domain is registered.
-2. Embed games using feed URLs without stripping or blocking ad parameters.
-
----
-
-## Quick Start
-
-### 1. Install and Sync
+Run the test suite:
 ```bash
-npm install
 npm test
 ```
 
-### 2. Development
+Run TypeScript compilation check:
 ```bash
-npm run dev
+npx tsc --noEmit
 ```
-Open [http://localhost:3000](http://localhost:3000).
 
-### 3. Production Build
+## Catalog Feed Synchronization
+
+The catalog registry can be refreshed from the remote feed:
+```bash
+npm run sync:feed
+```
+This updates `src/lib/games/registry.json`.
+
+## Project Structure
+
+- `src/app/`: Next.js App Router pages and API routes.
+- `src/components/`: Reusable interface components and layout elements.
+- `src/features/`: Feature-level logic and context providers (e.g. auth).
+- `src/lib/`: Core libraries for games catalog, WebRTC rooms, synthesized audio, and mock data.
+- `supabase/`: Database migrations and local seed SQL.
+- `tests/`: Automated unit tests using Node.js built-in test runner.
+
+## Production Build
+
 ```bash
 npm run build
 npm start
 ```
-
----
-
-## Database Architecture
-
-- `supabase/migrations/00001_initial_schema.sql`: Profiles, preferences, friendships, conversations, messages, rooms, and moderation.
-- `supabase/migrations/00002_playverse_schema.sql`: Categories, tags, ratings, plays, developer submissions, and DMCA notices.
-- `supabase/migrations/00003_gamedistribution_schema.sql`: Game metadata schema.

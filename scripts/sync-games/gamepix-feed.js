@@ -26,7 +26,7 @@ function loadEnvFile() {
       const m = /^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/.exec(line);
       if (m && process.env[m[1]] === undefined) process.env[m[1]] = m[2].replace(/^["']|["']$/g, '');
     }
-  } catch { /* no .env.local — fine */ }
+  } catch { /* optional local env */ }
 }
 
 function cleanText(raw, max) {
@@ -137,7 +137,7 @@ async function main() {
       const age = Date.now() - fs.statSync(OUT_FILE).mtimeMs;
       const count = JSON.parse(fs.readFileSync(OUT_FILE, 'utf-8')).length;
       if (count >= 200 && age < 12 * 3600 * 1000) { console.log(`GamePix games are up to date (${count.toLocaleString()} games).`); return; }
-    } catch { /* no registry yet — sync */ }
+    } catch { /* registry does not exist yet */ }
   }
   let items;
   if (arg('--file')) items = readFeedFile(arg('--file'));
@@ -147,7 +147,7 @@ async function main() {
     items = await download(sid, limit);
   }
   const { rows, skipped } = buildRegistry(items);
-  if (rows.length === 0) throw new Error('No games parsed — refusing to overwrite the registry.');
+  if (rows.length === 0) throw new Error('No games parsed, refusing to overwrite the registry.');
   fs.writeFileSync(OUT_FILE, JSON.stringify(rows));
   const byCat = {};
   rows.forEach((r) => { byCat[r[3]] = (byCat[r[3]] || 0) + 1; });

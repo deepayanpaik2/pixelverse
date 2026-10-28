@@ -57,7 +57,7 @@ function expand(row: Row, slug: string): GameManifest {
     id,
     slug,
     title,
-    description: description || `${title} — play it free in your browser on Pixelverse.`,
+    description: description || `${title}. Play free in your browser on Pixelverse.`,
     instructions: 'Use your mouse, keyboard or touch screen to play. Press the full-screen button for the best view.',
     category,
     tags: [category],
@@ -117,7 +117,7 @@ function buildCatalog(): GameManifest[] {
   return list;
 }
 
-/** Best quality first — the same order as the GamePix feed. */
+/** Full catalog matching feed order. */
 export const FEATURED_GAMES: GameManifest[] = buildCatalog();
 
 const byNewest = (a: GameManifest, b: GameManifest) => {
@@ -127,7 +127,7 @@ const byNewest = (a: GameManifest, b: GameManifest) => {
 };
 const NEWEST: GameManifest[] = [...FEATURED_GAMES].sort(byNewest);
 
-/** ids of the freshest games — used for the NEW badge */
+/** IDs of recent games used for the new release badge */
 export const NEW_GAME_IDS: Set<string> = new Set(NEWEST.slice(0, 40).map((g) => g.id));
 
 const BY_KEY = new Map<string, GameManifest>();

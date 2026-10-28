@@ -531,7 +531,7 @@ function runImporter() {
   console.log(`\nRegistry generated: ${REGISTRY_PATH} (${verified.length} verified games)`);
 
   // Write IMPORT_REPORT.md
-  let report = `# PLAYVERSE — COMPREHENSIVE GAME IMPORT REPORT\n\n`;
+  let report = `# Playverse: Game Import Report\n\n`;
   report += `**Generated**: ${new Date().toISOString()}\n`;
   report += `**Audit Status**: ALL IMPORTED GAMES LAWFULLY SOURCED AND AUDITED\n\n`;
   report += `## Summary Metrics\n\n`;

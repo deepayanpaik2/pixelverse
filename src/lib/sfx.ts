@@ -1,5 +1,5 @@
 /**
- * Pixelverse sound design — every sound is synthesized in the browser (no audio files).
+ * Sound effects synthesized in the browser via Web Audio API.
  * Glass bells and soft ticks on a gentle pentatonic scale, with a short shimmering echo.
  *
  *   tap     any press            hover   pointer lands on something playable

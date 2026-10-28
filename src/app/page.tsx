@@ -217,7 +217,7 @@ export default function HomePage() {
               <h2 className="text-xl sm:text-2xl text-white font-display font-extrabold tracking-tight flex items-center gap-2">
                 All Games Catalog
               </h2>
-              <p className="text-xs text-slate-400 font-medium">Keep scrolling — the entire universe streams as you explore</p>
+              <p className="text-xs text-slate-400 font-medium">Scroll down to browse the full games catalog.</p>
             </div>
           </div>
           <div className="flex items-center gap-2">

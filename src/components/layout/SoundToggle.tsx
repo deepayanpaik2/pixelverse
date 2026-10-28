@@ -16,7 +16,7 @@ export function SoundToggle() {
       onClick={() => setSfxOn(!on)}
       data-sfx="soft"
       className="p-2 rounded-xl bg-arcade-surface border border-arcade-border text-slate-300 hover:text-arcade-champagne hover:border-arcade-champagne/60 transition-colors"
-      title={on ? 'Sound on — click to mute' : 'Sound off — click to turn on'}
+      title={on ? 'Mute sound effects' : 'Unmute sound effects'}
       aria-label={on ? 'Mute sound effects' : 'Turn on sound effects'}
       aria-pressed={on}
     >

@@ -647,7 +647,7 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Drawer Navigation — Full Portal Command Hub */}
+      {/* Mobile drawer navigation */}
       {mobileMenu && (
         <div className="sm:hidden mt-3 pt-3 border-t border-white/10 drawer-neon rounded-2xl p-4 space-y-4 max-h-[82vh] overflow-y-auto scrollbar-none animate-in fade-in slide-in-from-top-2 duration-200">
           {/* User Account / Welcome Header */}

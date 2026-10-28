@@ -115,7 +115,7 @@ async function loadFeed(arg) {
 async function main() {
   const feed = await loadFeed(process.argv[2]);
   const { rows, skipped } = buildRegistry(feed);
-  if (rows.length === 0) throw new Error('No games parsed — refusing to overwrite the registry.');
+  if (rows.length === 0) throw new Error('No games parsed, refusing to overwrite the registry.');
   fs.writeFileSync(OUT_FILE, JSON.stringify(rows));
   const byCat = {};
   rows.forEach((r) => { byCat[r[3]] = (byCat[r[3]] || 0) + 1; });

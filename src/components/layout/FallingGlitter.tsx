@@ -4,12 +4,12 @@ import React, { useEffect, useRef } from 'react';
 import { useAuth } from '@/features/auth/AuthContext';
 
 /**
- * Falling glitter — tiny pearl pixels, diamonds and four-point sparks drifting down the page
- * in three depth layers. One fixed canvas, pre-rendered sprites, no per-frame filters.
+ * Canvas particle background rendered in three depth layers.
+ * One fixed canvas, pre-rendered sprites, no per-frame filters.
  *
  *  - pauses when the tab is hidden, and fades out while a game is running (html[data-playing])
- *  - scrolling gives the glitter a little extra downward wind
- *  - respects prefers-reduced-motion and the "animation intensity" setting
+ *  - scrolling adds a downward velocity modifier
+ *  - respects prefers-reduced-motion and the animation intensity setting
  */
 
 type Shape = 'pixel' | 'diamond' | 'spark';
@@ -204,7 +204,7 @@ export function FallingGlitter() {
     window.addEventListener('resize', resize);
 
     if (reduced) {
-      // a still, tasteful scatter — no motion at all
+      // Static scatter without animation
       draw(0);
       return () => window.removeEventListener('resize', resize);
     }
