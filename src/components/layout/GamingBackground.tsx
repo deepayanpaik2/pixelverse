@@ -4,13 +4,8 @@ import React, { useEffect, useMemo } from 'react';
 import { useAuth } from '@/features/auth/AuthContext';
 
 /**
- * GamingBackground — AAA Cyber Gaming Cosmos
- * Features:
- * - Dynamic theme-reactive cosmic nebula
- * - 3D perspective drifting cyberpunk grid floor
- * - Laser horizon beam
- * - Floating 3D holographic gaming particles (crosshairs, digital runes, glowing particles)
- * Respects animation intensity & reduced-motion.
+ * Ambient background visual layer.
+ * Respects animation intensity and reduced motion preferences.
  */
 export function GamingBackground() {
   const { preferences } = useAuth();

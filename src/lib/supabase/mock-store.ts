@@ -16,7 +16,7 @@ import {
   Report,
   CategoryInfo
 } from '@/types';
-import { FEATURED_GAMES, CATEGORIES } from '../games';
+import { FEATURED_GAMES } from '../games';
 
 const SEED_PROFILES: Profile[] = [
   {
@@ -25,9 +25,9 @@ const SEED_PROFILES: Profile[] = [
     display_name: 'Play Master',
     avatar_url: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150',
     banner_url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=1200',
-    bio: 'Lead Arcade Architect & High-Score Champion 🕹️ Playing since 1999.',
+    bio: 'Lead Arcade Architect and High-Score Champion. Playing since 1999.',
     status: 'online',
-    custom_status: 'Building next-gen browser games',
+    custom_status: 'Building browser games',
     favorite_categories: ['Arcade', 'Action', 'Puzzle'],
     level: 42,
     xp: 18450,
@@ -41,7 +41,7 @@ const SEED_PROFILES: Profile[] = [
     display_name: 'Neon Runner',
     avatar_url: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
     banner_url: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1200',
-    bio: 'Speedrunner | Synthwave enthusiast | Cyber Runner specialist ⚡',
+    bio: 'Speedrunner and Synthwave enthusiast. Cyber Runner specialist.',
     status: 'online',
     custom_status: 'Chasing world record distance',
     favorite_categories: ['Racing', 'Action', 'Arcade'],
@@ -57,7 +57,7 @@ const SEED_PROFILES: Profile[] = [
     display_name: 'Pixel Valkyrie',
     avatar_url: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150',
     banner_url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1200',
-    bio: 'Streamer & competitive multiplayer tactician 🎧',
+    bio: 'Streamer and competitive multiplayer tactician.',
     status: 'dnd',
     custom_status: 'Live on Pixelverse',
     favorite_categories: ['Multiplayer', 'Action', 'io Games'],
@@ -139,7 +139,7 @@ class MockPixelverseStore {
     }
   }
 
-  // --- Games Catalog & Status ---
+  // Games catalog and status
   getGames(kidsMode: boolean = false): GameManifest[] {
     let list = this.games.filter(g => g.status === 'published');
     if (kidsMode) {
@@ -164,7 +164,7 @@ class MockPixelverseStore {
     }
   }
 
-  // --- Ratings ---
+  // Ratings
   rateGame(gameId: string, isLike: boolean, userId?: string, guestId: string = 'guest'): { likes: number; dislikes: number; userRating: boolean } {
     const actorKey = userId || guestId;
     const existing = this.ratings.findIndex(r => r.game_id === gameId && (r.user_id === actorKey || r.guest_id === actorKey));
@@ -204,7 +204,7 @@ class MockPixelverseStore {
     return r ? r.is_like : null;
   }
 
-  // --- Favorites & History (with Guest support) ---
+  // Favorites and history (with guest support)
   getFavorites(actorId: string = 'guest'): string[] {
     return this.favorites[actorId] || [];
   }
@@ -254,7 +254,7 @@ class MockPixelverseStore {
     return slugs.map(s => this.games.find(g => g.slug === s)).filter(Boolean) as GameManifest[];
   }
 
-  // --- Developer Submissions ---
+  // Developer submissions
   createSubmission(sub: Omit<GameSubmission, 'id' | 'status' | 'created_at'>): GameSubmission {
     const newSub: GameSubmission = {
       ...sub,
@@ -320,7 +320,7 @@ class MockPixelverseStore {
     return true;
   }
 
-  // --- DMCA / Takedowns ---
+  // DMCA takedowns
   createTakedown(notice: Omit<TakedownNotice, 'id' | 'status' | 'created_at'>): TakedownNotice {
     const newNotice: TakedownNotice = {
       ...notice,
@@ -351,7 +351,7 @@ class MockPixelverseStore {
     return true;
   }
 
-  // --- Profiles & Friends ---
+  // Profiles and friends
   getProfiles(): Profile[] { return [...this.profiles]; }
 
   getProfileById(id: string): Profile | undefined {
@@ -385,7 +385,7 @@ class MockPixelverseStore {
     );
   }
 
-  // --- Reports ---
+  // Reports
   createReport(report: Omit<Report, 'id' | 'status' | 'created_at'>): Report {
     const r: Report = {
       ...report,
@@ -414,7 +414,7 @@ class MockPixelverseStore {
     return false;
   }
 
-  // --- Friendships & Rooms ---
+  // Friendships and rooms
   getFriendships(userId: string): Profile[] {
     return this.profiles.filter(p => p.id !== userId);
   }
@@ -458,7 +458,7 @@ class MockPixelverseStore {
           id: 'm-init',
           conversation_id: 'conv-general',
           sender_id: this.profiles[0]?.id || 'admin',
-          content: 'Welcome to the Pixelverse global arcade chat! 🎮',
+          content: 'Welcome to the Pixelverse global arcade chat.',
           is_edited: false,
           is_pinned: true,
           created_at: new Date().toISOString(),
@@ -474,7 +474,7 @@ class MockPixelverseStore {
         id: 'm-1',
         conversation_id: convId,
         sender_id: this.profiles[0]?.id || 'admin',
-        content: 'Welcome to the Pixelverse global arcade lounge! 🎮',
+        content: 'Welcome to the Pixelverse global arcade lounge.',
         is_edited: false,
         is_pinned: true,
         created_at: new Date().toISOString(),

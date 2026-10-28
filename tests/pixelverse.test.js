@@ -3,7 +3,6 @@ const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
 
-// 1. GAME MANIFEST & REGISTRY VALIDATION
 test('Friendship State Machine & Transitions', (t) => {
   // Simulated database state
   const friendRequests = [];
@@ -56,7 +55,6 @@ test('Friendship State Machine & Transitions', (t) => {
   assert.deepStrictEqual(friendships[0], { u1: 'user_a', u2: 'user_b' });
 });
 
-// 3. ROOM MEMBERSHIP & PERMISSIONS
 test('Room Membership & Access Controls', (t) => {
   const rooms = [];
   const roomMembers = [];
@@ -88,7 +86,6 @@ test('Room Membership & Access Controls', (t) => {
   assert.throws(() => joinRoom(room.id, 'guest_2'), /Room is full/);
 });
 
-// 4. NOTIFICATION GENERATION & AGGREGATION
 test('Notification Generation & Read Status', (t) => {
   const notifications = [];
 
@@ -118,7 +115,6 @@ test('Notification Generation & Read Status', (t) => {
   assert.strictEqual(notifications.every(n => n.isRead === true), true);
 });
 
-// 5. DATABASE MIGRATIONS & SCHEMA VALIDITY
 test('Database Migration Script Exists and Covers All 26 Tables', (t) => {
   const migrationPath = path.join(__dirname, '../supabase/migrations/00001_initial_schema.sql');
   assert.ok(fs.existsSync(migrationPath), 'Migration file must exist');

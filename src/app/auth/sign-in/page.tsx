@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Gamepad2, Lock, Mail, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Gamepad2, Lock, Mail, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 
 export default function SignInPage() {

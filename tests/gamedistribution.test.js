@@ -4,9 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { mapFeedItem, normalizeCategory } = require('../scripts/sync-gamedistribution/index.js');
 
-// =========================================================================
-// 1. GAMEDISTRIBUTION FEED-TO-MANIFEST MAPPING
-// =========================================================================
+// Feed-to-manifest mapping
 test('GameDistribution Feed-to-Manifest Mapping using Real Sample', (t) => {
   const sampleFeedItem = {
     "Title": "Rocketman Stunt Hero",
@@ -54,9 +52,7 @@ test('GameDistribution Feed-to-Manifest Mapping using Real Sample', (t) => {
   assert.strictEqual(manifest.status, 'published');
 });
 
-// =========================================================================
-// 2. CATEGORY NORMALIZATION MATRIX
-// =========================================================================
+// Category normalization
 test('GameDistribution Category Normalization Matrix', (t) => {
   assert.strictEqual(normalizeCategory(['shooter']), 'Action');
   assert.strictEqual(normalizeCategory(['battle']), 'Action');
@@ -72,9 +68,7 @@ test('GameDistribution Category Normalization Matrix', (t) => {
   assert.strictEqual(normalizeCategory(['unknown-genre']), 'Arcade'); // Fallback
 });
 
-// =========================================================================
-// 3. CATALOG REGISTRY SCHEMA VALIDATION (100 LIVE GAMES)
-// =========================================================================
+// Registry schema validation
 test('Live GameDistribution Registry Schema & Asset Integrity', (t) => {
   const registryPath = path.join(__dirname, '../src/lib/games/registry.json');
   assert.ok(fs.existsSync(registryPath), 'registry.json must exist');

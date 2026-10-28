@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
-import { Camera, Shuffle, Upload, X } from 'lucide-react';
+import { Camera, Shuffle, Upload } from 'lucide-react';
 import { DEFAULT_AVATAR, validateImageFile } from '@/lib/avatar';
 
 interface Props {

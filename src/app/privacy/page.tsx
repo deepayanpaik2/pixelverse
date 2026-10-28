@@ -40,7 +40,7 @@ export default function PrivacyPolicyPage() {
             <Database className="w-4 h-4 text-arcade-orchid" /> 2. Browser Local Storage
           </div>
           <p className="text-xs text-slate-400">
-            To give you a seamless experience, we use your device's browser <code className="text-arcade-champagne font-mono">localStorage</code> to remember:
+            To persist your preferences and game progress, we use your device's browser <code className="text-arcade-champagne font-mono">localStorage</code> to remember:
           </p>
           <ul className="list-disc list-inside text-xs text-slate-400 space-y-1">
             <li>Your favorite games list so your bookmarks stay saved.</li>

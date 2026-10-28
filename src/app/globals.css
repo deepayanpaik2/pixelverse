@@ -2,10 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ==========================================================================
-   Opal Noir — Pixelverse design system
-   Blue-black surfaces · iridescent opal edge as the single signature · pearl type
-   ========================================================================== */
+/* Pixelverse design tokens and base styles */
 
 :root {
   --background: #06070b;
@@ -225,9 +222,9 @@ h1[class*="font-"] { font-weight: 750; letter-spacing: -0.025em; }
 
 ::selection { background: var(--accent); color: #06070b; }
 
-/* ---------- Surfaces ---------- */
+/* Surfaces */
 
-/* Extremely fine static grain: gives the dark surfaces a paper-like depth without costing frames */
+/* Fine static grain */
 .grain::before {
   content: "";
   position: fixed;
@@ -284,7 +281,7 @@ h1[class*="font-"] { font-weight: 750; letter-spacing: -0.025em; }
   box-shadow: 0 0 0 #05070f;
 }
 
-/* ---------- Aurora: three slow, tinted lights behind everything ---------- */
+/* Ambient lights */
 .aurora { position: fixed; inset: 0; z-index: -10; overflow: hidden; pointer-events: none; }
 .aurora::after {
   content: ""; position: absolute; inset: 0;
@@ -336,7 +333,7 @@ h1[class*="font-"] { font-weight: 750; letter-spacing: -0.025em; }
   }
 }
 
-/* ---------- Falling glitter canvas ---------- */
+/* Canvas particles */
 .glitter {
   position: fixed; inset: 0; z-index: -9;
   width: 100%; height: 100%;
@@ -345,7 +342,7 @@ h1[class*="font-"] { font-weight: 750; letter-spacing: -0.025em; }
 }
 html[data-playing="true"] .glitter { opacity: 0; }
 
-/* ---------- The opal edge: one iridescent hairline, used on tiles, hero and the player ---------- */
+/* Edge highlight */
 @property --edge-angle { syntax: "<angle>"; inherits: false; initial-value: 135deg; }
 .opal-edge::before {
   content: ""; position: absolute; inset: 0; z-index: 4; pointer-events: none;
@@ -359,7 +356,7 @@ html[data-playing="true"] .glitter { opacity: 0; }
 .opal-edge:hover::before, .opal-edge:focus-visible::before, .opal-edge:active::before { opacity: 1; animation: edge-spin 5s linear infinite; }
 @keyframes edge-spin { to { --edge-angle: 495deg; } }
 
-/* ---------- Game tiles: tilt toward the pointer, opal outline, soft glare ---------- */
+/* Game tiles */
 .game-tile {
   --rx: 0deg; --ry: 0deg; --mx: 50%; --my: 50%;
   transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry));
@@ -412,7 +409,7 @@ html[data-playing="true"] .glitter { opacity: 0; }
   }
 }
 
-/* ---------- Ornament: the small diamond that marks every section title ---------- */
+/* Section marker */
 .diamond {
   display: inline-block; width: 9px; height: 9px; flex-shrink: 0;
   transform: rotate(45deg);
@@ -420,7 +417,7 @@ html[data-playing="true"] .glitter { opacity: 0; }
   box-shadow: 0 0 12px currentColor;
 }
 
-/* ---------- Motion helpers ---------- */
+/* Motion helpers */
 @keyframes fade-up { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 .fade-up { animation: fade-up .6s cubic-bezier(.2, .8, .2, 1) both; }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
@@ -432,7 +429,7 @@ html[data-playing="true"] .glitter { opacity: 0; }
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 
-/* The page-load moment: a single pearl shimmer passes over the wordmark */
+/* Wordmark shimmer */
 @keyframes gild { to { background-position: 200% center; } }
 .wordmark { animation: gild 6s linear infinite; }
 
@@ -449,7 +446,7 @@ html[data-playing="true"] .glitter { opacity: 0; }
   html { scroll-behavior: auto; }
 }
 
-/* ---------- Buttons ---------- */
+/* Buttons */
 .btn-mosaic {
   position: relative;
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
@@ -474,7 +471,7 @@ html[data-playing="true"] .glitter { opacity: 0; }
 .btn-gold:hover::after { transform: translateX(120%); }
 .btn-gold:active { transform: scale(.96); }
 
-/* ---------- Scrollbars ---------- */
+/* Scrollbars */
 * { scrollbar-width: thin; scrollbar-color: #333a52 transparent; }
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: rgba(6, 7, 11, 0.6); }
@@ -483,7 +480,7 @@ html[data-playing="true"] .glitter { opacity: 0; }
 .scrollbar-none { scrollbar-width: none; }
 .scrollbar-none::-webkit-scrollbar { display: none; }
 
-/* ---------- Voice activity ring ---------- */
+/* Voice activity ring */
 @keyframes speaking-pulse {
   0% { box-shadow: 0 0 0 0 rgba(159, 230, 195, 0.7); }
   70% { box-shadow: 0 0 0 8px rgba(159, 230, 195, 0); }
@@ -491,26 +488,23 @@ html[data-playing="true"] .glitter { opacity: 0; }
 }
 .voice-speaking-ring { animation: speaking-pulse 1.2s infinite; border-color: #9fe6c3 !important; }
 
-/* ---------- Phones ---------- */
+/* Mobile viewports */
 @media (max-width: 640px) {
   input, select, textarea { font-size: 16px; } /* stops iOS Safari from zooming on focus */
 }
 
-
-/* ==========================================================================
-   Click / touch effects, game opening sequence
-   ========================================================================== */
+/* Game transitions */
 
 .fx-layer { position: fixed; inset: 0; z-index: 9999; pointer-events: none; overflow: hidden; }
 
-/* Player stage: opens like a curtain parting when the game page loads */
+/* Player stage entrance */
 @keyframes stage-open {
   from { opacity: 0; transform: perspective(1400px) rotateX(5deg) translateY(26px) scale(.965); clip-path: inset(7% 7% 7% 7% round 30px); filter: blur(6px); }
   to   { opacity: 1; transform: none; clip-path: inset(0 0 0 0 round 30px); filter: none; }
 }
 .stage-open { animation: stage-open 1s cubic-bezier(.2, .8, .2, 1) backwards; }
 
-/* Launch veil: non-blocking background indicator */
+/* Launch veil */
 .launch-veil {
   display: none !important;
   pointer-events: none !important;
@@ -535,7 +529,7 @@ html[data-playing="true"] .glitter { opacity: 0; }
 }
 @keyframes launch-bar { from { transform: translateX(-110%); } to { transform: translateX(260%); } }
 
-/* Sections and cards ease in once when the page opens */
+/* Entrance transitions */
 .fade-up { animation-delay: .04s; }
 
 @media (prefers-reduced-motion: reduce) {
@@ -543,11 +537,9 @@ html[data-playing="true"] .glitter { opacity: 0; }
   .game-tile, .game-tile:hover { transform: none !important; }
 }
 
-/* ==========================================================================
-   Performance: fast, responsive rendering for 5000+ game catalog
-   ========================================================================== */
+/* Catalog performance optimizations */
 
-/* Game tiles: promote layout containment safely without GPU layer exhaustion */
+/* Layout containment for game tiles */
 .game-tile {
   contain: layout style;
   touch-action: manipulation;
@@ -638,12 +630,9 @@ button, a[role="button"], [data-sfx] {
 /* Backdrop-filter performance */
 .glass-panel-hover { will-change: border-color, box-shadow; }
 
-/* ==========================================================================
-   ULTRA GAMING 3D ENGINE & NEBULA MATRIX
-   Dynamic reactive themes · 3D layered elevation · Gaming icons · Perfect alignment
-   ========================================================================== */
+/* Visual theme layers and components */
 
-/* ---------- Nebula background: cosmic clouds reacting to theme ---------- */
+/* Nebula background */
 .nebula {
   position: fixed; inset: 0; z-index: -11; overflow: hidden; pointer-events: none;
   background:
@@ -659,7 +648,7 @@ button, a[role="button"], [data-sfx] {
   display: none;
 }
 
-/* ---------- Cyberpunk 3D perspective grid floor (ultra-lightweight static GPU layer) ---------- */
+/* Perspective grid floor */
 .grid-floor {
   position: fixed; inset: 0; z-index: -11; overflow: hidden; pointer-events: none;
   perspective: 1000px; transform-style: preserve-3d;
@@ -675,7 +664,7 @@ button, a[role="button"], [data-sfx] {
   mask-image: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 45%, transparent 95%);
 }
 
-/* Cyber Horizon Laser Beam */
+/* Horizon line */
 .cyber-horizon {
   position: fixed;
   top: 48%;
@@ -695,7 +684,7 @@ button, a[role="button"], [data-sfx] {
   100% { transform: translate3d(-18px, -64px, 30px) rotate(360deg); }
 }
 
-/* Mobile: flatten grid floor to save GPU */
+/* Mobile grid optimization */
 @media (max-width: 768px) {
   .grid-floor::before {
     transform: rotateX(60deg) translateY(-35%) translateZ(-80px);
@@ -703,7 +692,7 @@ button, a[role="button"], [data-sfx] {
   }
 }
 
-/* ---------- 3D Lifted Gaming Card System ---------- */
+/* Lifted cards */
 .card-3d {
   position: relative;
   transform-style: preserve-3d;
@@ -742,12 +731,12 @@ button, a[role="button"], [data-sfx] {
   transition-duration: 0.1s;
 }
 
-/* Layered 3D Z-Depth classes */
+/* Layered Z-Depth classes */
 .lift-z-1 { transform: translateZ(12px); transform-style: preserve-3d; }
 .lift-z-2 { transform: translateZ(24px); transform-style: preserve-3d; }
 .lift-z-3 { transform: translateZ(36px); transform-style: preserve-3d; }
 
-/* ---------- 3D Game Tile Tilt Engine ---------- */
+/* Tilt interaction */
 .game-tile {
   --rx: 0deg; --ry: 0deg; --mx: 50%; --my: 50%;
   transform: perspective(1000px) rotateX(var(--rx)) rotateY(var(--ry));
@@ -773,7 +762,7 @@ button, a[role="button"], [data-sfx] {
 }
 .game-tile:hover::after { opacity: 1; }
 
-/* 3D internal popouts inside game tiles */
+/* Internal popouts inside game tiles */
 .game-tile .tile-badge { transform: translateZ(28px); transition: transform 0.3s ease; }
 .game-tile .tile-play-orb { transform: translateZ(42px); transition: transform 0.3s ease, opacity 0.3s ease, scale 0.3s ease; }
 .game-tile .tile-title-plate { transform: translateZ(20px); transition: transform 0.3s ease; }
@@ -784,7 +773,7 @@ button, a[role="button"], [data-sfx] {
   .game-tile:active { transform: scale(0.975); }
 }
 
-/* ---------- 3D Mechanical Gaming Buttons ---------- */
+/* Button styles */
 .btn-gaming {
   position: relative;
   display: inline-flex; align-items: center; justify-content: center;
@@ -818,7 +807,7 @@ button, a[role="button"], [data-sfx] {
   transition-duration: 0.05s;
 }
 
-/* 3D Push button variant */
+/* 3D push button variant */
 .btn-3d {
   position: relative;
   display: inline-flex; align-items: center; justify-content: center;
@@ -836,7 +825,7 @@ button, a[role="button"], [data-sfx] {
   box-shadow: 0 0 0 #05070f;
 }
 
-/* Neon Glow Button */
+/* Neon glow button */
 .btn-neon {
   position: relative; overflow: hidden;
   background: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%);
@@ -860,7 +849,7 @@ button, a[role="button"], [data-sfx] {
   box-shadow: 0 0 0 #05070f;
 }
 
-/* ---------- 3D Gaming Icon Box & Badges ---------- */
+/* Icon box and badges */
 .gaming-icon-box {
   display: inline-flex; align-items: center; justify-content: center;
   position: relative;
@@ -895,7 +884,7 @@ button, a[role="button"], [data-sfx] {
   50% { box-shadow: 0 0 24px var(--accent-glow); transform: scale(1.06); }
 }
 
-/* ---------- Perfect Alignment & HUD Header System ---------- */
+/* Section headers */
 .section-head {
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
   margin-bottom: 1.25rem; flex-wrap: wrap;
@@ -916,7 +905,7 @@ button, a[role="button"], [data-sfx] {
   content: "]"; font-weight: 300; opacity: 0.4; margin-left: 0.35rem; color: var(--accent);
 }
 
-/* ---------- Glass Drawer & Neon Panels ---------- */
+/* Glass panels */
 .drawer-neon {
   background: var(--card-bg);
   backdrop-filter: blur(28px) saturate(200%);

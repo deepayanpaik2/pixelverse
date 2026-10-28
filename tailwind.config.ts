@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss";
 
 /**
- * Opal Noir — the Pixelverse palette.
+ * Pixelverse palette and typography tokens.
  * Blue-black surfaces, pearl-aqua as the lead accent (token still named `champagne`),
  * periwinkle, mint and rose-quartz in supporting roles.
  */

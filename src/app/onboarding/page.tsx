@@ -145,7 +145,7 @@ export default function OnboardingPage() {
 
         <AnimatePresence mode="wait">
           {step === 2 ? (
-            /* STEP 2: AVATAR STUDIO CUSTOMIZER */
+            /* Avatar customizer */
             <motion.div
               key="step-2"
               initial={{ opacity: 0, x: -16 }}
@@ -162,7 +162,7 @@ export default function OnboardingPage() {
                   Create & Style Your Avatar
                 </h1>
                 <p className="text-xs text-slate-400 max-w-lg mx-auto">
-                  Pick your legendary Roblox & Cyberpunk outfit, hairstyle, skins, and back gear — 100% free! You can customize anytime.
+                  Customize your avatar with hairstyles, outfits, and accessories. You can update your look anytime.
                 </p>
               </div>
 
@@ -191,7 +191,7 @@ export default function OnboardingPage() {
               </div>
             </motion.div>
           ) : (
-            /* STEP 3: PLAYER PROFILE DETAILS */
+            /* Profile details */
             <motion.div
               key="step-3"
               initial={{ opacity: 0, x: 16 }}

@@ -154,7 +154,7 @@ export class PartyRoomClient {
     return this.identity.clientId === this.hostClientId;
   }
 
-  // ---------- React store API (useSyncExternalStore) ----------
+  // React store API
   subscribe = (fn: () => void) => {
     this.listeners.add(fn);
     return () => {
@@ -207,7 +207,7 @@ export class PartyRoomClient {
     };
   }
 
-  // ---------- Joining / leaving ----------
+  // Joining and leaving
   async join(media: { audio: boolean; video: boolean; facingMode?: 'user' | 'environment' }) {
     this.status = 'connecting';
     if (media.facingMode) {
@@ -320,7 +320,7 @@ export class PartyRoomClient {
     this.meters.clear();
   }
 
-  // ---------- Presence -> connections ----------
+  // Presence and connections
   private reconcile() {
     if (this.destroyed || !this.channel) return;
     const state = this.channel.presenceState() as Record<string, any[]>;
@@ -423,7 +423,7 @@ export class PartyRoomClient {
     this.conns.delete(id);
   }
 
-  // ---------- Signaling ----------
+  // Signaling
   private signal(to: string, data: Record<string, unknown>) {
     this.channel?.send({ type: 'broadcast', event: 'signal', payload: { from: this.me.id, to, ...data } });
   }
@@ -492,7 +492,7 @@ export class PartyRoomClient {
     }
   }
 
-  // ---------- Local media ----------
+  // Local media
   private async acquireAudio(): Promise<void> {
     if (!navigator.mediaDevices?.getUserMedia) {
       this.micError = 'Microphone is not available here (it needs HTTPS or localhost).';
@@ -625,7 +625,7 @@ export class PartyRoomClient {
     this.emit();
   }
 
-  // ---------- Speaking detection ----------
+  // Speaking detection
   private watchAudio(id: string, track: MediaStreamTrack) {
     if (!this.ac) return;
     try {
@@ -667,7 +667,7 @@ export class PartyRoomClient {
     if (changed) this.emit();
   }
 
-  // ---------- Chat & game ----------
+  // Chat and game state
   sendChat(text: string) {
     const clean = text.trim().slice(0, 500);
     if (!clean) return;

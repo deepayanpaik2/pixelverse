@@ -1,21 +1,19 @@
-# PIXELVERSE — PROJECT STATUS
+# Pixelverse: Project Status
 
 ## Catalog
-- **5,001 games** from the GameMonetize HTML5 feed (18 categories), newest first.
+- 5,001 games from the GameMonetize HTML5 feed across 18 categories, newest first.
 - Source of truth: `src/lib/games/registry.json` (compact rows) expanded by `src/lib/games/index.ts`.
-- Refresh: `npm run sync:feed` (downloads the feed, cleans text, rewrites the registry), then redeploy.
-- Games embed from `https://html5.gamemonetize.co/{id}/` inside a sandboxed iframe; thumbnails come from `img.gamemonetize.com`.
-- All previous in-house games, GameDistribution games, their sync script/API route and reports were removed.
+- Refresh: `npm run sync:feed` (downloads the feed, cleans text, and updates the registry).
+- Games embed from `https://html5.gamemonetize.co/{id}/` in a sandboxed iframe; thumbnails load from `img.gamemonetize.com`.
 
-## Experience
-- Glass/transparency design system (`.glass-panel`, `.glass-clear`, `.glass-chip`), animated aurora background, frosted spotlight hero, smooth tile hover effects.
-- Infinite-scroll grids (`GameGrid`) on home, arcade, categories, tags, new, trending, top-rated and favorites.
-- Home page: spotlight, New Releases mosaic, six category shelves, 2-player and mobile shelves, then every game.
+## Layout and Navigation
+- Theme surfaces (`.glass-panel`, `.glass-chip`), ambient background gradients, spotlight hero, and tile interaction states.
+- Infinite scroll grids (`GameGrid`) on home, arcade, categories, tags, new, trending, and favorites pages.
+- Home page includes spotlight showcase, new releases, category shelves, and full catalog browsing.
 
 ## Verification
-- `npm test` — 15 tests (feed cleaning, registry integrity, social/i18n logic).
-- `npx tsc --noEmit` — 0 errors.
-- Play counts, likes and ratings are not invented: they start at 0 and grow from real activity on the site.
+- `npm test`: 14 automated tests covering feed parsing, registry integrity, and social logic.
+- `npx tsc --noEmit`: Typecheck passing with zero errors.
 
-## Still mock / local-only
-- Auth, friends, rooms, chat, favorites, ratings and history run on the built-in mock store (localStorage) unless Supabase env vars are configured.
+## Local and Demo Mode
+- Authentication, rooms, chat, ratings, and favorites run on the built-in local store (`localStorage`) when Supabase credentials are not configured.

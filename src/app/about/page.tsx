@@ -23,13 +23,13 @@ export default function AboutPage() {
       {/* Hero Header */}
       <div className="text-center space-y-4 pt-4">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-arcade-champagne/10 border border-arcade-champagne/30 text-arcade-champagne text-xs font-bold uppercase tracking-wider">
-          <Sparkles className="w-3.5 h-3.5" /> Next-Generation Web Arcade
+          <Sparkles className="w-3.5 h-3.5" /> Browser Games Portal
         </div>
         <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
           About <span className="text-transparent bg-clip-text bg-gradient-to-r from-arcade-champagne via-arcade-orchid to-arcade-rose">Pixelverse</span>
         </h1>
         <p className="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
-          Pixelverse is a next-generation browser games portal built for instant play, zero-friction discovery, and 100% lawful game distribution. No app installs, no mandatory sign-up, and no waiting.
+          Pixelverse is a browser games portal built for instant play, fast discovery, and verified game distribution. No app installs, no mandatory sign-up, and no waiting.
         </p>
       </div>
 

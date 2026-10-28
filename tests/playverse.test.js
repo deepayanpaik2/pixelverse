@@ -3,12 +3,7 @@ const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
 
-// =========================================================================
-// 1. PLAYVERSE CATALOG & MANIFEST INTEGRITY
-// =========================================================================
-// =========================================================================
-// 2. RATINGS CALCULATION & ALGORITHM
-// =========================================================================
+// Ratings calculation
 test('Rating Score Calculation Logic', (t) => {
   function computeRating(likes, dislikes) {
     const total = likes + dislikes;
@@ -24,9 +19,7 @@ test('Rating Score Calculation Logic', (t) => {
   assert.strictEqual(computeRating(95, 5), 4.8, '95% likes should equal 4.8');
 });
 
-// =========================================================================
-// 3. GUEST FAVORITES & USER ACCOUNT MERGING
-// =========================================================================
+// Guest favorites and account merging
 test('Guest Favorites Storage & User Merge State Transitions', (t) => {
   const store = {
     favorites: {
@@ -77,9 +70,7 @@ test('Guest Favorites Storage & User Merge State Transitions', (t) => {
   assert.deepStrictEqual(store.favorites['user_123'], ['game_a', 'memory-match']);
 });
 
-// =========================================================================
-// 4. DEVELOPER SUBMISSION LIFECYCLE
-// =========================================================================
+// Developer submission lifecycle
 test('Developer Submission Lifecycle (Create, Approve, Reject)', (t) => {
   const submissions = [];
   const publishedGames = [];
@@ -152,9 +143,7 @@ test('Developer Submission Lifecycle (Create, Approve, Reject)', (t) => {
   assert.strictEqual(publishedGames.length, 1); // Not published
 });
 
-// =========================================================================
-// 5. DMCA TAKEDOWN PROCEDURE & QUARANTINE
-// =========================================================================
+// DMCA takedown procedure
 test('DMCA Takedown Procedure & Automatic Quarantine', (t) => {
   const games = [
     { id: 'game-1', title: 'Space Runner', status: 'published' },
@@ -208,9 +197,7 @@ test('DMCA Takedown Procedure & Automatic Quarantine', (t) => {
   assert.strictEqual(games[1].status, 'published'); // Unaffected
 });
 
-// =========================================================================
-// 6. I18N LOCALIZATION DICTIONARY PARITY
-// =========================================================================
+// Localization dictionary completeness
 test('i18n Translation Dictionary Completeness', (t) => {
   const i18nPath = path.join(__dirname, '../src/lib/i18n/index.ts');
   assert.ok(fs.existsSync(i18nPath), 'src/lib/i18n/index.ts must exist');

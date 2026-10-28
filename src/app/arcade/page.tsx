@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import { FEATURED_GAMES, getAllCategories, gameInCategory } from '@/lib/games';
 import { useAuth } from '@/features/auth/AuthContext';
-import { mockStore } from '@/lib/supabase/mock-store';
 import { GameGrid } from '@/components/portal/GameGrid';
 import { playSfx } from '@/lib/sfx';
 
@@ -65,7 +64,7 @@ function ArcadeContent() {
             <div className="flex items-center gap-2 mb-1">
               <span className="w-2 h-2 rounded-full bg-[var(--accent)] animate-pulse" />
               <span className="text-[10px] font-mono text-[var(--accent)] font-bold tracking-widest uppercase">
-                // ARCADE DIRECTORY
+                Arcade Directory
               </span>
             </div>
             <h1 className="text-2xl sm:text-4xl font-display font-extrabold text-white tracking-tight">
@@ -115,7 +114,7 @@ function ArcadeContent() {
           data-active={selectedCategory === 'All'}
           className="glass-chip px-5 py-2.5 rounded-full text-xs font-extrabold whitespace-nowrap text-slate-200"
         >
-          🎮 All Games ({FEATURED_GAMES.length})
+          All Games ({FEATURED_GAMES.length})
         </button>
         {categories.map((cat) => (
           <button

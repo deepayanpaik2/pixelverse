@@ -66,7 +66,7 @@ export function AvatarStudio({
     { id: 'background', label: 'Stage', icon: Layers, count: BACKGROUND_STAGES.length },
   ];
 
-  // Randomizer: generate awesome random combinations
+  // Generate random combinations
   const randomize = useCallback(() => {
     playSfx('launch');
     const randomItem = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
@@ -437,7 +437,7 @@ function OptionCard<T extends string>({
       {/* Top row: Icon / Color swatch + Selected Checkmark */}
       <div className="flex items-center justify-between w-full mb-1.5">
         <div className="flex items-center gap-1.5">
-          {item.previewColor ? (
+          {item.previewColor && (
             <div className="flex -space-x-1 items-center">
               <span
                 className="w-4 h-4 rounded-full border border-white/30 shadow-sm"
@@ -450,8 +450,6 @@ function OptionCard<T extends string>({
                 />
               )}
             </div>
-          ) : (
-            <span className="text-lg">{item.icon || '✨'}</span>
           )}
 
           {item.isNew && (

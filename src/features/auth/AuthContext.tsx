@@ -107,7 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const userRef = useRef<Profile | null>(null);
   userRef.current = user;
 
-  // ---------- load profile + preferences from Supabase ----------
+  // Load profile and preferences from Supabase
   const loadRealUser = useCallback(async (userId: string, meta?: Record<string, any>) => {
     let { data: row } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
 
@@ -149,7 +149,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (!real) {
-      // ---- offline / demo mode (no Supabase keys): original mock behaviour ----
+      // Fallback demo mode when Supabase is not configured
       const savedUserId = typeof window !== 'undefined' ? localStorage.getItem('playverse_current_user_id') : null;
       const initialUser = savedUserId ? mockStore.getProfileById(savedUserId) : null;
       if (initialUser) setUser(initialUser);
@@ -198,7 +198,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [real, loadRealUser]);
 
-  // ---------- simple local settings ----------
+  // Local settings
   const setKidsMode = (enabled: boolean) => {
     setKidsModeState(enabled);
     if (typeof window !== 'undefined') localStorage.setItem('playverse_kids_mode', enabled.toString());
@@ -226,7 +226,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return mockStore.getUserGameRating(gameId, user ? user.id : undefined, actorKey);
   };
 
-  // ---------- sign in ----------
+  // Sign in
   const signIn = async (email: string, pass: string): Promise<Result> => {
     if (!real) {
       const username = email.split('@')[0];
@@ -274,7 +274,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // ---------- sign up ----------
+  // Sign up
   const signUp = async (email: string, pass: string, username: string, displayName: string) => {
     const clean = cleanUsername(username);
     if (clean.length < 3) return { success: false, error: 'Username must be 3-20 characters (letters, numbers, underscore).' };
@@ -340,7 +340,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setFavorites(mockStore.getFavorites('guest'));
   };
 
-  // ---------- profile ----------
+  // Profile
   const checkUsernameAvailable = async (username: string): Promise<boolean> => {
     const clean = cleanUsername(username);
     if (clean.length < 3) return false;

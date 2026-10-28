@@ -26,7 +26,6 @@ import {
   Sparkle
 } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
-import { CATEGORIES } from '@/lib/games';
 import { playSfx } from '@/lib/sfx';
 
 export function Sidebar() {
@@ -171,7 +170,7 @@ export function Sidebar() {
         </div>
       </aside>
 
-      {/* Mobile Sticky Bottom Navigation Bar — Golden 5-item thumb friendly layout */}
+      {/* Mobile bottom navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 drawer-neon border-t border-white/15 px-1 pt-1.5 pb-[calc(0.5rem+env(safe-area-inset-bottom))] flex items-stretch justify-around sm:backdrop-blur-2xl">
         {[
           { label: 'Home', href: '/', icon: Home },

@@ -16,7 +16,7 @@ const REPORT_PATH = path.join(__dirname, '../../IMPORT_REPORT.md');
 
 // Complete catalog including In-House, Open Source, and Licensed Publisher Feeds
 const CATALOG_MANIFESTS = [
-  // --- IN-HOUSE ORIGINALS ---
+  // In-house games
   {
     id: "inhouse-001",
     slug: "cyber-runner",
@@ -200,7 +200,7 @@ const CATALOG_MANIFESTS = [
     status: "published"
   },
 
-  // --- OPEN SOURCE VERIFIED BROWSER GAMES ---
+  // Open source browser games
   {
     id: "oss-001",
     slug: "hextris",
@@ -326,7 +326,7 @@ const CATALOG_MANIFESTS = [
     status: "published"
   },
 
-  // --- LICENSED PUBLISHER FEEDS INTEGRATIONS ---
+  // Publisher feeds
   {
     id: "feed-001",
     slug: "moto-x3m",
@@ -531,7 +531,7 @@ function runImporter() {
   console.log(`\nRegistry generated: ${REGISTRY_PATH} (${verified.length} verified games)`);
 
   // Write IMPORT_REPORT.md
-  let report = `# PLAYVERSE — COMPREHENSIVE GAME IMPORT REPORT\n\n`;
+  let report = `# Playverse: Game Import Report\n\n`;
   report += `**Generated**: ${new Date().toISOString()}\n`;
   report += `**Audit Status**: ALL IMPORTED GAMES LAWFULLY SOURCED AND AUDITED\n\n`;
   report += `## Summary Metrics\n\n`;
@@ -546,7 +546,7 @@ function runImporter() {
   report += `| :--- | :--- | :--- | :--- | :--- | :--- |\n`;
 
   for (const g of verified) {
-    report += `| **${g.title}** | \`${g.source_type}\` | ${g.category} | ${g.orientation} | ${g.license} | ✅ Published |\n`;
+    report += `| **${g.title}** | \`${g.source_type}\` | ${g.category} | ${g.orientation} | ${g.license} | Published |\n`;
   }
 
   if (blocked.length > 0) {

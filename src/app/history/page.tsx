@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Clock, Gamepad2, Play } from 'lucide-react';
+import { Clock, Play } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { mockStore } from '@/lib/supabase/mock-store';
 import { GameTile } from '@/components/portal/GameTile';
@@ -30,14 +30,14 @@ export default function HistoryPage() {
             <div className="flex items-center gap-2 mb-1">
               <span className="w-2 h-2 rounded-full bg-[var(--accent)] animate-pulse" />
               <span className="text-[10px] font-mono text-[var(--accent)] font-bold tracking-widest uppercase">
-                // SESSION LOGS
+                History
               </span>
             </div>
             <h1 className="text-2xl sm:text-4xl font-display font-extrabold text-white tracking-tight">
               Recently Played
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 font-medium mt-1">
-              Jump right back into your recently launched titles with instant load times.
+              Resume your recently played games.
             </p>
           </div>
         </div>

@@ -51,7 +51,7 @@ export default function CategoryDetailPage() {
         <div className="py-20 text-center glass-panel rounded-2xl border border-arcade-border">
           <Gamepad2 className="w-12 h-12 text-slate-600 mx-auto mb-3" />
           <h3 className="text-base font-bold text-white">No games in this category yet</h3>
-          <p className="text-xs text-slate-400 mt-1">Check back soon — new games arrive with every catalog update.</p>
+          <p className="text-xs text-slate-400 mt-1">Check back soon. New games arrive with every catalog update.</p>
           <Link href="/" className="mt-4 inline-block px-4 py-2 bg-arcade-champagne text-arcade-dark rounded-xl text-xs font-bold">
             Browse All Games
           </Link>

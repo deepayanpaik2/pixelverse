@@ -21,7 +21,7 @@ export function ProfileCover({ bannerUrl, seed, className = '' }: { bannerUrl?: 
         className="absolute inset-0 w-full h-full object-cover select-none"
         draggable={false}
       />
-      {/* Seamless unified ambient vignette */}
+      {/* Ambient vignette */}
       <div className="absolute inset-0 bg-gradient-to-t from-[#090b14] via-[#090b14]/30 to-transparent" />
       <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-black/40 pointer-events-none" />
     </div>

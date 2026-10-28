@@ -133,11 +133,9 @@ async function runSync(options = {}) {
   const referrerUrl = options.referrerUrl || process.env.GD_REFERRER_URL || 'http://localhost:3000';
   const maxGames = parseInt(options.maxGames || process.env.GD_PAGE_SIZE || '100', 10);
 
-  console.log(`\n======================================================`);
-  console.log(`🚀 Starting GameDistribution Catalog Sync`);
-  console.log(`📡 Feed URL: ${feedUrl}`);
-  console.log(`🌐 Referrer URL: ${referrerUrl}`);
-  console.log(`======================================================\n`);
+  console.log('Starting GameDistribution catalog sync');
+  console.log(`Feed URL: ${feedUrl}`);
+  console.log(`Referrer URL: ${referrerUrl}`);
 
   let rawGames = [];
 
@@ -154,13 +152,13 @@ async function runSync(options = {}) {
     }
 
     rawGames = await res.json();
-    console.log(`✓ Successfully downloaded ${rawGames.length} games from GameDistribution feed.`);
+    console.log(`Downloaded ${rawGames.length} games from GameDistribution feed.`);
   } catch (err) {
-    console.warn(`⚠️ Network fetch failed: ${err.message}. Checking for cached seed data...`);
+    console.warn(`Network fetch failed: ${err.message}. Checking for cached seed data...`);
     const seedPath = path.join(__dirname, 'seed-sample.json');
     if (fs.existsSync(seedPath)) {
       rawGames = JSON.parse(fs.readFileSync(seedPath, 'utf-8'));
-      console.log(`✓ Loaded ${rawGames.length} games from offline seed sample.`);
+      console.log(`Loaded ${rawGames.length} games from offline seed sample.`);
     } else {
       throw new Error(`Unable to fetch GameDistribution feed and no local seed available: ${err.message}`);
     }
@@ -223,7 +221,7 @@ async function runSync(options = {}) {
       });
     } catch (err) {
       report.failed++;
-      console.error(`✗ Error processing game ${raw.Title || raw.Md5}:`, err.message);
+      console.error(`Error processing game ${raw.Title || raw.Md5}:`, err.message);
     }
   }
 
@@ -257,7 +255,7 @@ async function runSync(options = {}) {
   // Save Markdown report
   const mdReportPath = path.join(__dirname, '../../GD_SYNC_REPORT.md');
   const md = [
-    `# 🎮 GameDistribution Catalog Sync Report`,
+    `# GameDistribution Catalog Sync Report`,
     ``,
     `- **Sync Timestamp**: ${report.sync_date}`,
     `- **Feed URL**: \`${report.feed_url}\``,
@@ -279,12 +277,10 @@ async function runSync(options = {}) {
   ].join('\n');
   fs.writeFileSync(mdReportPath, md);
 
-  console.log(`\n======================================================`);
-  console.log(`✅ GameDistribution Catalog Sync Complete!`);
-  console.log(`📊 Added: ${report.added} | Updated: ${report.updated} | Total: ${finalGames.length}`);
-  console.log(`📁 Saved to: ${existingRegistryPath}`);
-  console.log(`📄 Report written to: GD_SYNC_REPORT.md`);
-  console.log(`======================================================\n`);
+  console.log('GameDistribution catalog sync complete.');
+  console.log(`Added: ${report.added} | Updated: ${report.updated} | Total: ${finalGames.length}`);
+  console.log(`Saved to: ${existingRegistryPath}`);
+  console.log(`Report written to: GD_SYNC_REPORT.md`);
 
   return report;
 }

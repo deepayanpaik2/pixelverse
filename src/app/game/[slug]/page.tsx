@@ -166,8 +166,7 @@ export default function GamePlayerPage() {
     if (!el) return;
     if (pseudoFs) { setPseudoFs(false); return; }
 
-    // iPhone and iOS devices: Apple restricts standard Element.requestFullscreen() on mobile WebKit.
-    // Use seamless, edge-to-edge CSS pseudo-fullscreen that works flawlessly on every iPhone and iPad.
+    // Mobile WebKit does not support standard Element.requestFullscreen(); fall back to CSS pseudo-fullscreen.
     const isIOS =
       typeof navigator !== 'undefined' &&
       (/iPad|iPhone|iPod/.test(navigator.userAgent || '') ||
@@ -256,7 +255,7 @@ export default function GamePlayerPage() {
         </Link>
       </div>
 
-      {/* Main Game Player Viewport with 3D Cyber Bezel & Ambient Glow */}
+      {/* Game player viewport */}
       <div className="relative group">
         {!(pseudoFs || isFullscreen) && (
           <div className="absolute -inset-3 rounded-[2.5rem] blur-2xl opacity-25 bg-gradient-to-r from-[var(--accent)] to-[var(--accent-secondary)] pointer-events-none transition-opacity duration-500 group-hover:opacity-45" />
@@ -275,7 +274,6 @@ export default function GamePlayerPage() {
                 }`
           }`}
         >
-          {/* Floating Exit Button for iPhone & Pseudo Fullscreen */}
           {pseudoFs && (
             <button
               onClick={() => setPseudoFs(false)}
@@ -286,10 +284,8 @@ export default function GamePlayerPage() {
               <span>Exit</span>
             </button>
           )}
-          {/* Loading / Play Screen Overlay */}
           {!isPlaying ? (
             <div className="relative flex-1 min-h-0 w-full overflow-hidden bg-[#060812] flex items-center justify-center">
-              {/* Deep Cyber Arena Stage Backdrop (Clean, unblurred, luxury gaming space) */}
               <div
                 className="absolute inset-0 pointer-events-none"
                 style={{
@@ -300,7 +296,6 @@ export default function GamePlayerPage() {
               <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-[var(--accent)] opacity-20 blur-3xl pointer-events-none" />
               <div className="absolute -bottom-24 -right-24 w-80 h-80 rounded-full bg-[var(--accent-secondary)] opacity-20 blur-3xl pointer-events-none" />
 
-              {/* Content card */}
               <div className="relative z-10 flex flex-col sm:flex-row items-center gap-6 sm:gap-10 px-6 py-8 max-w-3xl w-full justify-center">
                 <div className="relative shrink-0">
                   <div className="absolute -inset-3 rounded-[2rem] bg-gradient-to-br from-[var(--accent)] to-[var(--accent-secondary)] blur-xl opacity-60" />
@@ -358,9 +353,7 @@ export default function GamePlayerPage() {
               </div>
             </div>
           ) : (
-            /* Live Game Viewport */
             <div className="w-full flex-1 min-h-0 bg-black relative">
-              {/* Background loader: behind iframe (z-0), non-blocking, fades out when iframe loads */}
               {!iframeLoaded && (
                 <div className="absolute inset-0 z-0 flex flex-col items-center justify-center gap-3 bg-[#060810] text-center pointer-events-none select-none">
                   <div className="w-16 h-16 rounded-2xl overflow-hidden border border-white/20 shadow-xl opacity-75 bg-black/60 flex items-center justify-center p-1">
@@ -371,7 +364,6 @@ export default function GamePlayerPage() {
                 </div>
               )}
 
-              {/* Game Iframe: on top (z-10), immediately clickable with zero obstruction */}
               <iframe
                 ref={iframeRef}
                 key={iframeKey}

@@ -2,7 +2,7 @@
   "name": "pixelverse",
   "version": "1.0.0",
   "private": true,
-  "description": "Pixelverse - The Ultimate Social Gaming Universe",
+  "description": "Web portal for browser games with HTML5 catalog, WebRTC rooms, and messaging",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

@@ -18,7 +18,7 @@ export function CategoryChips({ activeCategory }: CategoryChipsProps) {
         data-active={!active}
         className="glass-chip px-3.5 py-2 sm:px-5 sm:py-2.5 rounded-full text-xs sm:text-[13px] font-extrabold whitespace-nowrap text-slate-200 hover:text-white transition-all flex items-center gap-1.5 sm:gap-2 shadow-sm shrink-0"
       >
-        <span>🎮 All Games</span>
+        <span>All Games</span>
       </Link>
 
       {CATEGORIES.map((cat) => (

@@ -78,14 +78,14 @@ export default function SettingsPage() {
             <div className="flex items-center gap-2 mb-1">
               <span className="w-2 h-2 rounded-full bg-[var(--accent)] animate-pulse" />
               <span className="text-[10px] font-mono text-[var(--accent)] font-bold tracking-widest uppercase">
-                // SYSTEM PREFERENCES
+                Preferences
               </span>
             </div>
             <h1 className="text-2xl sm:text-4xl font-display font-extrabold text-white tracking-tight">
               Settings & Themes
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 font-medium mt-1">
-              Customize visual aesthetics, 3D gaming theme engines, and player identity.
+              Customize appearance, themes, and profile options.
             </p>
           </div>
         </div>
@@ -165,10 +165,10 @@ export default function SettingsPage() {
                 onChange={(e) => setStatus(e.target.value as any)}
                 className="w-full bg-[#060810]/80 border border-white/15 rounded-xl p-3 text-white focus:outline-none focus:border-[var(--accent)] transition-all font-semibold"
               >
-                <option value="online">🟢 Online (Available)</option>
-                <option value="idle">🟡 Idle (Away)</option>
-                <option value="dnd">🔴 Do Not Disturb (Gaming)</option>
-                <option value="offline">⚪ Invisible (Offline)</option>
+                <option value="online">Online (Available)</option>
+                <option value="idle">Idle (Away)</option>
+                <option value="dnd">Do Not Disturb (Gaming)</option>
+                <option value="offline">Invisible (Offline)</option>
               </select>
             </div>
 

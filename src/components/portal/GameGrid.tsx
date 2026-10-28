@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { ChevronDown, Sparkles } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { GameManifest } from '@/types';
 import { GameTile } from './GameTile';
 import { playSfx } from '@/lib/sfx';

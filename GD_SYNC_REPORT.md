@@ -1,4 +1,4 @@
-# 🎮 GameDistribution Catalog Sync Report
+# GameDistribution Catalog Sync Report
 
 - **Sync Timestamp**: 2026-10-24T15:44:11.980Z
 - **Feed URL**: `https://catalog.api.gamedistribution.com/api/v2.0/rss/All/?format=json`

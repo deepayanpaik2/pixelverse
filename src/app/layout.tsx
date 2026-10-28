@@ -12,7 +12,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://pixelverse.local'),
   title: {
-    default: 'Pixelverse — Instant Free Online Games Portal',
+    default: 'Pixelverse: Play Free Online Games',
     template: '%s | Pixelverse',
   },
   description: 'Play thousands of free online games instantly. No downloads, no login required. Discover high-performance HTML5, WebGL, and retro arcade titles.',
@@ -26,12 +26,12 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://pixelverse.local',
     siteName: 'Pixelverse',
-    title: 'Pixelverse — Instant Free Online Games Portal',
+    title: 'Pixelverse: Play Free Online Games',
     description: 'Instant-play browser games with zero downloads. Silky smooth 60 FPS Canvas and WebGL games.',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Pixelverse — Instant Free Online Games Portal',
+    title: 'Pixelverse: Play Free Online Games',
     description: 'Play free online games instantly on any device. Zero downloads, no account needed.',
   },
 };
