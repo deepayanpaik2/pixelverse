@@ -75,12 +75,6 @@ export default function GamePlayerPage() {
     return () => clearTimeout(t);
   }, [isPlaying, onSite, iframeKey, hintDismissed, iframeLoaded]);
 
-  useEffect(() => {
-    if (!isPlaying || onSite || hintDismissed || iframeLoaded) return;
-    const t = setTimeout(() => setShowStuckHint(true), 8000);
-    return () => clearTimeout(t);
-  }, [isPlaying, onSite, iframeKey, hintDismissed, iframeLoaded]);
-
   // Tell the page a game is running so the falling-glitter backdrop stops using the CPU
   useEffect(() => {
     const el = document.documentElement;
@@ -257,7 +251,7 @@ export default function GamePlayerPage() {
 
       {/* Game player viewport */}
       <div className="relative group">
-        {!(pseudoFs || isFullscreen) && (
+        {!(pseudoFs || isFullscreen || isPlaying) && (
           <div className="absolute -inset-3 rounded-[2.5rem] blur-2xl opacity-25 bg-gradient-to-r from-[var(--accent)] to-[var(--accent-secondary)] pointer-events-none transition-opacity duration-500 group-hover:opacity-45" />
         )}
         <div
@@ -265,7 +259,7 @@ export default function GamePlayerPage() {
           className={`flex flex-col overflow-hidden ${
             pseudoFs || isFullscreen
               ? 'fixed inset-0 z-[99999] w-screen h-[100dvh] bg-black m-0 p-0 rounded-none border-0'
-              : `stage-open opal-edge [--edge-opacity:.6] relative glass-panel border border-white/20 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.95)] ${
+              : `${isPlaying ? 'relative bg-[#060810] border border-white/15 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.95)]' : 'stage-open opal-edge [--edge-opacity:.6] relative glass-panel border border-white/20 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.95)]'} ${
                   isFitScreen
                     ? 'rounded-3xl h-[88vh] min-h-[480px] w-full transition-[height] duration-300'
                     : game.orientation === 'portrait'
@@ -378,13 +372,14 @@ export default function GamePlayerPage() {
                 sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-pointer-lock allow-orientation-lock allow-presentation allow-modals allow-downloads"
                 allow="accelerometer; autoplay; camera; clipboard-read; clipboard-write; display-capture; fullscreen; gamepad; geolocation; gyroscope; microphone; midi; payment; picture-in-picture; screen-wake-lock; web-share"
                 allowFullScreen
-                className="relative z-10 w-full h-full border-none bg-transparent"
+                className="relative z-10 w-full h-full border-none bg-black block"
+                style={{ contain: 'strict' }}
               />
             </div>
           )}
 
           {/* Viewport Control Bar (Bottom Overlay) */}
-          <div className="relative shrink-0 z-40 bg-[#060810]/95 backdrop-blur-xl px-4 py-2.5 border-t border-white/10 flex items-center justify-between pb-[max(0.625rem,env(safe-area-inset-bottom))]">
+          <div className="relative shrink-0 z-40 bg-[#060810] px-4 py-2.5 border-t border-white/10 flex items-center justify-between pb-[max(0.625rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center gap-2.5 min-w-0">
               <span className="w-2 h-2 rounded-full bg-[var(--accent)] animate-pulse shrink-0" />
               <h2 className="font-display font-extrabold text-sm text-white truncate max-w-[170px] sm:max-w-xs">{game.title}</h2>

@@ -164,15 +164,25 @@ export function FallingGlitter() {
       ctx.globalAlpha = 1;
     };
 
+    let running = false;
     const isPaused = () => document.hidden || document.documentElement.dataset.playing === 'true';
+
+    const start = () => {
+      if (running || isPaused()) return;
+      running = true;
+      last = performance.now();
+      raf = requestAnimationFrame(frame);
+    };
+
+    const stop = () => {
+      if (!running) return;
+      running = false;
+      cancelAnimationFrame(raf);
+    };
 
     const frame = (now: number) => {
       if (isPaused()) {
-        // idle cheaply; resume when the tab or the game state changes
-        timer = window.setTimeout(() => {
-          last = performance.now();
-          raf = requestAnimationFrame(frame);
-        }, 400);
+        running = false;
         return;
       }
       // Frame-rate throttle to ~30 FPS for laptop battery and thermal safety
@@ -200,21 +210,41 @@ export function FallingGlitter() {
       wind = Math.max(-120, Math.min(260, wind + dy * 1.6));
     };
 
+    const onVisibilityChange = () => {
+      if (document.hidden) stop();
+      else start();
+    };
+
+    const observer = new MutationObserver(() => {
+      if (document.documentElement.dataset.playing === 'true') {
+        stop();
+      } else {
+        start();
+      }
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-playing'] });
+
     resize();
     window.addEventListener('resize', resize);
+    document.addEventListener('visibilitychange', onVisibilityChange);
 
     if (reduced) {
       // Static scatter without animation
       draw(0);
-      return () => window.removeEventListener('resize', resize);
+      return () => {
+        observer.disconnect();
+        document.removeEventListener('visibilitychange', onVisibilityChange);
+        window.removeEventListener('resize', resize);
+      };
     }
 
     window.addEventListener('scroll', onScroll, { passive: true });
-    raf = requestAnimationFrame(frame);
+    start();
 
     return () => {
-      cancelAnimationFrame(raf);
-      clearTimeout(timer);
+      stop();
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', onVisibilityChange);
       window.removeEventListener('resize', resize);
       window.removeEventListener('scroll', onScroll);
     };

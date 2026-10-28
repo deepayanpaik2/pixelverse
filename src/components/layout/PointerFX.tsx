@@ -63,6 +63,7 @@ export function PointerFX() {
     };
 
     const onDown = (e: PointerEvent) => {
+      if (document.documentElement.dataset.playing === 'true') return;
       if (e.pointerType === 'mouse' && e.button !== 0) return;
       unlockSfx();
       const t = e.target instanceof Element ? e.target : null;
@@ -76,6 +77,7 @@ export function PointerFX() {
 
     let lastHover: Element | null = null;
     const onOver = (e: PointerEvent) => {
+      if (document.documentElement.dataset.playing === 'true') return;
       if (e.pointerType !== 'mouse') return;
       const t = e.target instanceof Element ? e.target.closest(PLAYABLE) : null;
       if (t && t !== lastHover) playSfx('hover');

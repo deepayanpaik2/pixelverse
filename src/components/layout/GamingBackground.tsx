@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/features/auth/AuthContext';
 
 /**
@@ -10,13 +10,24 @@ import { useAuth } from '@/features/auth/AuthContext';
 export function GamingBackground() {
   const { preferences } = useAuth();
   const intensity = preferences?.animation_intensity ?? 'full';
+  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
-    if (intensity === 'minimal') return;
+    const update = () => {
+      setIsPlaying(document.documentElement.dataset.playing === 'true');
+    };
+    update();
+    const observer = new MutationObserver(update);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-playing'] });
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (intensity === 'minimal' || isPlaying) return;
     const root = document.documentElement;
     root.classList.add('gaming-bg');
     return () => root.classList.remove('gaming-bg');
-  }, [intensity]);
+  }, [intensity, isPlaying]);
 
   // Generate lightweight deterministic floating cyber particles (lean count for zero thermal overhead)
   const particles = useMemo(() => {
@@ -32,7 +43,7 @@ export function GamingBackground() {
     }));
   }, []);
 
-  if (intensity === 'minimal') return null;
+  if (intensity === 'minimal' || isPlaying) return null;
 
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden z-[-12]" aria-hidden="true">
