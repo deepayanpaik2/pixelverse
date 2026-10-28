@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Heart, Gamepad2, Sparkles } from 'lucide-react';
+import { Heart, Sparkles } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { FEATURED_GAMES } from '@/lib/games';
 import { GameGrid } from '@/components/portal/GameGrid';

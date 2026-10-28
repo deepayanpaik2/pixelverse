@@ -2,8 +2,8 @@
 
 import React, { useMemo } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Gamepad2, Sparkles, Users, Smartphone, Flame, Compass } from 'lucide-react';
-import { CATEGORIES, gameInCategory, getNewGames } from '@/lib/games';
+import { ArrowRight, Gamepad2, Sparkles, Users, Smartphone, Compass } from 'lucide-react';
+import { CATEGORIES, getNewGames } from '@/lib/games';
 import { SpotlightHero } from '@/components/portal/SpotlightHero';
 import { CategoryChips } from '@/components/portal/CategoryChips';
 import { GameTile } from '@/components/portal/GameTile';

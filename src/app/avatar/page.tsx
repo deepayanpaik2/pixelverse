@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Sparkles, Gamepad2, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { AvatarStudio } from '@/components/avatar/AvatarStudio';
 import { useAuth } from '@/features/auth/AuthContext';
 

@@ -15,7 +15,6 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { mockStore } from '@/lib/supabase/mock-store';
-import { Profile } from '@/types';
 
 export default function FriendsPage() {
   const { user } = useAuth();

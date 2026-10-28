@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Clock, Gamepad2, Play } from 'lucide-react';
+import { Clock, Play } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { mockStore } from '@/lib/supabase/mock-store';
 import { GameTile } from '@/components/portal/GameTile';

@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import { FEATURED_GAMES, getAllCategories, gameInCategory } from '@/lib/games';
 import { useAuth } from '@/features/auth/AuthContext';
-import { mockStore } from '@/lib/supabase/mock-store';
 import { GameGrid } from '@/components/portal/GameGrid';
 import { playSfx } from '@/lib/sfx';
 

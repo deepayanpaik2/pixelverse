@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { FEATURED_GAMES, CATEGORIES, gameInCategory, categorySlug } from '@/lib/games';
+import { FEATURED_GAMES, CATEGORIES, gameInCategory } from '@/lib/games';
 
 export async function GET(request: Request) {
   try {

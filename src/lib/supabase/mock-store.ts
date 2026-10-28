@@ -16,7 +16,7 @@ import {
   Report,
   CategoryInfo
 } from '@/types';
-import { FEATURED_GAMES, CATEGORIES } from '../games';
+import { FEATURED_GAMES } from '../games';
 
 const SEED_PROFILES: Profile[] = [
   {

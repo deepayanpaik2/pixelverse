@@ -26,7 +26,6 @@ import {
   Sparkle
 } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
-import { CATEGORIES } from '@/lib/games';
 import { playSfx } from '@/lib/sfx';
 
 export function Sidebar() {
