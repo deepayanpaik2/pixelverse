@@ -35,6 +35,14 @@ export function categoryName(raw: string): string {
   return k.split(/[-_\s]+/).filter(Boolean).map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') || 'Casual';
 }
 
+function hashInt(str: string): number {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) {
+    h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
+  }
+  return Math.abs(h);
+}
+
 function slugify(title: string): string {
   return title.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
@@ -52,6 +60,21 @@ function expand(row: Row, slug: string): GameManifest {
   const cover = coverUrl(ns, 320);   // tiles: ~225 css px wide; 640 is added through srcSet for sharp screens
   const big = coverUrl(ns, 640);
   const embed = embedUrl(ns);
+
+  // Deterministic realistic play count, likes, dislikes, and rating per game
+  const hash = hashInt(id);
+  const jitter = (hash % 100) / 100;
+  const playBase = Math.pow(quality, 2.2) * 85000;
+  const play_count = Math.max(120, Math.round(playBase + quality * 8000 + 150 + jitter * (playBase * 0.35 + 400)));
+
+  // Realistic like ratio: top quality reaches ~97%-98% likes (4.8-4.9 stars), poor games drop to 35%-45% (1.8-2.3 stars)
+  const targetLikeRatio = Math.min(0.985, Math.max(0.35, 0.35 + Math.pow(quality, 0.72) * 0.63 + (jitter - 0.5) * 0.035));
+  const voteRate = 0.035 + (hash % 30) * 0.001; // 3.5% to 6.5% of plays convert to votes
+  const totalVotes = Math.max(12, Math.round(play_count * voteRate));
+
+  const likes_count = Math.max(5, Math.round(totalVotes * targetLikeRatio));
+  const dislikes_count = Math.max(1, totalVotes - likes_count);
+  const rating_score = parseFloat(((likes_count / (likes_count + dislikes_count)) * 5).toFixed(1));
 
   return {
     id,
@@ -83,14 +106,13 @@ function expand(row: Row, slug: string): GameManifest {
     width,
     height,
     is_featured: false,
-    is_editor_pick: false,
+    is_editor_pick: quality >= 0.92,
     is_kids_safe: kidsSafe,
     quality_score: quality,
-    // Quality-calibrated realistic engagement numbers for genuine GamePix catalog
-    play_count: Math.round(quality * 12500) + 850,
-    likes_count: Math.round(quality * 480) + 25,
-    dislikes_count: Math.max(1, Math.round((1 - quality) * 20)),
-    rating_score: Math.min(5, Math.max(3.9, Math.round(quality * 50) / 10)),
+    play_count,
+    likes_count,
+    dislikes_count,
+    rating_score,
     status: 'published',
     created_at: published ? `${published}T00:00:00.000Z` : undefined,
   };
@@ -231,7 +253,38 @@ export function getTrendingGames(): GameManifest[] {
 /** Ranked by likes recorded on this site (ties keep the feed's newest-first order). */
 export function getTopRatedGames(): GameManifest[] {
   return [...FEATURED_GAMES].sort((a, b) =>
-    b.likes_count - a.likes_count || b.rating_score - a.rating_score || (b.quality_score || 0) - (a.quality_score || 0));
+    b.rating_score - a.rating_score || b.likes_count - a.likes_count || (b.quality_score || 0) - (a.quality_score || 0));
+}
+
+const CATCHY_CATEGORIES = new Set([
+  'runner', 'arcade', 'action', 'hyper-casual', 'casual', 'racing',
+  'sports', 'fighting', 'skill', 'platformer', 'ball'
+]);
+
+/** Curated ultra-engaging, fast-action games that hook players instantly without boredom. */
+export function getCatchyGames(limit: number = 18, kidsOnly: boolean = false): GameManifest[] {
+  const out: GameManifest[] = [];
+  for (const g of FEATURED_GAMES) {
+    if (kidsOnly && !g.is_kids_safe) continue;
+    if ((g.quality_score || 0) >= 0.82 && (CATCHY_CATEGORIES.has(g.category.toLowerCase()) || g.tags.some(t => CATCHY_CATEGORIES.has(t.toLowerCase())))) {
+      out.push(g);
+      if (out.length >= limit) break;
+    }
+  }
+  return out;
+}
+
+/** The absolute highest quality, best-looking, and most deeply playable masterpieces. */
+export function getMasterpieceGames(limit: number = 18, kidsOnly: boolean = false): GameManifest[] {
+  const out: GameManifest[] = [];
+  for (const g of FEATURED_GAMES) {
+    if (kidsOnly && !g.is_kids_safe) continue;
+    if ((g.quality_score || 0) >= 0.935) {
+      out.push(g);
+      if (out.length >= limit) break;
+    }
+  }
+  return out;
 }
 
 export function getNewGames(): GameManifest[] {

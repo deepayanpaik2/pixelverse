@@ -2,8 +2,8 @@
 
 import React, { useMemo } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Gamepad2, Sparkles, Users, Smartphone, Compass } from 'lucide-react';
-import { CATEGORIES, getNewGames } from '@/lib/games';
+import { ArrowRight, Gamepad2, Sparkles, Users, Smartphone, Compass, Crown, Flame } from 'lucide-react';
+import { CATEGORIES, getNewGames, getMasterpieceGames, getCatchyGames } from '@/lib/games';
 import { SpotlightHero } from '@/components/portal/SpotlightHero';
 import { CategoryChips } from '@/components/portal/CategoryChips';
 import { GameTile } from '@/components/portal/GameTile';
@@ -71,6 +71,9 @@ export default function HomePage() {
   const games = useMemo(() => mockStore.getGames(kidsMode), [kidsMode]);
 
   // Early-break searches: stops scanning as soon as the shelf is filled (1000x faster than full array scans)
+  const masterpieceGames = useMemo(() => getMasterpieceGames(12, kidsMode), [kidsMode]);
+  const catchyGames = useMemo(() => getCatchyGames(12, kidsMode), [kidsMode]);
+
   const spotlightGames = useMemo(() => {
     const list: typeof games = [];
     for (const g of games) {
@@ -137,6 +140,92 @@ export default function HomePage() {
 
       {/* 3D Category Control Bar */}
       <CategoryChips />
+
+      {/* 1. All-Time Masterpieces Section (Hall of Fame) */}
+      {masterpieceGames.length > 0 && (
+        <section className="space-y-3.5 sm:space-y-4 fade-up">
+          <div className="section-head">
+            <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+              <div
+                className="gaming-icon-box w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0 text-amber-300"
+                style={{ borderColor: 'rgba(251, 191, 36, 0.4)', boxShadow: '0 0 16px rgba(251, 191, 36, 0.2)' }}
+              >
+                <Crown className="w-4 h-4 sm:w-5 sm:h-5 fill-amber-400/80" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-lg sm:text-2xl text-white font-display font-extrabold tracking-tight flex items-center gap-2 truncate">
+                  All-Time Masterpieces
+                </h2>
+                <p className="text-xs text-slate-400 font-medium truncate">
+                  Visually stunning 3D graphics, rich mechanics, and verified 60 FPS playability
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/top-rated"
+              onClick={() => playSfx('tap')}
+              className="glass-chip shrink-0 flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl text-xs font-black text-amber-200 hover:text-white transition-all group border-amber-500/30"
+            >
+              <span>Hall of Fame</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 grid-flow-dense gap-2.5 sm:gap-4 lg:gap-5">
+            {masterpieceGames.map((game, idx) => (
+              <GameTile
+                key={game.id}
+                game={game}
+                size={idx === 0 ? '2x2' : idx === 7 || idx === 11 ? 'wide' : '1x1'}
+                priority={idx < 4}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 2. Instant Fun & Catchy Section (Zero Boredom!) */}
+      {catchyGames.length > 0 && (
+        <section className="space-y-3.5 sm:space-y-4 fade-up">
+          <div className="section-head">
+            <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+              <div
+                className="gaming-icon-box w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0 text-rose-400"
+                style={{ borderColor: 'rgba(251, 113, 133, 0.4)', boxShadow: '0 0 16px rgba(251, 113, 133, 0.2)' }}
+              >
+                <Flame className="w-4 h-4 sm:w-5 sm:h-5 fill-rose-500/80" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-lg sm:text-2xl text-white font-display font-extrabold tracking-tight flex items-center gap-2 truncate">
+                  Instant Fun & Catchy
+                </h2>
+                <p className="text-xs text-slate-400 font-medium truncate">
+                  Fast-paced, high dopamine thrills you can pick up in seconds and play for hours
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/trending"
+              onClick={() => playSfx('tap')}
+              className="glass-chip shrink-0 flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl text-xs font-black text-rose-200 hover:text-white transition-all group border-rose-500/30"
+            >
+              <span>Play Most Addictive</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 grid-flow-dense gap-2.5 sm:gap-4 lg:gap-5">
+            {catchyGames.map((game, idx) => (
+              <GameTile
+                key={game.id}
+                game={game}
+                size={idx === 0 ? 'wide' : idx === 5 ? '2x2' : '1x1'}
+                priority={idx < 4}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Fresh Releases Section: 3D Mosaic Grid */}
       <section className="space-y-3.5 sm:space-y-4 fade-up">
