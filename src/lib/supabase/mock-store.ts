@@ -27,7 +27,7 @@ const SEED_PROFILES: Profile[] = [
     banner_url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=1200',
     bio: 'Lead Arcade Architect and High-Score Champion. Playing since 1999.',
     status: 'online',
-    custom_status: 'Building next-gen browser games',
+    custom_status: 'Building browser games',
     favorite_categories: ['Arcade', 'Action', 'Puzzle'],
     level: 42,
     xp: 18450,

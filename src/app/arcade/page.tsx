@@ -64,7 +64,7 @@ function ArcadeContent() {
             <div className="flex items-center gap-2 mb-1">
               <span className="w-2 h-2 rounded-full bg-[var(--accent)] animate-pulse" />
               <span className="text-[10px] font-mono text-[var(--accent)] font-bold tracking-widest uppercase">
-                // ARCADE DIRECTORY
+                Arcade Directory
               </span>
             </div>
             <h1 className="text-2xl sm:text-4xl font-display font-extrabold text-white tracking-tight">

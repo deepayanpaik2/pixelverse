@@ -12,7 +12,7 @@ export default function AuthCallbackPage() {
     let done = false;
     const go = (path: string) => { if (!done) { done = true; router.replace(path); } };
 
-    // Email-confirmation / magic links land here with the session in the URL
+    // Email confirmation and sign-in links land here with the session in the URL
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) go('/'); // ProfileGate forwards new accounts to /onboarding
     });

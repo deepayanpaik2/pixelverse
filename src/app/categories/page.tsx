@@ -50,14 +50,14 @@ export default function CategoriesPage() {
             <div className="flex items-center gap-2 mb-1">
               <span className="w-2 h-2 rounded-full bg-[var(--accent)] animate-pulse" />
               <span className="text-[10px] font-mono text-[var(--accent)] font-bold tracking-widest uppercase">
-                // CATALOG MATRIX
+                Categories
               </span>
             </div>
             <h1 className="text-2xl sm:text-4xl font-display font-extrabold text-white tracking-tight">
               All Game Categories
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 font-medium mt-1">
-              Explore the entire gaming universe categorized into {CATEGORIES.length} genre matrices.
+              Browse the catalog across {CATEGORIES.length} game categories.
             </p>
           </div>
         </div>

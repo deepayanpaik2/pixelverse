@@ -66,7 +66,7 @@ export function AvatarStudio({
     { id: 'background', label: 'Stage', icon: Layers, count: BACKGROUND_STAGES.length },
   ];
 
-  // Randomizer: generate awesome random combinations
+  // Generate random combinations
   const randomize = useCallback(() => {
     playSfx('launch');
     const randomItem = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];

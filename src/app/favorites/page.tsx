@@ -24,14 +24,14 @@ export default function FavoritesPage() {
             <div className="flex items-center gap-2 mb-1">
               <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse" />
               <span className="text-[10px] font-mono text-rose-400 font-bold tracking-widest uppercase">
-                // VAULT MATRIX
+                Favorites
               </span>
             </div>
             <h1 className="text-2xl sm:text-4xl font-display font-extrabold text-white tracking-tight">
-              My Favorites Vault
+              Favorite Games
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 font-medium mt-1">
-              {user ? 'Your personal synced library of bookmarked games.' : 'Saved on this browser. Sign in to sync across your phone and PC!'}
+              {user ? 'Your personal library of bookmarked games.' : 'Saved on this browser. Sign in to sync across devices.'}
             </p>
           </div>
         </div>

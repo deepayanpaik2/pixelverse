@@ -25,7 +25,7 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-xs leading-relaxed text-slate-400 font-medium">
-              Next-generation browser gaming platform. Lightning instant play, 3D gaming universe, zero installs, across mobile and desktop.
+              Browser gaming platform. Instant play, zero installs, accessible on mobile and desktop.
             </p>
             <div className="flex items-center gap-2 text-[11px] text-[var(--accent)] font-mono">
               <span className="w-2 h-2 rounded-full bg-[var(--accent)] animate-ping" />
@@ -146,7 +146,7 @@ export function Footer() {
             <span>© {new Date().getFullYear()} Pixelverse Gaming Universe.</span>
             <span className="hidden sm:inline text-slate-600">•</span>
             <span className="flex items-center gap-1.5 text-slate-300 font-semibold">
-              Crafted with <Heart className="w-3.5 h-3.5 fill-rose-500 text-rose-500 inline animate-pulse" /> by <a href="https://github.com/deepayanpaik2" target="_blank" rel="noopener noreferrer" className="text-[var(--accent)] hover:underline font-bold">Deepayan</a>
+              Maintained by <a href="https://github.com/deepayanpaik2" target="_blank" rel="noopener noreferrer" className="text-[var(--accent)] hover:underline font-bold">Deepayan</a>
             </span>
           </div>
           <div className="flex items-center gap-2 text-slate-400">
