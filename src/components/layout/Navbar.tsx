@@ -281,7 +281,7 @@ export function Navbar() {
         </div>
 
         {/* Center Section: 3D Cyber Search Terminal */}
-        <div className="hidden sm:flex flex-1 max-w-md lg:max-w-lg relative">
+        <div className="hidden md:flex flex-1 min-w-[140px] max-w-xs lg:max-w-sm xl:max-w-md relative">
           <form onSubmit={handleSearchSubmit} className="relative w-full">
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-focus-within:text-[var(--accent)] transition-colors" />
             <input
@@ -343,7 +343,7 @@ export function Navbar() {
         </div>
 
         {/* Right Section: Aligned 3D Gaming Action Controls */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Mobile Search Toggle Button */}
           <button
             type="button"
@@ -364,7 +364,7 @@ export function Navbar() {
               setKidsMode(!kidsMode);
               playSfx('toggle');
             }}
-            className={`hidden sm:flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-black transition-all btn-3d shrink-0 ${
+            className={`hidden 2xl:flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-black transition-all btn-3d shrink-0 ${
               kidsMode
                 ? 'bg-emerald-400 text-black shadow-[0_4px_16px_rgba(52,211,153,0.5)] border border-emerald-300'
                 : 'bg-black/50 border border-white/15 text-slate-300 hover:text-white hover:border-white/30'
@@ -384,7 +384,7 @@ export function Navbar() {
           <Link
             href="/submit"
             onClick={() => playSfx('tap')}
-            className="hidden lg:flex items-center gap-2 px-3.5 py-2 rounded-xl bg-black/50 border border-white/15 text-xs font-black text-slate-200 hover:text-[var(--accent)] hover:border-[var(--accent)]/50 transition-all btn-3d shrink-0"
+            className="hidden 2xl:flex items-center gap-2 px-3.5 py-2 rounded-xl bg-black/50 border border-white/15 text-xs font-black text-slate-200 hover:text-[var(--accent)] hover:border-[var(--accent)]/50 transition-all btn-3d shrink-0"
           >
             <Upload className="w-3.5 h-3.5 text-[var(--accent)]" />
             <span>Submit</span>
@@ -394,7 +394,7 @@ export function Navbar() {
           <Link
             href="/avatar"
             onClick={() => playSfx('tap')}
-            className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-pink-500/15 via-purple-500/15 to-cyan-500/15 border border-pink-500/30 hover:border-pink-400 text-xs font-black text-white hover:shadow-[0_0_15px_rgba(236,72,153,0.35)] transition-all btn-3d shrink-0"
+            className="hidden xl:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-pink-500/15 via-purple-500/15 to-cyan-500/15 border border-pink-500/30 hover:border-pink-400 text-xs font-black text-white hover:shadow-[0_0_15px_rgba(236,72,153,0.35)] transition-all btn-3d shrink-0"
             title="Custom Roblox & Cyberpunk Avatar Studio"
           >
             <Sparkles className="w-3.5 h-3.5 text-pink-400 animate-pulse" />
@@ -442,7 +442,7 @@ export function Navbar() {
               aria-label="Select Gaming Theme"
             >
               <Palette className="w-4 h-4 text-[var(--accent)] drop-shadow-[0_0_8px_var(--accent)] shrink-0" />
-              <span className="hidden xl:inline text-[11px] uppercase tracking-wide">Theme</span>
+              <span className="hidden 2xl:inline text-[11px] uppercase tracking-wide">Theme</span>
             </button>
 
             {/* Luxurious 3D Theme Customizer Dropdown Drawer */}
@@ -525,7 +525,7 @@ export function Navbar() {
           </div>
 
           {/* i18n Language Dropdown */}
-          <div className="relative hidden sm:block" ref={langRef}>
+          <div className="relative hidden lg:block" ref={langRef}>
             <button
               onClick={() => {
                 setShowLangMenu(!showLangMenu);
@@ -571,7 +571,7 @@ export function Navbar() {
           <Link
             href="/favorites"
             onClick={() => playSfx('tap')}
-            className="hidden sm:flex p-2 sm:px-3 sm:py-2 rounded-xl bg-black/50 border border-white/15 text-slate-300 hover:text-white hover:border-white/30 transition-all relative items-center gap-1.5 btn-3d shrink-0"
+            className="hidden 2xl:flex p-2 sm:px-3 sm:py-2 rounded-xl bg-black/50 border border-white/15 text-slate-300 hover:text-white hover:border-white/30 transition-all relative items-center gap-1.5 btn-3d shrink-0"
             title="Saved Favorites"
           >
             <Heart className="w-4 h-4 text-rose-400" />
@@ -603,7 +603,7 @@ export function Navbar() {
                   alt=""
                   className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg object-cover border border-white/20 shrink-0"
                 />
-                <span className="text-xs font-black text-white hidden md:block max-w-[85px] truncate pr-1">
+                <span className="text-xs font-black text-white hidden md:block max-w-[65px] lg:max-w-[80px] xl:max-w-[95px] truncate pr-0.5">
                   {user.display_name}
                 </span>
               </button>

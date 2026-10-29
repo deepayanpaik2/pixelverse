@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   Play,
-  Dices,
   Sparkles,
   ChevronLeft,
   ChevronRight,
@@ -18,7 +17,6 @@ import {
 import { GameManifest } from '@/types';
 import { useAuth } from '@/features/auth/AuthContext';
 import { playSfx } from '@/lib/sfx';
-import { GameRouletteModal } from './GameRouletteModal';
 
 interface SpotlightHeroProps {
   games: GameManifest[];
@@ -27,7 +25,6 @@ interface SpotlightHeroProps {
 export function SpotlightHero({ games }: SpotlightHeroProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [showRoulette, setShowRoulette] = useState(false);
   const { favorites, toggleFavorite } = useAuth();
   const coverRef = useRef<HTMLDivElement>(null);
 
@@ -176,19 +173,6 @@ export function SpotlightHero({ games }: SpotlightHeroProps) {
                 }`}
               />
               <span className="sm:hidden">{isFav ? 'Saved' : 'Favorite'}</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setShowRoulette(true);
-                playSfx('tap');
-              }}
-              className="px-5 py-3 sm:py-3.5 rounded-full bg-white/[0.08] hover:bg-white/15 border border-white/20 text-white font-black text-xs sm:text-sm tracking-wide flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md btn-3d"
-              title="Surprise Me! Instant Game Roulette"
-            >
-              <Dices className="w-4 h-4 text-[var(--accent)]" />
-              <span>Surprise Me</span>
             </button>
 
             <div className="flex items-center justify-center sm:justify-start gap-2 text-[10px] sm:text-[11px] font-bold text-slate-300 uppercase tracking-wide">
