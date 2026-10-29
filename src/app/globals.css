@@ -958,3 +958,30 @@ button, a[role="button"], [data-sfx] {
 /* Transparent body when gaming bg is active */
 html.gaming-bg { background: transparent !important; }
 body.gaming-bg { background: transparent !important; }
+
+
+/* Custom lightweight scrollbar for modals & party rooms */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* Potato PC & Potato Mobile GPU Optimizations: disable heavy backdrop filters on weak GPUs */
+@media (max-width: 640px) {
+  .drawer-neon {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background-color: rgba(9, 11, 20, 0.98) !important;
+  }
+}

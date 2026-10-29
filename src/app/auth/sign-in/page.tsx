@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Gamepad2, Lock, Mail, ArrowRight } from 'lucide-react';
+import { Gamepad2, Lock, Mail, ArrowRight, CheckCircle2, Sparkles, Loader2 } from 'lucide-react';
+import { playSfx } from '@/lib/sfx';
 import { useAuth } from '@/features/auth/AuthContext';
 
 export default function SignInPage() {
@@ -13,25 +14,62 @@ export default function SignInPage() {
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [signedInUser, setSignedInUser] = useState<string | null>(null);
+
+  // Prefetch home route immediately on mount so redirect is instant
+  React.useEffect(() => {
+    router.prefetch('/');
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting || signedInUser) return;
     setIsSubmitting(true);
     setErrorMsg('');
 
     const res = await signIn(email, password);
-    setIsSubmitting(false);
 
     if (res.success) {
-      router.push('/');
+      const uname = email.split('@')[0];
+      setSignedInUser(uname);
+      playSfx('launch');
+      // Snappy 450ms transition so user enjoys the sign-in confirmation animation
+      setTimeout(() => {
+        router.replace('/');
+      }, 450);
     } else {
+      setIsSubmitting(false);
       setErrorMsg(res.error || 'Failed to sign in. Please verify your credentials.');
     }
   };
 
   return (
     <div className="min-h-[calc(100vh-160px)] flex items-center justify-center p-4">
-      <div className="max-w-md w-full glass-panel p-8 rounded-2xl border border-arcade-border shadow-2xl space-y-6">
+      <div className="max-w-md w-full glass-panel p-8 rounded-2xl border border-arcade-border shadow-2xl space-y-6 animate-in fade-in zoom-in-95 duration-200">
+        {signedInUser ? (
+          <div className="py-8 text-center space-y-4 animate-in zoom-in-90 duration-300">
+            <div className="relative w-16 h-16 mx-auto flex items-center justify-center">
+              <div className="absolute inset-0 rounded-full bg-emerald-400/20 blur-xl animate-pulse" />
+              <div className="relative w-16 h-16 rounded-2xl bg-emerald-500/20 border-2 border-emerald-400 flex items-center justify-center text-emerald-300 shadow-[0_0_24px_rgba(52,211,153,0.6)]">
+                <CheckCircle2 className="w-8 h-8" />
+              </div>
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-white flex items-center justify-center gap-1.5">
+                Signed In! <Sparkles className="w-4 h-4 text-emerald-400" />
+              </h2>
+              <p className="text-xs text-slate-300 mt-1">
+                Welcome back, <span className="text-arcade-champagne font-bold">@{signedInUser}</span>
+              </p>
+            </div>
+            {/* Quick animated progress indicator */}
+            <div className="w-48 mx-auto h-1.5 rounded-full bg-white/10 overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-emerald-400 to-arcade-champagne animate-pulse w-full" />
+            </div>
+            <p className="text-[11px] text-slate-400 font-medium">Entering Pixelverse…</p>
+          </div>
+        ) : (
+          <>
         <div className="text-center space-y-2">
           <div className="w-12 h-12 mx-auto bg-arcade-champagne/10 border border-arcade-champagne/30 rounded-xl flex items-center justify-center text-arcade-champagne mb-2 shadow-champagne-glow">
             <Gamepad2 className="w-6 h-6" />
@@ -98,6 +136,8 @@ export default function SignInPage() {
             Create an Account
           </Link>
         </div>
+          </>
+        )}
       </div>
     </div>
   );

@@ -109,10 +109,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Load profile and preferences from Supabase
   const loadRealUser = useCallback(async (userId: string, meta?: Record<string, any>) => {
-    let { data: row } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
+    // Parallelize profile and preferences queries for 2x faster loading
+    const [profileRes, prefRes] = await Promise.all([
+      supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
+      supabase.from('user_preferences').select('*').eq('user_id', userId).maybeSingle(),
+    ]);
 
+    let row = profileRes.data;
     if (!row) {
-      // Safety net if the signup trigger has not been installed yet
       const username = cleanUsername(meta?.username || '') || `user_${userId.slice(0, 8)}`;
       const ins = await supabase
         .from('profiles')
@@ -126,12 +130,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const profile = rowToProfile(row);
     setUser(profile);
 
-    const { data: prefRow } = await supabase.from('user_preferences').select('*').eq('user_id', userId).maybeSingle();
-    if (prefRow) {
-      setPreferences({ ...defaultPreferences, ...prefRow, user_id: userId });
-    } else {
-      setPreferences({ ...defaultPreferences, user_id: userId });
-    }
+    const prefRow = prefRes.data;
+    const userPrefs = prefRow ? { ...defaultPreferences, ...prefRow, user_id: userId } : { ...defaultPreferences, user_id: userId };
+    setPreferences(userPrefs);
+
+    try {
+      localStorage.setItem('playverse_auth_cache', JSON.stringify({ profile, prefs: userPrefs }));
+      localStorage.setItem('playverse_current_user_id', userId);
+    } catch {}
+
     setFavorites(mockStore.getFavorites(userId));
     return profile;
   }, []);
@@ -146,6 +153,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (savedPrefs) {
         try { setPreferences(prev => ({ ...prev, ...JSON.parse(savedPrefs) })); } catch {}
       }
+      // Instant cache hydration: no delay, zero loading wait
+      try {
+        const cached = localStorage.getItem('playverse_auth_cache');
+        if (cached) {
+          const { profile, prefs } = JSON.parse(cached);
+          if (profile) setUser(profile);
+          if (prefs) setPreferences(prefs);
+        }
+      } catch {}
     }
 
     if (!real) {

@@ -37,60 +37,30 @@ export interface SavedMessage {
 const COLORS = ['#00f0ff', '#39ff14', '#ff0055', '#9d4edd', '#ffbe0b', '#ff7a00', '#4cc9f0', '#f72585'];
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/1/I
 
-const LOCAL_SEED_ROOMS: PartyRoom[] = [
-  {
-    id: 'room-1',
-    code: 'RETRO9',
-    name: 'Retro Speedruns & High Scores',
-    description: 'Chasing high scores together in classic arcade challenges. Voice chat open!',
-    host_client_id: 'host-1',
-    host_name: 'Play Master',
-    visibility: 'public',
-    max_participants: 8,
-    selected_game_id: '737HCH',
-    member_count: 3,
-    is_closed: false,
-    created_at: new Date(Date.now() - 1000 * 60 * 20).toISOString(),
-    last_active_at: new Date().toISOString(),
-  },
-  {
-    id: 'room-2',
-    code: 'PUZZ42',
-    name: 'Chill Puzzle & Logic Co-Op',
-    description: 'Casual relaxing puzzle runs with fellow gamers.',
-    host_client_id: 'host-2',
-    host_name: 'Neon Runner',
-    visibility: 'public',
-    max_participants: 6,
-    selected_game_id: '737HCH',
-    member_count: 2,
-    is_closed: false,
-    created_at: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
-    last_active_at: new Date().toISOString(),
-  },
-  {
-    id: 'room-3',
-    code: 'ARENA7',
-    name: 'Multiplayer Arena Showdown',
-    description: 'Live competitive battles. Grab your keyboard and fight for the top spot!',
-    host_client_id: 'host-3',
-    host_name: 'Pixel Valkyrie',
-    visibility: 'public',
-    max_participants: 8,
-    selected_game_id: '737HCH',
-    member_count: 4,
-    is_closed: false,
-    created_at: new Date(Date.now() - 1000 * 60 * 10).toISOString(),
-    last_active_at: new Date().toISOString(),
-  },
-];
+const STORAGE_KEY_ROOMS = 'playverse_party_rooms';
 
-let inMemoryRooms: PartyRoom[] = [...LOCAL_SEED_ROOMS];
-let inMemoryMessages: Record<string, SavedMessage[]> = {
-  RETRO9: [
-    { id: 'm1', client_id: 'host-1', sender_name: 'Play Master', body: 'Welcome to the party room! Ready to play?', created_at: new Date(Date.now() - 60000).toISOString() },
-  ],
-};
+function loadStoredRooms(): PartyRoom[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_ROOMS);
+    if (!raw) return [];
+    const parsed: PartyRoom[] = JSON.parse(raw);
+    const cutoff = Date.now() - 30 * 60 * 1000; // clean up rooms older than 30 mins
+    return parsed.filter(r => !r.is_closed && new Date(r.last_active_at || r.created_at).getTime() > cutoff);
+  } catch {
+    return [];
+  }
+}
+
+function saveStoredRooms(rooms: PartyRoom[]) {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(STORAGE_KEY_ROOMS, JSON.stringify(rooms.slice(0, 50)));
+  } catch {}
+}
+
+let inMemoryRooms: PartyRoom[] = loadStoredRooms();
+let inMemoryMessages: Record<string, SavedMessage[]> = {};
 
 export function roomsBackendReady(): boolean {
   return true;
@@ -197,26 +167,45 @@ export async function createRoom(input: {
     last_active_at: new Date().toISOString(),
   };
   inMemoryRooms.unshift(localRoom);
+  saveStoredRooms(inMemoryRooms);
   return localRoom;
 }
 
-export async function listPublicRooms(): Promise<PartyRoom[]> {
+export async function listPublicRooms(gameId?: string | null): Promise<PartyRoom[]> {
   if (isSupabaseConfigured()) {
     try {
-      const since = new Date(Date.now() - 3 * 60 * 1000).toISOString();
-      const { data, error } = await supabase
+      const since = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      let query = supabase
         .from('party_rooms')
         .select('*')
         .eq('visibility', 'public')
         .eq('is_closed', false)
-        .gt('last_active_at', since)
+        .gt('last_active_at', since);
+
+      if (gameId) {
+        query = query.eq('selected_game_id', gameId);
+      }
+
+      const { data, error } = await query
         .order('member_count', { ascending: false })
         .order('created_at', { ascending: false })
         .limit(50);
-      if (!error && data && data.length > 0) return data as PartyRoom[];
+
+      if (!error && Array.isArray(data)) {
+        return data as PartyRoom[];
+      }
     } catch {}
   }
-  return inMemoryRooms.filter(r => !r.is_closed && r.visibility === 'public');
+
+  // Fallback to real locally created rooms (never fake bot rooms)
+  const stored = loadStoredRooms();
+  return stored.filter(r => {
+    if (r.is_closed || r.visibility !== 'public') return false;
+    const activeTime = new Date(r.last_active_at || r.created_at).getTime();
+    if (Date.now() - activeTime > 15 * 60 * 1000) return false;
+    if (gameId && r.selected_game_id !== gameId) return false;
+    return true;
+  });
 }
 
 export async function getRoomByCode(code: string): Promise<PartyRoom | null> {
@@ -240,6 +229,7 @@ export async function heartbeat(code: string, count: number): Promise<void> {
   if (found) {
     found.last_active_at = new Date().toISOString();
     found.member_count = count;
+    saveStoredRooms(inMemoryRooms);
   }
   if (isSupabaseConfigured()) {
     try {
@@ -253,6 +243,7 @@ export async function closeRoom(code: string, clientId: string): Promise<void> {
   const found = inMemoryRooms.find(r => r.code === norm);
   if (found && found.host_client_id === clientId) {
     found.is_closed = true;
+    saveStoredRooms(inMemoryRooms);
   }
   if (isSupabaseConfigured()) {
     try {
