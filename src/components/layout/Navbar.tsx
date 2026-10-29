@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   Search,
+  Dices,
   Heart,
   Baby,
   Globe,
@@ -36,6 +37,7 @@ import {
 } from 'lucide-react';
 import { BrandMark } from './BrandMark';
 import { SoundToggle } from './SoundToggle';
+import { GameRouletteModal } from '@/components/portal/GameRouletteModal';
 import { useAuth } from '@/features/auth/AuthContext';
 import { TRANSLATIONS, LanguageCode } from '@/lib/i18n';
 import { FEATURED_GAMES } from '@/lib/games';
@@ -174,6 +176,7 @@ export function Navbar() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [showRoulette, setShowRoulette] = useState(false);
 
   const themeRef = useRef<HTMLDivElement>(null);
   const langRef = useRef<HTMLDivElement>(null);
@@ -405,6 +408,21 @@ export function Navbar() {
           <div className="shrink-0">
             <SoundToggle />
           </div>
+
+          {/* Surprise Me! / Instant Game Roulette 3D Button */}
+          <button
+            type="button"
+            onClick={() => {
+              setShowRoulette(true);
+              playSfx('tap');
+            }}
+            className="flex items-center gap-1.5 p-2 sm:px-3 sm:py-2 rounded-xl bg-gradient-to-r from-[var(--accent)]/15 via-purple-500/15 to-pink-500/15 border border-[var(--accent)]/40 hover:border-[var(--accent)] text-white hover:shadow-[0_0_15px_var(--accent-glow)] transition-all btn-3d shrink-0 cursor-pointer"
+            title="Surprise Me! (Instant Game Roulette)"
+            aria-label="Surprise Me! (Instant Game Roulette)"
+          >
+            <Dices className="w-4 h-4 text-[var(--accent)] drop-shadow-[0_0_8px_var(--accent)] shrink-0" />
+            <span className="hidden xl:inline text-[11px] font-black uppercase tracking-wide">Surprise</span>
+          </button>
 
           {/* 3D THEME CUSTOMIZER BUTTON & MENU */}
           <div className="relative shrink-0" ref={themeRef}>
@@ -674,6 +692,25 @@ export function Navbar() {
           className="sm:hidden mt-3 pt-3 border-t border-white/10 drawer-neon rounded-2xl p-4 space-y-4 max-h-[82vh] overflow-y-auto scrollbar-none animate-in fade-in slide-in-from-top-2 duration-200"
           style={{ opacity: 1, pointerEvents: 'auto' }}
         >
+          {/* Mobile Surprise Roulette Button */}
+          <button
+            type="button"
+            onClick={() => {
+              setMobileMenu(false);
+              setShowRoulette(true);
+              playSfx('tap');
+            }}
+            className="w-full flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-[var(--accent)]/20 to-purple-600/20 border border-[var(--accent)]/40 text-white font-black text-xs btn-3d shadow-md"
+          >
+            <span className="flex items-center gap-2">
+              <Dices className="w-4 h-4 text-[var(--accent)]" />
+              <span>🎲 Surprise Me! (Game Roulette)</span>
+            </span>
+            <span className="text-[10px] font-mono text-[var(--accent)] font-black px-2 py-0.5 rounded-full bg-white/10">
+              SPIN
+            </span>
+          </button>
+
           {/* User Account / Welcome Header */}
           {user ? (
             <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.04] border border-white/10">
@@ -931,6 +968,8 @@ export function Navbar() {
           )}
         </div>
       )}
+      {/* Game Roulette Instant Modal */}
+      <GameRouletteModal isOpen={showRoulette} onClose={() => setShowRoulette(false)} />
     </header>
   );
 }

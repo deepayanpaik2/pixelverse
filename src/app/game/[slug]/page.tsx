@@ -24,7 +24,8 @@ import {
   Star,
   Info,
   RefreshCw,
-  Zap
+  Zap,
+  Swords
 } from 'lucide-react';
 import { getGameBySlug, getRelatedGames, categorySlug } from '@/lib/games';
 import { getLaunchUrl, isOnSiteGame } from '@/lib/games/launch';
@@ -32,6 +33,9 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { mockStore } from '@/lib/supabase/mock-store';
 import { GameTile } from '@/components/portal/GameTile';
 import { playSfx } from '@/lib/sfx';
+import { createRoom, getIdentity } from '@/lib/party/rooms';
+import { ChallengeDuelModal } from '@/components/portal/ChallengeDuelModal';
+import { GameProTipsSheet } from '@/components/portal/GameProTipsSheet';
 
 export default function GamePlayerPage() {
   const params = useParams();
@@ -48,6 +52,60 @@ export default function GamePlayerPage() {
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [pseudoFs, setPseudoFs] = useState(false); // fullscreen fallback for iPhone Safari
   const [copiedLink, setCopiedLink] = useState(false);
+  const [showDuelModal, setShowDuelModal] = useState(false);
+  const [duelCode, setDuelCode] = useState('');
+  const [duelUrl, setDuelUrl] = useState('');
+  const [challengeText, setChallengeText] = useState('');
+  const [isCreatingDuel, setIsCreatingDuel] = useState(false);
+
+  const handleStartDuel = async () => {
+    if (!game || isCreatingDuel) return;
+    setIsCreatingDuel(true);
+    try {
+      const creatorName = user?.display_name || 'Gamer';
+      const room = await createRoom({
+        name: `⚔️ ${creatorName}'s ${game.title} Duel`,
+        description: `1v1 Match in ${game.title}! Join now and beat my score.`,
+        visibility: 'public',
+        maxParticipants: 2,
+        gameId: game.id,
+        identity: getIdentity(creatorName),
+      });
+
+      const origin = typeof window !== 'undefined' ? window.location.origin : '';
+      const shareUrl = `${origin}/rooms/${room.code}?duel=1`;
+      const message = `⚔️ ${creatorName} challenged you to a 1v1 Duel in ${game.title}!\n🎮 Join the match now: ${shareUrl}`;
+
+      setDuelCode(room.code);
+      setDuelUrl(shareUrl);
+      setChallengeText(message);
+      setShowDuelModal(true);
+      playSfx('duel');
+
+      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+        navigator.clipboard.writeText(message).catch(() => {});
+      }
+    } catch {
+      // Fallback duel code
+      const fallbackCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+      const origin = typeof window !== 'undefined' ? window.location.origin : '';
+      const shareUrl = `${origin}/rooms/${fallbackCode}?duel=1&game=${game.id}`;
+      const creatorName = user?.display_name || 'Gamer';
+      const message = `⚔️ ${creatorName} challenged you to a 1v1 Duel in ${game.title}!\n🎮 Join the match now: ${shareUrl}`;
+
+      setDuelCode(fallbackCode);
+      setDuelUrl(shareUrl);
+      setChallengeText(message);
+      setShowDuelModal(true);
+      playSfx('duel');
+
+      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+        navigator.clipboard.writeText(message).catch(() => {});
+      }
+    } finally {
+      setIsCreatingDuel(false);
+    }
+  };
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportText, setReportText] = useState('');
 
@@ -536,6 +594,17 @@ export default function GamePlayerPage() {
           </Link>
 
           <button
+            type="button"
+            onClick={handleStartDuel}
+            disabled={isCreatingDuel}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-rose-500/20 to-orange-500/20 border border-rose-500/40 text-xs font-black text-rose-300 hover:text-white hover:border-rose-400 hover:shadow-[0_0_15px_rgba(244,63,94,0.4)] transition-all shadow-sm btn-3d disabled:opacity-50"
+            title="Challenge a friend to a 1v1 match in this game"
+          >
+            <Swords className="w-3.5 h-3.5 text-rose-400" />
+            <span>{isCreatingDuel ? 'Setting Duel...' : '⚔️ 1v1 Duel'}</span>
+          </button>
+
+          <button
             onClick={() => {
               toggleFavorite(game.id);
               playSfx('like');
@@ -574,6 +643,9 @@ export default function GamePlayerPage() {
           </button>
         </div>
       </div>
+
+      {/* 💡 Pro Tips & Interactive Controls Cheat Sheet */}
+      <GameProTipsSheet game={game} />
 
       {/* Description, How to Play, & Licensing Details */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -727,6 +799,16 @@ export default function GamePlayerPage() {
           </div>
         </div>
       )}
+
+      {/* 1v1 Duel Challenge Modal */}
+      <ChallengeDuelModal
+        isOpen={showDuelModal}
+        onClose={() => setShowDuelModal(false)}
+        game={game}
+        roomCode={duelCode}
+        duelUrl={duelUrl}
+        challengeText={challengeText}
+      />
     </div>
   );
 }

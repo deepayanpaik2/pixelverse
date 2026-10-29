@@ -6,7 +6,7 @@
  *   open    a game tile is opened   launch  the Play button: a rising chime + whoosh
  *   like    favourite / rating   toggle  switches and chips
  */
-export type SfxName = 'tap' | 'soft' | 'hover' | 'open' | 'launch' | 'like' | 'toggle';
+export type SfxName = 'tap' | 'soft' | 'hover' | 'open' | 'launch' | 'like' | 'toggle' | 'roulette' | 'duel';
 
 const KEY = 'pv-sfx';
 const EVENT = 'pv-sfx-change';
@@ -131,7 +131,7 @@ function whoosh(at: number, dur: number, vol: number) {
 // C major pentatonic across two octaves
 const N = { C5: 523.25, D5: 587.33, E5: 659.25, G5: 783.99, A5: 880, C6: 1046.5, D6: 1174.66, E6: 1318.51, G6: 1568 };
 
-const MIN_GAP: Record<SfxName, number> = { tap: 30, soft: 30, hover: 70, open: 120, launch: 400, like: 120, toggle: 80 };
+const MIN_GAP: Record<SfxName, number> = { tap: 30, soft: 30, hover: 70, open: 120, launch: 400, like: 120, toggle: 80, roulette: 250, duel: 300 };
 
 export function playSfx(name: SfxName) {
   if (!isSfxOn()) return;
@@ -174,6 +174,22 @@ export function playSfx(name: SfxName) {
       sg.gain.setValueAtTime(0.0001, t); sg.gain.exponentialRampToValueAtTime(0.09, t + 0.2); sg.gain.exponentialRampToValueAtTime(0.0001, t + 0.7);
       sweep.connect(sg); sg.connect(bus!); sweep.start(t); sweep.stop(t + 0.75);
       [N.C5, N.E5, N.G5, N.C6, N.E6, N.G6].forEach((f, i) => bell(f, t + 0.12 + i * 0.075, 0.7 - i * 0.04, 0.06, 0.65));
+      break;
+    }
+    case 'roulette': {
+      const steps = [N.C5, N.E5, N.G5, N.A5, N.C6, N.D6, N.E6, N.G6];
+      steps.forEach((freq, idx) => {
+        tick(freq * 0.9, t + idx * 0.05, 0.04, 0.05);
+        bell(freq, t + idx * 0.05, 0.15, 0.035, 0.3);
+      });
+      bell(N.G6, t + 0.45, 0.8, 0.08, 0.7);
+      break;
+    }
+    case 'duel': {
+      whoosh(t, 0.4, 0.08);
+      bell(N.C5, t, 0.4, 0.08, 0.5);
+      bell(N.G5, t + 0.08, 0.5, 0.08, 0.6);
+      bell(N.C6, t + 0.16, 0.7, 0.09, 0.7);
       break;
     }
   }

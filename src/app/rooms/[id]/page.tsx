@@ -25,6 +25,7 @@ import {
   Loader2,
   AlertTriangle,
   Users,
+  Swords,
 } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { FEATURED_GAMES } from '@/lib/games';
@@ -162,8 +163,10 @@ function gridCols(n: number) {
 
 // In-room view
 function RoomView({ room, client, onLeft }: { room: PartyRoom; client: PartyRoomClient; onLeft: () => void }) {
+  const searchParams = useSearchParams();
+  const isDuel = searchParams?.get('duel') === '1' || searchParams?.get('duel') === 'true';
   const snap = useSyncExternalStore(client.subscribe, client.getSnapshot, client.getSnapshot);
-  const [tab, setTab] = useState<'lobby' | 'game'>('lobby');
+  const [tab, setTab] = useState<'lobby' | 'game'>(isDuel ? 'game' : 'lobby');
   const [text, setText] = useState('');
   const [copied, setCopied] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -247,6 +250,11 @@ function RoomView({ room, client, onLeft }: { room: PartyRoom; client: PartyRoom
               <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-arcade-sage/10 text-arcade-sage border border-arcade-sage/30">
                 {room.code}
               </span>
+              {isDuel && (
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-rose-500/20 text-rose-300 border border-rose-500/40 flex items-center gap-1 shadow-sm">
+                  <Swords className="w-3 h-3" /> 1v1 DUEL
+                </span>
+              )}
               <span className="flex items-center gap-1 text-[11px] text-slate-400">
                 <Users className="w-3.5 h-3.5" /> {snap.peers.length}/{room.max_participants}
               </span>

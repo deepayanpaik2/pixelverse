@@ -298,3 +298,15 @@ export function getKidsGames(): GameManifest[] {
 export function getTwoPlayerGames(): GameManifest[] {
   return FEATURED_GAMES.filter((g) => g.is_multiplayer || g.supported_players.includes('2'));
 }
+
+export function getRandomGame(excludeSlug?: string): GameManifest {
+  const pool = FEATURED_GAMES.slice(0, 400);
+  const candidates = excludeSlug ? pool.filter((g) => g.slug !== excludeSlug) : pool;
+  return candidates[Math.floor(Math.random() * candidates.length)] || pool[0];
+}
+
+export function getRandomGamePool(count: number = 8): GameManifest[] {
+  const pool = FEATURED_GAMES.slice(0, 400);
+  const shuffled = [...pool].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+}
