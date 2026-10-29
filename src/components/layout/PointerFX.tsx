@@ -34,7 +34,7 @@ function spawn(layer: HTMLElement, x: number, y: number, strong: boolean) {
     const p = document.createElement('div');
     p.style.cssText =
       `position:absolute;left:${x}px;top:${y}px;width:${s}px;height:${s}px;margin:${-s / 2}px 0 0 ${-s / 2}px;` +
-      `background:${c};box-shadow:0 0 8px ${c};`;
+      `background:${c};box-shadow:0 0 8px ${c};pointer-events:none;`;
     layer.appendChild(p);
     p.animate(
       [

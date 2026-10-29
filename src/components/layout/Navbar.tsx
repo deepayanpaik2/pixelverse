@@ -181,21 +181,26 @@ export function Navbar() {
 
   const t = TRANSLATIONS[language] || TRANSLATIONS.en;
 
-  // Close menus on outside click
+  // Close menus on outside click (supports mouse and touch)
   useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (themeRef.current && !themeRef.current.contains(e.target as Node)) {
+    function handleClickOutside(e: MouseEvent | TouchEvent) {
+      const target = e.target as Node;
+      if (themeRef.current && !themeRef.current.contains(target)) {
         setShowThemeMenu(false);
       }
-      if (langRef.current && !langRef.current.contains(e.target as Node)) {
+      if (langRef.current && !langRef.current.contains(target)) {
         setShowLangMenu(false);
       }
-      if (userRef.current && !userRef.current.contains(e.target as Node)) {
+      if (userRef.current && !userRef.current.contains(target)) {
         setShowUserMenu(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside, { passive: true });
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
   }, []);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -294,7 +299,10 @@ export function Navbar() {
 
           {/* Instant Search Suggestions Box */}
           {showSuggestions && suggestions.length > 0 && (
-            <div className="absolute left-0 right-0 top-full mt-2 drawer-neon rounded-2xl border border-white/15 overflow-hidden shadow-2xl z-50 divide-y divide-white/5 animate-in fade-in slide-in-from-top-2 duration-200">
+            <div
+              className="absolute left-0 right-0 top-full mt-2 drawer-neon rounded-2xl border border-white/15 overflow-hidden shadow-2xl z-50 divide-y divide-white/5 animate-in fade-in slide-in-from-top-2 duration-200"
+              style={{ opacity: 1, pointerEvents: 'auto' }}
+            >
               <div className="px-3.5 py-2 text-[10px] font-black tracking-widest text-[var(--accent)] uppercase bg-white/[0.02]">
                 Instant Matches
               </div>
@@ -421,7 +429,10 @@ export function Navbar() {
 
             {/* Luxurious 3D Theme Customizer Dropdown Drawer */}
             {showThemeMenu && (
-              <div className="absolute right-0 mt-3 w-[calc(100vw-1.5rem)] max-w-sm sm:w-96 drawer-neon rounded-2xl border border-white/20 p-3.5 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.95)] z-50 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div
+                className="absolute right-0 mt-3 w-[calc(100vw-1.5rem)] max-w-sm sm:w-96 drawer-neon rounded-2xl border border-white/20 p-3.5 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.95)] z-50 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200"
+                style={{ opacity: 1, pointerEvents: 'auto' }}
+              >
                 {/* Header Strip */}
                 <div className="flex items-center justify-between pb-2.5 border-b border-white/10">
                   <div className="flex items-center gap-2">
@@ -512,7 +523,10 @@ export function Navbar() {
             </button>
 
             {showLangMenu && (
-              <div className="absolute right-0 mt-3 w-44 drawer-neon rounded-2xl border border-white/15 p-1.5 shadow-2xl z-50 space-y-1 animate-in fade-in slide-in-from-top-2">
+              <div
+                className="absolute right-0 mt-3 w-44 drawer-neon rounded-2xl border border-white/15 p-1.5 shadow-2xl z-50 space-y-1 animate-in fade-in slide-in-from-top-2"
+                style={{ opacity: 1, pointerEvents: 'auto' }}
+              >
                 {languages.map((l) => (
                   <button
                     key={l.code}
@@ -554,13 +568,17 @@ export function Navbar() {
           {user ? (
             <div className="relative shrink-0" ref={userRef}>
               <button
+                type="button"
                 onClick={() => {
                   setShowUserMenu(!showUserMenu);
                   setShowThemeMenu(false);
                   setShowLangMenu(false);
                   playSfx('tap');
                 }}
-                className="flex items-center gap-2 p-1.5 rounded-xl bg-black/60 border border-white/15 hover:border-[var(--accent)] transition-all btn-3d shrink-0"
+                className="flex items-center gap-2 p-1.5 rounded-xl bg-black/60 border border-white/15 hover:border-[var(--accent)] transition-all btn-3d shrink-0 cursor-pointer"
+                aria-label="User account menu"
+                aria-expanded={showUserMenu}
+                aria-haspopup="true"
               >
                 <img
                   src={user.avatar_url}
@@ -573,7 +591,10 @@ export function Navbar() {
               </button>
 
               {showUserMenu && (
-                <div className="absolute right-0 mt-3 w-56 drawer-neon rounded-2xl border border-white/15 p-2 shadow-2xl z-50 space-y-1 text-xs animate-in fade-in slide-in-from-top-2">
+                <div
+                  className="absolute right-0 mt-3 w-56 drawer-neon rounded-2xl border border-white/15 p-2 shadow-2xl z-50 space-y-1 text-xs animate-in fade-in slide-in-from-top-2"
+                  style={{ opacity: 1, pointerEvents: 'auto' }}
+                >
                   <div className="px-3 py-2 border-b border-white/10 text-slate-400">
                     <div className="font-extrabold text-white truncate">{user.display_name}</div>
                     <div className="text-[10px] text-[var(--accent)] font-mono">@{user.username}</div>
@@ -649,7 +670,10 @@ export function Navbar() {
 
       {/* Mobile drawer navigation */}
       {mobileMenu && (
-        <div className="sm:hidden mt-3 pt-3 border-t border-white/10 drawer-neon rounded-2xl p-4 space-y-4 max-h-[82vh] overflow-y-auto scrollbar-none animate-in fade-in slide-in-from-top-2 duration-200">
+        <div
+          className="sm:hidden mt-3 pt-3 border-t border-white/10 drawer-neon rounded-2xl p-4 space-y-4 max-h-[82vh] overflow-y-auto scrollbar-none animate-in fade-in slide-in-from-top-2 duration-200"
+          style={{ opacity: 1, pointerEvents: 'auto' }}
+        >
           {/* User Account / Welcome Header */}
           {user ? (
             <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.04] border border-white/10">
