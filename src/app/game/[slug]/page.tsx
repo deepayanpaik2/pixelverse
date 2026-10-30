@@ -25,7 +25,8 @@ import {
   Info,
   RefreshCw,
   Zap,
-  Swords
+  Swords,
+  RotateCw
 } from 'lucide-react';
 import { getGameBySlug, getRelatedGames, categorySlug } from '@/lib/games';
 import { getLaunchUrl, isOnSiteGame } from '@/lib/games/launch';
@@ -35,7 +36,7 @@ import { GameTile } from '@/components/portal/GameTile';
 import { playSfx } from '@/lib/sfx';
 import { createRoom, getIdentity } from '@/lib/party/rooms';
 import { ChallengeDuelModal } from '@/components/portal/ChallengeDuelModal';
-import { GameProTipsSheet } from '@/components/portal/GameProTipsSheet';
+import { GameHowToPlayGuide } from '@/components/portal/GameHowToPlayGuide';
 
 export default function GamePlayerPage() {
   const params = useParams();
@@ -52,6 +53,7 @@ export default function GamePlayerPage() {
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [pseudoFs, setPseudoFs] = useState(false); // fullscreen fallback for iPhone Safari
   const [isMobileDevice, setIsMobileDevice] = useState(false);
+  const [mobileFsOrientation, setMobileFsOrientation] = useState<'landscape' | 'portrait'>('landscape');
   const [copiedLink, setCopiedLink] = useState(false);
   const [showDuelModal, setShowDuelModal] = useState(false);
   const [duelCode, setDuelCode] = useState('');
@@ -322,6 +324,18 @@ export default function GamePlayerPage() {
     setUserRating(res.userRating);
   };
 
+  const toggleMobileOrientation = () => {
+    const next = mobileFsOrientation === 'landscape' ? 'portrait' : 'landscape';
+    setMobileFsOrientation(next);
+    playSfx('tap');
+
+    try {
+      if (typeof screen !== 'undefined' && screen.orientation && (screen.orientation as any).lock) {
+        (screen.orientation as any).lock(next).catch(() => {});
+      }
+    } catch {}
+  };
+
   const toggleFullscreen = () => {
     const el = containerRef.current || document.documentElement;
     if (!el) return;
@@ -330,6 +344,10 @@ export default function GamePlayerPage() {
       exitFullscreenCleanly();
       return;
     }
+
+    // Match initial orientation to the game's manifest (portrait games start portrait, others landscape)
+    const initialOrientation = game?.orientation === 'portrait' ? 'portrait' : 'landscape';
+    setMobileFsOrientation(initialOrientation);
 
     // Call native requestFullscreen across all browser engines (Android Brave, Chrome, Samsung Internet, Firefox, Edge, PC)
     const requestFs =
@@ -361,10 +379,10 @@ export default function GamePlayerPage() {
     setPseudoFs(true);
     setIsFullscreen(true);
 
-    // Try locking orientation to landscape for games on mobile devices
+    // Lock orientation to match initialOrientation on mobile devices
     try {
       if (typeof screen !== 'undefined' && screen.orientation && (screen.orientation as any).lock) {
-        (screen.orientation as any).lock('landscape').catch(() => {});
+        (screen.orientation as any).lock(initialOrientation).catch(() => {});
       }
     } catch {}
 
@@ -453,9 +471,22 @@ export default function GamePlayerPage() {
                 }`
           }`}
         >
-          {/* Mobile Fullscreen Floating HUD Pill (True Fullscreen with Zero Canvas Intrusion) */}
+          {/* Mobile Fullscreen Floating HUD Pill (True Fullscreen with Zero Canvas Intrusion & Screen Rotate) */}
           {(pseudoFs || isFullscreen) && isMobileDevice && (
-            <div className="fixed top-2.5 right-2.5 z-[100000] flex items-center gap-1 p-1 rounded-full bg-black/60 hover:bg-black/90 border border-white/20 shadow-2xl backdrop-blur-md opacity-60 hover:opacity-100 transition-opacity">
+            <div className="fixed top-2.5 right-2.5 z-[100000] flex items-center gap-1.5 p-1 rounded-full bg-black/80 hover:bg-black/95 border border-white/25 shadow-2xl backdrop-blur-md opacity-75 hover:opacity-100 transition-opacity">
+              <button
+                type="button"
+                onClick={toggleMobileOrientation}
+                className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 hover:bg-[var(--accent)] text-slate-200 hover:text-black font-extrabold text-[10px] active:scale-95 transition-all cursor-pointer"
+                title={`Rotate Screen (${mobileFsOrientation === 'landscape' ? 'Landscape' : 'Portrait'} active)`}
+                aria-label="Rotate screen orientation"
+              >
+                <RotateCw className="w-3.5 h-3.5 text-[var(--accent)]" />
+                <span className="uppercase font-mono text-[9px] font-bold">
+                  {mobileFsOrientation === 'landscape' ? 'Land' : 'Port'}
+                </span>
+              </button>
+              <div className="w-[1px] h-3 bg-white/20" />
               <button
                 type="button"
                 onClick={() => {
@@ -463,7 +494,7 @@ export default function GamePlayerPage() {
                   setIframeLoaded(false);
                   playSfx('tap');
                 }}
-                className="p-1 rounded-full text-slate-300 hover:text-white active:scale-90 transition-transform"
+                className="p-1 rounded-full text-slate-300 hover:text-white active:scale-90 transition-transform cursor-pointer"
                 title="Restart Game"
                 aria-label="Restart game"
               >
@@ -476,7 +507,7 @@ export default function GamePlayerPage() {
                   exitFullscreenCleanly();
                   playSfx('tap');
                 }}
-                className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 hover:bg-[var(--accent)] text-slate-200 hover:text-black font-extrabold text-[10px] active:scale-95 transition-all cursor-pointer"
+                className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-500/20 hover:bg-rose-500 text-rose-200 hover:text-white font-extrabold text-[10px] active:scale-95 transition-all cursor-pointer border border-rose-500/30"
                 title="Exit Fullscreen"
                 aria-label="Exit fullscreen"
               >
@@ -814,12 +845,12 @@ export default function GamePlayerPage() {
         </div>
       </div>
 
-      {/* 💡 Pro Tips & Interactive Controls Cheat Sheet */}
-      <GameProTipsSheet game={game} />
+      {/* 🎮 How to Play Guide (PC & Mobile Easiest Controls) */}
+      <GameHowToPlayGuide game={game} />
 
-      {/* Description, How to Play, & Licensing Details */}
+      {/* Description & Licensing Details */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left 2 Cols: Overview & Instructions */}
+        {/* Left 2 Cols: Overview */}
         <div className="lg:col-span-2 space-y-6">
           <div className="glass-panel p-6 rounded-2xl border border-arcade-border space-y-4">
             <div>
@@ -830,37 +861,6 @@ export default function GamePlayerPage() {
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
               {game.description}
             </p>
-
-            {/* How to Play Section */}
-            {game.instructions && (
-              <div className="pt-4 border-t border-arcade-border/60 space-y-2">
-                <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                  <Info className="w-4 h-4 text-arcade-champagne" /> How to Play
-                </h3>
-                <p className="text-xs text-slate-300 leading-relaxed bg-arcade-midnight p-3.5 rounded-xl border border-arcade-border">
-                  {game.instructions}
-                </p>
-              </div>
-            )}
-
-            {/* Controls Guide */}
-            <div className="pt-4 border-t border-arcade-border/60 space-y-2">
-              <h3 className="text-xs font-bold text-white uppercase tracking-wider">Controls</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                {!!game.controls.keyboard?.length && (
-                  <div className="bg-arcade-midnight p-3 rounded-xl border border-arcade-border flex items-center justify-between">
-                    <span className="text-slate-400">Keyboard:</span>
-                    <span className="font-bold text-arcade-champagne">{game.controls.keyboard.join(', ')}</span>
-                  </div>
-                )}
-                {game.controls.touch && (
-                  <div className="bg-arcade-midnight p-3 rounded-xl border border-arcade-border flex items-center justify-between">
-                    <span className="text-slate-400">Touch/Mobile:</span>
-                    <span className="font-bold text-arcade-sage">Tap & Swipe Supported</span>
-                  </div>
-                )}
-              </div>
-            </div>
 
             {/* Game Tags */}
             <div className="pt-3 border-t border-arcade-border/60 flex flex-wrap gap-1.5">

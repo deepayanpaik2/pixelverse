@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Swords, Check, Share2, MessageCircle, X, ArrowRight } from 'lucide-react';
 import { GameManifest } from '@/types';
 import { playSfx } from '@/lib/sfx';
+import { GameHowToPlayGuide } from '@/components/portal/GameHowToPlayGuide';
 
 interface ChallengeDuelModalProps {
   isOpen: boolean;
@@ -80,7 +81,7 @@ export function ChallengeDuelModal({
       }}
     >
       <div
-        className="relative w-full max-w-sm sm:max-w-md my-auto drawer-neon rounded-2xl sm:rounded-3xl border-2 border-rose-500/50 p-4 sm:p-6 shadow-[0_25px_60px_-15px_rgba(244,63,94,0.4)] overflow-hidden text-center flex flex-col items-center gap-3 sm:gap-4 max-h-[min(90dvh,540px)]"
+        className="relative w-full max-w-sm sm:max-w-md my-auto drawer-neon rounded-2xl sm:rounded-3xl border-2 border-rose-500/50 p-4 sm:p-6 shadow-[0_25px_60px_-15px_rgba(244,63,94,0.4)] overflow-y-auto text-center flex flex-col items-center gap-3 sm:gap-4 max-h-[min(94dvh,680px)] scrollbar-thin"
         style={{ opacity: 1, pointerEvents: 'auto' }}
       >
         {/* Glow ambient */}
@@ -116,6 +117,9 @@ export function ChallengeDuelModal({
             </div>
           </div>
         </div>
+
+        {/* 🎮 How to Play Quick Controls (PC & Mobile) */}
+        <GameHowToPlayGuide game={game} variant="compact" />
 
         {/* Invitation Text Box */}
         <div className="w-full bg-[#060810] border border-white/15 rounded-2xl p-3 text-left space-y-1 shrink-0">

@@ -40,6 +40,7 @@ import {
   type PartyRoom,
 } from '@/lib/party/rooms';
 import { PartyRoomClient, type PeerState } from '@/lib/party/rtc';
+import { GameHowToPlayGuide } from '@/components/portal/GameHowToPlayGuide';
 
 // Participant tile
 function Tile({
@@ -169,6 +170,7 @@ function RoomView({ room, client, onLeft }: { room: PartyRoom; client: PartyRoom
   const [tab, setTab] = useState<'lobby' | 'game'>(isDuel ? 'game' : 'lobby');
   const [text, setText] = useState('');
   const [copied, setCopied] = useState(false);
+  const [showControlsGuide, setShowControlsGuide] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const lastGameSignal = useRef(0);
   const countRef = useRef(1);
@@ -325,12 +327,30 @@ function RoomView({ room, client, onLeft }: { room: PartyRoom; client: PartyRoom
                 ))}
               </div>
               <div className="glass-panel rounded-2xl overflow-hidden border border-arcade-border h-[62vh] min-h-[420px] flex flex-col">
-                <div className="flex items-center justify-between px-4 py-2 bg-arcade-midnight border-b border-arcade-border">
-                  <span className="text-xs font-bold text-white">{game?.title}</span>
-                  <button onClick={() => setTab('lobby')} className="text-xs font-bold text-arcade-sage hover:underline">
+                <div className="flex items-center justify-between px-4 py-2 bg-arcade-midnight border-b border-arcade-border gap-2">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="text-xs font-bold text-white truncate">{game?.title}</span>
+                    {game && (
+                      <button
+                        type="button"
+                        onClick={() => setShowControlsGuide((prev) => !prev)}
+                        className="flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-arcade-surface hover:bg-white/10 border border-arcade-border text-[10px] font-bold text-arcade-champagne hover:text-white transition-all active:scale-95 cursor-pointer shadow-sm"
+                        title="Show how to play on PC & Mobile"
+                      >
+                        <Gamepad2 className="w-3 h-3 text-arcade-champagne" />
+                        <span>{showControlsGuide ? 'Hide Controls' : 'How to Play'}</span>
+                      </button>
+                    )}
+                  </div>
+                  <button onClick={() => setTab('lobby')} className="text-xs font-bold text-arcade-sage hover:underline shrink-0">
                     ← Back to party
                   </button>
                 </div>
+                {showControlsGuide && game && (
+                  <div className="p-3 bg-arcade-midnight/95 border-b border-arcade-border backdrop-blur-md animate-in slide-in-from-top-2 duration-200 overflow-y-auto max-h-48 scrollbar-thin">
+                    <GameHowToPlayGuide game={game} variant="compact" />
+                  </div>
+                )}
                 <div className="flex-1 min-h-0 bg-black">
                   <iframe
                     src={game ? getLaunchUrl(game, typeof window !== 'undefined' ? window.location.origin : '') : undefined}
@@ -403,25 +423,30 @@ function RoomView({ room, client, onLeft }: { room: PartyRoom; client: PartyRoom
           </div>
 
           {game && tab === 'lobby' && (
-            <div className="glass-panel p-4 rounded-2xl border border-arcade-border flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-14 h-14 rounded-xl overflow-hidden bg-black/60 border border-arcade-border flex items-center justify-center p-1 shrink-0">
-                  <img src={game.thumbnail_url} alt={game.title} className="w-full h-full object-contain" />
+            <div className="space-y-3">
+              <div className="glass-panel p-4 rounded-2xl border border-arcade-border flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-14 h-14 rounded-xl overflow-hidden bg-black/60 border border-arcade-border flex items-center justify-center p-1 shrink-0">
+                    <img src={game.thumbnail_url} alt={game.title} className="w-full h-full object-contain" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-[10px] font-bold text-arcade-champagne uppercase tracking-wider">Party Game</span>
+                    <h3 className="text-base font-bold text-white truncate">{game.title}</h3>
+                    <p className="text-xs text-slate-400">
+                      {game.category} • {game.supported_players}
+                    </p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <span className="text-[10px] font-bold text-arcade-champagne uppercase tracking-wider">Party Game</span>
-                  <h3 className="text-base font-bold text-white truncate">{game.title}</h3>
-                  <p className="text-xs text-slate-400">
-                    {game.category} • {game.supported_players}
-                  </p>
-                </div>
+                <button
+                  onClick={() => setTab('game')}
+                  className="px-4 py-2 rounded-xl bg-arcade-surface border border-arcade-border text-xs font-bold text-white hover:border-arcade-champagne transition-colors flex items-center gap-2 shrink-0 cursor-pointer"
+                >
+                  <Play className="w-4 h-4 fill-current" /> Open game
+                </button>
               </div>
-              <button
-                onClick={() => setTab('game')}
-                className="px-4 py-2 rounded-xl bg-arcade-surface border border-arcade-border text-xs font-bold text-white hover:border-arcade-champagne transition-colors flex items-center gap-2 shrink-0"
-              >
-                <Play className="w-4 h-4 fill-current" /> Open game
-              </button>
+
+              {/* How to Play Guide for everyone in the room */}
+              <GameHowToPlayGuide game={game} variant="compact" />
             </div>
           )}
         </div>
