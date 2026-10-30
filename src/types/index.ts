@@ -35,7 +35,7 @@ export interface UserPreferences {
   language: 'en' | 'hi' | 'bn' | 'es';
 }
 
-export type GameSourceType = 'gamepix' | 'gamemonetize' | 'gamedistribution' | 'feed' | 'self_hosted' | 'in_house' | 'developer_submitted' | 'poki';
+export type GameSourceType = 'gamepix' | 'gamemonetize' | 'gamedistribution' | 'feed' | 'self_hosted' | 'in_house' | 'developer_submitted';
 export type GameOrientation = 'landscape' | 'portrait' | 'both';
 
 export interface GameControls {
@@ -49,11 +49,6 @@ export interface GameManifest {
   id: string;
   slug: string;
   gd_game_hash?: string;
-  poki_slug?: string;
-  poki_url?: string;
-  external_url?: string;
-  play_mode?: 'embed' | 'external' | 'dual';
-  embed_status?: 'authorized' | 'external_only' | 'pending_permission' | 'unavailable';
   title: string;
   description: string;
   instructions?: string;
@@ -66,7 +61,7 @@ export interface GameManifest {
   launch_path: string;
   embed_url?: string;
   source_type: GameSourceType;
-  source?: 'gamepix' | 'gamemonetize' | 'gamedistribution' | 'feed' | 'self_hosted' | 'in_house' | 'developer_submitted' | 'poki';
+  source?: 'gamepix' | 'gamemonetize' | 'gamedistribution' | 'feed' | 'self_hosted' | 'in_house' | 'developer_submitted';
   repository_url?: string;
   author: string;
   developer_name?: string;
