@@ -48,11 +48,11 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["Plus Jakarta Sans", "Figtree", "Outfit", "Noto Sans Devanagari", "Noto Sans Bengali", "system-ui", "sans-serif"],
-        display: ["Outfit", "Plus Jakarta Sans", "Figtree", "system-ui", "sans-serif"],
-        mono: ["JetBrains Mono", "ui-monospace", "monospace"],
-        heading: ["Outfit", "Plus Jakarta Sans", "Figtree", "system-ui", "sans-serif"],
-        body: ["Plus Jakarta Sans", "Figtree", "Noto Sans Devanagari", "Noto Sans Bengali", "system-ui", "sans-serif"],
+        sans: ["var(--font-plus-jakarta)", "var(--font-figtree)", "var(--font-outfit)", "system-ui", "sans-serif"],
+        display: ["var(--font-outfit)", "var(--font-plus-jakarta)", "var(--font-figtree)", "system-ui", "sans-serif"],
+        mono: ["var(--font-jetbrains)", "ui-monospace", "monospace"],
+        heading: ["var(--font-outfit)", "var(--font-plus-jakarta)", "var(--font-figtree)", "system-ui", "sans-serif"],
+        body: ["var(--font-plus-jakarta)", "var(--font-figtree)", "system-ui", "sans-serif"],
       },
       boxShadow: {
         "champagne-glow": "0 0 22px -4px rgba(169, 233, 223, 0.45)",

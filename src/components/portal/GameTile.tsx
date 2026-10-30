@@ -1,17 +1,18 @@
 'use client';
 
-import React, { memo, useEffect, useRef, useState } from 'react';
+import React, { memo, useEffect, useRef, useState, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Play, Heart, Star, Sparkles } from 'lucide-react';
 import { GameManifest } from '@/types';
 import { useAuth } from '@/features/auth/AuthContext';
-import { NEW_GAME_IDS } from '@/lib/games';
 import { getOutlineTheme, GameIconOutline } from './GameIconOutline';
 
 interface GameTileProps {
   game: GameManifest;
   size?: '1x1' | '2x2' | 'wide';
   priority?: boolean;
+  isNew?: boolean;
 }
 
 const SIZE_CLASSES: Record<NonNullable<GameTileProps['size']>, string> = {
@@ -20,7 +21,7 @@ const SIZE_CLASSES: Record<NonNullable<GameTileProps['size']>, string> = {
   '2x2': 'col-span-2 row-span-2',
 };
 
-function GameTileBase({ game, size = '1x1', priority = false }: GameTileProps) {
+function GameTileBase({ game, size = '1x1', priority = false, isNew: propIsNew }: GameTileProps) {
   const { favorites, toggleFavorite } = useAuth();
   const imgRef = useRef<HTMLImageElement>(null);
   const [loaded, setLoaded] = useState(false);
@@ -31,7 +32,7 @@ function GameTileBase({ game, size = '1x1', priority = false }: GameTileProps) {
   }, []);
 
   const isFav = favorites.includes(game.id);
-  const isNew = NEW_GAME_IDS.has(game.id);
+  const isNew = propIsNew !== undefined ? propIsNew : (game.is_editor_pick || (game.quality_score !== undefined && game.quality_score >= 0.95));
   const hasRating = game.likes_count + game.dislikes_count > 0;
   const big = size !== '1x1';
 
@@ -39,13 +40,13 @@ function GameTileBase({ game, size = '1x1', priority = false }: GameTileProps) {
   const outlineTheme = getOutlineTheme(game.id, game.category);
   const rectRef = useRef<{ left: number; top: number; width: number; height: number } | null>(null);
 
-  const onTiltEnter = (e: React.PointerEvent<HTMLAnchorElement>) => {
+  const onTiltEnter = useCallback((e: React.PointerEvent<HTMLAnchorElement>) => {
     if (e.pointerType !== 'mouse') return;
     const r = e.currentTarget.getBoundingClientRect();
     rectRef.current = { left: r.left, top: r.top, width: r.width, height: r.height };
-  };
+  }, []);
 
-  const onTilt = (e: React.PointerEvent<HTMLAnchorElement>) => {
+  const onTilt = useCallback((e: React.PointerEvent<HTMLAnchorElement>) => {
     if (e.pointerType !== 'mouse') return;
     const el = e.currentTarget;
     let r = rectRef.current;
@@ -60,19 +61,19 @@ function GameTileBase({ game, size = '1x1', priority = false }: GameTileProps) {
     el.style.setProperty('--rx', `${(-(py - 0.5) * 12).toFixed(2)}deg`);
     el.style.setProperty('--mx', `${(px * 100).toFixed(1)}%`);
     el.style.setProperty('--my', `${(py * 100).toFixed(1)}%`);
-  };
+  }, []);
 
-  const onTiltEnd = (e: React.PointerEvent<HTMLAnchorElement>) => {
+  const onTiltEnd = useCallback((e: React.PointerEvent<HTMLAnchorElement>) => {
     rectRef.current = null;
     e.currentTarget.style.setProperty('--rx', '0deg');
     e.currentTarget.style.setProperty('--ry', '0deg');
-  };
+  }, []);
 
-  const handleFavoriteClick = (e: React.MouseEvent) => {
+  const handleFavoriteClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     toggleFavorite(game.id);
-  };
+  }, [game.id, toggleFavorite]);
 
   return (
     <Link
@@ -81,12 +82,13 @@ function GameTileBase({ game, size = '1x1', priority = false }: GameTileProps) {
       onPointerEnter={onTiltEnter}
       onPointerMove={onTilt}
       onPointerLeave={onTiltEnd}
-      className={`game-tile group relative rounded-[1.2rem] sm:rounded-[1.4rem] p-1.5 sm:p-2 bg-[#090b14]/90 border border-white/[0.12] ${outlineTheme.tileHoverBorder} transition-all flex flex-col justify-between ${SIZE_CLASSES[size]}`}
+      style={{ contentVisibility: 'auto', containIntrinsicSize: '220px' }}
+      className={`game-tile group relative rounded-[1.2rem] sm:rounded-[1.4rem] p-1.5 sm:p-2 bg-[#090b14]/90 border border-white/[0.12] ${outlineTheme.tileHoverBorder} transition-[transform,opacity] duration-200 flex flex-col justify-between ${SIZE_CLASSES[size]}`}
     >
       {/* 3D Depth Reactive Ambient Glow customized per game outline theme (desktop hover only) */}
       <div className="hidden sm:block absolute inset-0 z-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">
         <div
-          className="absolute -inset-2 rounded-[1.6rem] blur-2xl opacity-40 transition-all duration-300"
+          className="absolute -inset-2 rounded-[1.6rem] blur-2xl opacity-40 transition-opacity duration-300"
           style={{
             background: `radial-gradient(circle, ${outlineTheme.accentGlow} 0%, transparent 70%)`,
           }}
@@ -95,7 +97,7 @@ function GameTileBase({ game, size = '1x1', priority = false }: GameTileProps) {
 
       {/* Upper Image Frame (100% Whole Uncropped Artwork with Creative Outline Frame) */}
       <div
-        className={`relative w-full rounded-[1rem] sm:rounded-[1.1rem] overflow-hidden bg-[#060812] border ${outlineTheme.borderClass} ${outlineTheme.hoverBorderClass} ${outlineTheme.glowShadowClass} transition-all duration-300 shrink-0 flex items-center justify-center ${
+        className={`relative w-full rounded-[1rem] sm:rounded-[1.1rem] overflow-hidden bg-[#060812] border ${outlineTheme.borderClass} ${outlineTheme.hoverBorderClass} ${outlineTheme.glowShadowClass} transition-opacity duration-300 shrink-0 flex items-center justify-center ${
           size === 'wide'
             ? 'aspect-[16/7]'
             : size === '2x2'
@@ -118,22 +120,21 @@ function GameTileBase({ game, size = '1x1', priority = false }: GameTileProps) {
             <div className="absolute inset-0 bg-gradient-to-b from-[#11162b]/40 via-[#060812] to-[#04050a] pointer-events-none" />
 
             {/* Whole, 100% Uncropped, Perfectly Fitted Game Photo */}
-            <img
-              ref={imgRef}
+            <Image
               src={game.thumbnail_url}
-              width={big ? 520 : 260}
-              height={big ? 390 : 195}
+              width={big ? 512 : 256}
+              height={big ? 384 : 192}
               sizes={
                 big
                   ? '(min-width: 640px) 42vw, 100vw'
                   : '(min-width: 1536px) 14vw, (min-width: 1024px) 18vw, (min-width: 640px) 24vw, 48vw'
               }
               alt={game.title}
-              loading={priority ? 'eager' : 'lazy'}
-              decoding="async"
+              priority={priority}
+              loading={priority ? undefined : 'lazy'}
               onLoad={() => setLoaded(true)}
               onError={() => setBroken(true)}
-              className={`relative z-10 w-full h-full object-contain p-2 rounded-xl transition-transform duration-300 ease-out group-hover:scale-105 ${
+              className={`relative z-10 w-full h-full object-contain p-2 rounded-xl transition-transform duration-200 ease-out group-hover:scale-105 ${
                 loaded ? 'opacity-100' : 'opacity-0'
               }`}
             />
@@ -163,7 +164,7 @@ function GameTileBase({ game, size = '1x1', priority = false }: GameTileProps) {
           <button
             onClick={handleFavoriteClick}
             data-sfx="like"
-            className="shrink-0 pointer-events-auto p-1.5 rounded-full bg-black/70 border border-white/20 text-slate-200 opacity-80 sm:opacity-0 sm:group-hover:opacity-100 hover:text-rose-400 hover:border-rose-400/50 hover:scale-115 active:scale-90 transition-all duration-200 drop-shadow-lg backdrop-blur-md"
+            className="shrink-0 pointer-events-auto p-1.5 rounded-full bg-black/80 border border-white/20 text-slate-200 opacity-80 sm:opacity-0 sm:group-hover:opacity-100 hover:text-rose-400 hover:border-rose-400/50 hover:scale-115 active:scale-90 transition-[transform,opacity,color,border-color] duration-200 drop-shadow-lg"
             title={isFav ? 'Remove from favorites' : 'Save to favorites'}
             aria-label={isFav ? 'Remove from favorites' : 'Save to favorites'}
           >

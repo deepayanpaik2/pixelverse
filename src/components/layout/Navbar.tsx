@@ -38,10 +38,14 @@ import {
 } from 'lucide-react';
 import { BrandMark } from './BrandMark';
 import { SoundToggle } from './SoundToggle';
-import { GameRouletteModal } from '@/components/portal/GameRouletteModal';
+import dynamic from 'next/dynamic';
+
+const GameRouletteModal = dynamic(
+  () => import('@/components/portal/GameRouletteModal').then((m) => m.GameRouletteModal),
+  { ssr: false }
+);
 import { useAuth } from '@/features/auth/AuthContext';
 import { TRANSLATIONS, LanguageCode } from '@/lib/i18n';
-import { FEATURED_GAMES } from '@/lib/games';
 import { playSfx } from '@/lib/sfx';
 
 interface ThemeOption {
@@ -225,20 +229,36 @@ export function Navbar() {
     router.push(`/arcade?search=${encodeURIComponent(searchQuery.trim())}`);
   };
 
-  const suggestions = useMemo(() => {
+  interface SuggestionGame {
+    id: string;
+    slug: string;
+    title: string;
+    category: string;
+    thumbnail_url: string;
+    supported_players?: string;
+  }
+  const [suggestions, setSuggestions] = useState<SuggestionGame[]>([]);
+
+  useEffect(() => {
     const q = searchQuery.trim().toLowerCase();
-    if (q.length <= 1) return [];
-    const list: typeof FEATURED_GAMES = [];
-    for (const g of FEATURED_GAMES) {
-      if (
-        g.title.toLowerCase().includes(q) ||
-        g.category.toLowerCase().includes(q)
-      ) {
-        list.push(g);
-        if (list.length >= 5) break;
-      }
+    if (q.length <= 1) {
+      setSuggestions([]);
+      return;
     }
-    return list;
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/games?search=${encodeURIComponent(q)}&limit=5`, { signal: controller.signal });
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.games) setSuggestions(data.games);
+        }
+      } catch {}
+    }, 120);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
   }, [searchQuery]);
 
   const languages: { code: LanguageCode; label: string; flag: string }[] = [
@@ -251,7 +271,7 @@ export function Navbar() {
   const currentTheme = preferences?.theme || 'dark';
 
   return (
-    <header className="sticky top-0 z-50 w-full drawer-neon border-b border-white/[0.12] px-3 sm:px-5 py-2.5 pt-[calc(0.625rem+env(safe-area-inset-top))] sm:backdrop-blur-2xl">
+    <header className="sticky top-0 z-50 w-full drawer-neon border-b border-white/[0.12] px-3 sm:px-5 py-2.5 pt-[calc(0.625rem+env(safe-area-inset-top))]">
       <div className="max-w-[1920px] mx-auto flex items-center justify-between gap-2 sm:gap-4">
         {/* Left Section: Mobile Menu Button & Brand Logo */}
         <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 shrink-0">

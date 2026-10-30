@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { GameManifest } from '@/types';
 import { GameTile } from './GameTile';
@@ -23,11 +23,8 @@ function mosaicSize(idx: number): '1x1' | '2x2' | 'wide' {
   return '1x1';
 }
 
-export function GameGrid({ games, pageSize = 36, mosaic = false, className }: GameGridProps) {
-  const [count, setCount] = useState(() => {
-    if (typeof window !== 'undefined' && window.innerWidth < 640) return 20;
-    return pageSize;
-  });
+export function GameGrid({ games, pageSize = 24, mosaic = false, className }: GameGridProps) {
+  const [count, setCount] = useState(24);
   const sentinel = useRef<HTMLDivElement>(null);
   const ioRef = useRef<IntersectionObserver | null>(null);
 
@@ -58,7 +55,7 @@ export function GameGrid({ games, pageSize = 36, mosaic = false, className }: Ga
           }
         }
       },
-      { rootMargin: '600px 0px' }
+      { rootMargin: '400px 0px' }
     );
     io.observe(el);
     ioRef.current = io;
@@ -68,10 +65,12 @@ export function GameGrid({ games, pageSize = 36, mosaic = false, className }: Ga
     };
   }, [hasMore, visible, pageSize, loadMore, total]);
 
+  const visibleGames = useMemo(() => games.slice(0, visible), [games, visible]);
+
   return (
     <div className="space-y-6">
       <div className={className || `grid gap-2.5 sm:gap-4 lg:gap-5 ${mosaic ? MOSAIC_COLS : DEFAULT_COLS}`}>
-        {games.slice(0, visible).map((game, idx) => (
+        {visibleGames.map((game, idx) => (
           <GameTile
             key={game.id}
             game={game}
@@ -104,10 +103,11 @@ export function GameGrid({ games, pageSize = 36, mosaic = false, className }: Ga
                 loadMore();
                 playSfx('tap');
               }}
-              className="btn-gaming flex items-center gap-2 px-6 py-3 rounded-full text-xs font-black shadow-lg"
+              data-sfx="tap"
+              className="mt-2 inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/15 text-slate-200 hover:text-white font-extrabold text-xs transition-colors shadow-sm cursor-pointer"
             >
-              <span>Load More Titles</span>
-              <ChevronDown className="w-4 h-4" />
+              <span>Load More Games</span>
+              <ChevronDown className="w-4 h-4 text-[var(--accent)]" />
             </button>
           )}
         </div>

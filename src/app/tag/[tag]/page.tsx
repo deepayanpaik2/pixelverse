@@ -1,17 +1,19 @@
-'use client';
-
-import React, { useMemo } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
 import { Hash, ArrowLeft, Gamepad2 } from 'lucide-react';
 import { getGamesByTag } from '@/lib/games';
 import { GameGrid } from '@/components/portal/GameGrid';
 
-export default function TagDetailPage() {
-  const params = useParams();
+export const revalidate = 3600; // ISR 1 hour
+
+interface TagPageProps {
+  params: { tag: string };
+}
+
+export default function TagDetailPage({ params }: TagPageProps) {
   const rawTag = params?.tag as string;
   const tag = decodeURIComponent(rawTag || '');
-  const games = useMemo(() => getGamesByTag(tag), [tag]);
+  const games = getGamesByTag(tag);
 
   return (
     <div className="space-y-6 pb-16">
@@ -38,7 +40,7 @@ export default function TagDetailPage() {
           </Link>
         </div>
       ) : (
-        <GameGrid games={games} mosaic={false} />
+        <GameGrid games={games} mosaic={false} pageSize={24} />
       )}
     </div>
   );

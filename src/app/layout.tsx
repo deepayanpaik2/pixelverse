@@ -1,6 +1,36 @@
 import type { Metadata, Viewport } from 'next';
+import { Outfit, Plus_Jakarta_Sans, Figtree, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { LayoutShell } from '@/components/layout/LayoutShell';
+import { PerformanceMode } from '@/components/layout/PerformanceMode';
+
+const outfit = Outfit({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800', '900'],
+  variable: '--font-outfit',
+  display: 'swap',
+});
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-plus-jakarta',
+  display: 'swap',
+});
+
+const figtree = Figtree({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-figtree',
+  display: 'swap',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['500', '700'],
+  variable: '--font-jetbrains',
+  display: 'swap',
+});
 
 export const viewport: Viewport = {
   themeColor: '#06070b',
@@ -42,19 +72,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
+    <html
+      lang="en"
+      className={`dark ${outfit.variable} ${plusJakartaSans.variable} ${figtree.variable} ${jetbrainsMono.variable}`}
+    >
       <head>
-        {/* Outfit (punchy gaming display) + Plus Jakarta Sans + Figtree (smooth body) + Noto for Hindi and Bengali */}
         <link rel="preconnect" href="https://img.gamepix.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://play.gamepix.com" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Figtree:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Noto+Sans+Bengali:wght@400;600;700&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap"
-        />
       </head>
       <body className="antialiased font-sans">
+        <PerformanceMode />
         <LayoutShell>{children}</LayoutShell>
       </body>
     </html>

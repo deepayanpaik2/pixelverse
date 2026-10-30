@@ -2,8 +2,6 @@
 
 import React, { useEffect } from 'react';
 import { AuthProvider, useAuth } from '@/features/auth/AuthContext';
-import { VoiceProvider } from '@/features/voice/VoiceContext';
-import { ChatProvider } from '@/features/chat/ChatContext';
 import { Navbar } from './Navbar';
 import { Sidebar } from './Sidebar';
 import { Footer } from './Footer';
@@ -58,8 +56,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
   return (
     <AuthProvider>
       <ThemeApplicator />
-      <VoiceProvider>
-        <ChatProvider>
+      
           <div className="grain relative isolate min-h-screen flex flex-col bg-[var(--background)] text-[var(--foreground)] transition-colors duration-300">
             {/* Skip link for keyboard / screen reader users */}
             <a href="#main-content" className="skip-link">
@@ -80,8 +77,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
               </div>
             </div>
           </div>
-        </ChatProvider>
-      </VoiceProvider>
+        
     </AuthProvider>
   );
 }

@@ -1,3 +1,4 @@
+import { getSharedAudioContext } from '@/lib/audio/shared-audio';
 /**
  * Sound effects synthesized in the browser via Web Audio API.
  * Glass bells and soft ticks on a gentle pentatonic scale, with a short shimmering echo.

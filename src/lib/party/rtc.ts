@@ -1,3 +1,4 @@
+import { getSharedAudioContext } from '@/lib/audio/shared-audio';
 /**
  * Party room realtime engine  (100% free stack)
  *
@@ -217,8 +218,8 @@ export class PartyRoomClient {
     this.emit();
 
     try {
-      this.ac = new (window.AudioContext || (window as any).webkitAudioContext)();
-      this.ac.resume().catch(() => {});
+      this.ac = getSharedAudioContext();
+      this.ac?.resume().catch(() => {});
     } catch {
       this.ac = null;
     }
@@ -309,13 +310,13 @@ export class PartyRoomClient {
     if (this.channel) {
       try {
         this.channel.untrack();
+        this.channel.unsubscribe();
       } catch {
         /* ignore */
       }
       supabase.removeChannel(this.channel);
       this.channel = null;
     }
-    this.ac?.close().catch(() => {});
     this.ac = null;
     this.meters.clear();
   }

@@ -1,18 +1,28 @@
-'use client';
-
-import React, { useMemo } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { Gamepad2, ArrowLeft, Grid } from 'lucide-react';
+import { notFound } from 'next/navigation';
+import { ArrowLeft, Grid } from 'lucide-react';
 import { CATEGORIES, getGamesByCategory } from '@/lib/games';
 import { CategoryChips } from '@/components/portal/CategoryChips';
 import { GameGrid } from '@/components/portal/GameGrid';
 
-export default function CategoryDetailPage() {
-  const params = useParams();
+export const revalidate = 3600; // ISR 1 hour
+
+export function generateStaticParams() {
+  return CATEGORIES.map((c) => ({ slug: c.slug }));
+}
+
+interface CategoryPageProps {
+  params: { slug: string };
+}
+
+export default function CategoryDetailPage({ params }: CategoryPageProps) {
   const slug = params?.slug as string;
-  const category = CATEGORIES.find(c => c.slug.toLowerCase() === decodeURIComponent(slug || '').toLowerCase() || c.name.toLowerCase() === decodeURIComponent(slug || '').toLowerCase());
-  const games = useMemo(() => getGamesByCategory(slug || ''), [slug]);
+  const decoded = decodeURIComponent(slug || '').toLowerCase();
+  const category = CATEGORIES.find(
+    (c) => c.slug.toLowerCase() === decoded || c.name.toLowerCase() === decoded
+  );
+  const games = getGamesByCategory(slug || '');
 
   return (
     <div className="space-y-6 pb-16">
@@ -49,15 +59,13 @@ export default function CategoryDetailPage() {
       {/* Games Mosaic Grid */}
       {games.length === 0 ? (
         <div className="py-20 text-center glass-panel rounded-2xl border border-arcade-border">
-          <Gamepad2 className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-          <h3 className="text-base font-bold text-white">No games in this category yet</h3>
-          <p className="text-xs text-slate-400 mt-1">Check back soon. New games arrive with every catalog update.</p>
-          <Link href="/" className="mt-4 inline-block px-4 py-2 bg-arcade-champagne text-arcade-dark rounded-xl text-xs font-bold">
-            Browse All Games
+          <p className="text-slate-400 font-medium text-sm">No games found in this category yet.</p>
+          <Link href="/arcade" className="mt-4 inline-block px-5 py-2 bg-arcade-champagne text-arcade-dark font-black text-xs rounded-xl shadow-champagne-glow">
+            Explore All Games
           </Link>
         </div>
       ) : (
-        <GameGrid games={games} mosaic={false} />
+        <GameGrid games={games} mosaic={true} pageSize={24} />
       )}
     </div>
   );

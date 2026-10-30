@@ -6,8 +6,19 @@ import { useRouter } from 'next/navigation';
 import { Dices, X, Star, ArrowRight, RotateCw, Zap } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { GameManifest } from '@/types';
-import { getRandomGamePool } from '@/lib/games';
+
 import { playSfx } from '@/lib/sfx';
+
+const FALLBACK_POOL: any[] = [
+  { id: 'gp-subway-surfers', slug: 'subway-surfers', title: 'Subway Surfers', category: 'Action', thumbnail_url: 'https://img.gamepix.com/games/subway-surfers/icon/subway-surfers.png' },
+  { id: 'gp-moto-x3m', slug: 'moto-x3m', title: 'Moto X3M', category: 'Driving', thumbnail_url: 'https://img.gamepix.com/games/moto-x3m/icon/moto-x3m.png' },
+  { id: 'gp-temple-run-2', slug: 'temple-run-2', title: 'Temple Run 2', category: 'Action', thumbnail_url: 'https://img.gamepix.com/games/temple-run-2/icon/temple-run-2.png' },
+  { id: 'gp-cut-the-rope', slug: 'cut-the-rope', title: 'Cut the Rope', category: 'Puzzle', thumbnail_url: 'https://img.gamepix.com/games/cut-the-rope/icon/cut-the-rope.png' },
+  { id: 'gp-drift-boss', slug: 'drift-boss', title: 'Drift Boss', category: 'Driving', thumbnail_url: 'https://img.gamepix.com/games/drift-boss/icon/drift-boss.png' },
+  { id: 'gp-retro-bowl', slug: 'retro-bowl', title: 'Retro Bowl', category: 'Sports', thumbnail_url: 'https://img.gamepix.com/games/retro-bowl/icon/retro-bowl.png' },
+  { id: 'gp-flappy-bird', slug: 'flappy-bird', title: 'Flappy Bird', category: 'Arcade', thumbnail_url: 'https://img.gamepix.com/games/flappy-bird/icon/flappy-bird.png' },
+  { id: 'gp-pacman', slug: 'pacman', title: 'Pac-Man', category: 'Arcade', thumbnail_url: 'https://img.gamepix.com/games/pacman/icon/pacman.png' }
+];
 
 interface GameRouletteModalProps {
   isOpen: boolean;
@@ -27,8 +38,15 @@ export function GameRouletteModal({ isOpen, onClose }: GameRouletteModalProps) {
     setMounted(true);
   }, []);
 
-  const startSpin = () => {
-    const pool = getRandomGamePool(16);
+  const startSpin = async () => {
+    let pool: any[] = FALLBACK_POOL;
+    try {
+      const res = await fetch('/api/games?sort=random&limit=16');
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.games?.length) pool = data.games;
+      }
+    } catch {}
     setCandidates(pool);
     setIsSpinning(true);
     setWinner(null);
