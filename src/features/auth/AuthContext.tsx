@@ -24,6 +24,7 @@ interface AuthContextType {
   rateGame: (gameId: string, isLike: boolean) => { likes: number; dislikes: number; userRating: boolean };
   getUserRating: (gameId: string) => boolean | null;
   signIn: (email: string, pass: string) => Promise<Result>;
+  signInWithGoogle: () => Promise<Result>;
   signUp: (email: string, pass: string, username: string, displayName: string) => Promise<Result & { needsConfirmation?: boolean }>;
   signOut: () => Promise<void>;
   updateProfile: (updates: Partial<Profile>) => Promise<Result>;
@@ -117,10 +118,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     let row = profileRes.data;
     if (!row) {
-      const username = cleanUsername(meta?.username || '') || `user_${userId.slice(0, 8)}`;
+      const googleName = meta?.full_name || meta?.name || '';
+      const emailPrefix = meta?.email ? meta.email.split('@')[0] : '';
+      const rawUser = meta?.username || meta?.user_name || emailPrefix || googleName.replace(/\s+/g, '_') || `user_${userId.slice(0, 8)}`;
+      const username = cleanUsername(rawUser) || `user_${userId.slice(0, 8)}`;
+      const displayName = meta?.display_name || googleName || username;
+      const avatarUrl = meta?.avatar_url || meta?.picture || DEFAULT_AVATAR(username);
+
       const ins = await supabase
         .from('profiles')
-        .insert({ id: userId, username, display_name: meta?.display_name || username, avatar_url: DEFAULT_AVATAR(username), status: 'online' })
+        .insert({
+          id: userId,
+          username,
+          display_name: displayName,
+          avatar_url: avatarUrl,
+          status: 'online',
+          profile_completed: true,
+        })
         .select('*')
         .maybeSingle();
       row = ins.data;
@@ -290,6 +304,58 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Sign in with Google (OAuth)
+  const signInWithGoogle = async (): Promise<Result> => {
+    if (!real) {
+      const mockGoogle = mockStore.getProfiles()[0] || {
+        id: 'usr-google',
+        username: 'google_gamer',
+        display_name: 'Google Gamer',
+        avatar_url: DEFAULT_AVATAR('google_gamer'),
+        bio: 'Pixelverse Gamer',
+        status: 'online',
+        favorite_categories: [],
+        level: 1,
+        xp: 0,
+        is_admin: false,
+        is_moderator: false,
+        created_at: new Date().toISOString(),
+        profile_completed: true,
+      };
+      setUser(mockGoogle as any);
+      if (typeof window !== 'undefined') localStorage.setItem('playverse_current_user_id', mockGoogle.id);
+      mockStore.mergeGuestFavorites(mockGoogle.id);
+      setFavorites(mockStore.getFavorites(mockGoogle.id));
+      return { success: true };
+    }
+
+    try {
+      const origin =
+        typeof window !== 'undefined'
+          ? window.location.origin
+          : process.env.NEXT_PUBLIC_SITE_URL || 'https://pixelverse-lilac.vercel.app';
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+
+      if (error) {
+        return { success: false, error: friendlyAuthError(error.message) };
+      }
+
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to initialize Google sign-in' };
+    }
+  };
+
   // Sign up
   const signUp = async (email: string, pass: string, username: string, displayName: string) => {
     const clean = cleanUsername(username);
@@ -455,7 +521,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user, preferences, isAuthenticated: !!user, isLoading, isRealBackend: real,
         kidsMode, language, favorites,
         setKidsMode, setLanguage, toggleFavorite, rateGame, getUserRating,
-        signIn, signUp, signOut, updateProfile, uploadAvatar, checkUsernameAvailable,
+        signIn, signInWithGoogle, signUp, signOut, updateProfile, uploadAvatar, checkUsernameAvailable,
         updatePreferences, switchUser,
       }}
     >

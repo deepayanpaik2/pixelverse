@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Lock, Mail, User, ArrowRight, Sparkles, Eye, EyeOff, CheckCircle2, XCircle, Loader2, MailCheck } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { SignupStepper } from '@/components/profile/SignupStepper';
+import { playSfx } from '@/lib/sfx';
 
 function passwordStrength(p: string) {
   let score = 0;
@@ -19,7 +20,7 @@ function passwordStrength(p: string) {
 
 export default function SignUpPage() {
   const router = useRouter();
-  const { signUp, checkUsernameAvailable } = useAuth();
+  const { signUp, signInWithGoogle, checkUsernameAvailable } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
@@ -27,6 +28,7 @@ export default function SignUpPage() {
   const [displayName, setDisplayName] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [needsConfirmation, setNeedsConfirmation] = useState(false);
   const [nameState, setNameState] = useState<'idle' | 'checking' | 'ok' | 'taken' | 'invalid'>('idle');
 
@@ -42,11 +44,24 @@ export default function SignUpPage() {
       setNameState(free ? 'ok' : 'taken');
     }, 400);
     return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cleanName]);
+  }, [cleanName, checkUsernameAvailable]);
+
+  const handleGoogleSignIn = async () => {
+    if (isSubmitting || isGoogleLoading) return;
+    setIsGoogleLoading(true);
+    setErrorMsg('');
+    playSfx('launch');
+
+    const res = await signInWithGoogle();
+    if (!res.success) {
+      setIsGoogleLoading(false);
+      setErrorMsg(res.error || 'Failed to initialize Google Sign-In.');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting || isGoogleLoading) return;
     setErrorMsg('');
     if (nameState === 'taken') return setErrorMsg('That username is already taken.');
     if (cleanName.length < 3) return setErrorMsg('Username needs at least 3 characters.');
@@ -70,7 +85,7 @@ export default function SignUpPage() {
         initial={{ opacity: 0, y: 24, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-        className="max-w-md w-full glass-panel p-6 sm:p-8 rounded-2xl border border-arcade-border shadow-2xl space-y-6"
+        className="max-w-md w-full glass-panel p-6 sm:p-8 rounded-2xl border border-arcade-border shadow-2xl space-y-5"
       >
         <SignupStepper step={1} />
 
@@ -88,13 +103,13 @@ export default function SignUpPage() {
               <Link href="/auth/sign-in" className="inline-block text-xs text-arcade-champagne font-bold hover:underline">Back to sign in</Link>
             </motion.div>
           ) : (
-            <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
+            <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
               <div className="text-center space-y-2">
                 <div className="w-12 h-12 mx-auto bg-arcade-sage/10 border border-arcade-sage/30 rounded-xl flex items-center justify-center text-arcade-sage shadow-sage-glow">
                   <Sparkles className="w-6 h-6" />
                 </div>
                 <h1 className="text-2xl font-black text-white">Join Pixelverse</h1>
-                <p className="text-xs text-slate-400">Create your account. Next you will build your player profile.</p>
+                <p className="text-xs text-slate-400">Choose your preferred sign-up method to get started</p>
               </div>
 
               {errorMsg && (
@@ -102,6 +117,40 @@ export default function SignUpPage() {
                   {errorMsg}
                 </motion.div>
               )}
+
+              {/* Google OAuth Button */}
+              <button
+                type="button"
+                onClick={handleGoogleSignIn}
+                disabled={isGoogleLoading || isSubmitting}
+                className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-extrabold text-xs shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2.5 active:scale-98 disabled:opacity-60 cursor-pointer border border-slate-200"
+              >
+                {isGoogleLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-slate-700" />
+                    <span>Connecting to Google...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                      <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" />
+                      <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z" />
+                      <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.03 0 12s.45 3.82 1.25 5.42l4.03-3.15z" />
+                      <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z" />
+                    </svg>
+                    <span>Continue with Google</span>
+                  </>
+                )}
+              </button>
+
+              {/* Divider */}
+              <div className="relative flex items-center justify-center my-1">
+                <div className="border-t border-white/10 w-full" />
+                <span className="bg-[#0c1020] px-3 text-[10px] font-bold uppercase tracking-widest text-slate-400 shrink-0">
+                  or register with email
+                </span>
+                <div className="border-t border-white/10 w-full" />
+              </div>
 
               <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
                 <div>
@@ -160,14 +209,14 @@ export default function SignUpPage() {
 
                 <motion.button
                   whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-                  type="submit" disabled={isSubmitting || nameState === 'taken'}
+                  type="submit" disabled={isSubmitting || isGoogleLoading || nameState === 'taken'}
                   className="w-full py-2.5 rounded-xl bg-arcade-sage text-arcade-dark font-extrabold text-xs shadow-sage-glow hover:bg-white transition-colors flex items-center justify-center gap-1.5 mt-2 disabled:opacity-60"
                 >
                   {isSubmitting ? 'Creating account...' : 'Continue to profile'} <ArrowRight className="w-3.5 h-3.5" />
                 </motion.button>
               </form>
 
-              <div className="pt-4 border-t border-arcade-border text-center text-xs text-slate-400">
+              <div className="pt-3 border-t border-arcade-border text-center text-xs text-slate-400">
                 Already registered?{' '}
                 <Link href="/auth/sign-in" className="text-arcade-sage font-bold hover:underline">Sign In</Link>
               </div>
