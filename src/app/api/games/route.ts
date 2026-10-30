@@ -1,4 +1,3 @@
-export const revalidate = 300;
 import { NextResponse } from 'next/server';
 import { FEATURED_GAMES, CATEGORIES, gameInCategory } from '@/lib/games';
 
@@ -37,8 +36,6 @@ export async function GET(request: Request) {
       result = [...result].sort((a, b) => a.title.localeCompare(b.title));
     } else if (sort === 'plays') {
       result = [...result].sort((a, b) => b.play_count - a.play_count);
-    } else if (sort === 'random' || searchParams.get('random') === 'true') {
-      result = [...result].sort(() => Math.random() - 0.5);
     } else if (sort === 'rating') {
       result = [...result].sort((a, b) => b.rating_score - a.rating_score || (b.quality_score || 0) - (a.quality_score || 0));
     }

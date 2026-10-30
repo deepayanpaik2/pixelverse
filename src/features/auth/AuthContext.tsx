@@ -97,36 +97,6 @@ function friendlyAuthError(message: string): string {
   return message;
 }
 
-export interface AuthState {
-  user: Profile | null;
-  preferences: UserPreferences;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  isRealBackend: boolean;
-  kidsMode: boolean;
-  language: LanguageCode;
-  favorites: string[];
-}
-
-export interface AuthActions {
-  setKidsMode: (enabled: boolean) => void;
-  setLanguage: (lang: LanguageCode) => void;
-  toggleFavorite: (gameId: string) => boolean;
-  rateGame: (gameId: string, isLike: boolean) => { likes: number; dislikes: number; userRating: boolean };
-  getUserRating: (gameId: string) => boolean | null;
-  signIn: (email: string, pass: string) => Promise<Result>;
-  signInWithGoogle: () => Promise<Result>;
-  signUp: (email: string, pass: string, username: string, displayName: string) => Promise<Result & { needsConfirmation?: boolean }>;
-  signOut: () => Promise<void>;
-  updateProfile: (updates: Partial<Profile>) => Promise<Result>;
-  uploadAvatar: (file: File) => Promise<Result & { url?: string }>;
-  checkUsernameAvailable: (username: string) => Promise<boolean>;
-  updatePreferences: (updates: Partial<UserPreferences>) => void;
-  switchUser: (username: string) => void;
-}
-
-const AuthStateContext = createContext<AuthState | undefined>(undefined);
-const AuthActionsContext = createContext<AuthActions | undefined>(undefined);
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -297,35 +267,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [real, loadRealUser]);
 
   // Local settings
-  const setKidsMode = useCallback((enabled: boolean) => {
+  const setKidsMode = (enabled: boolean) => {
     setKidsModeState(enabled);
     if (typeof window !== 'undefined') localStorage.setItem('playverse_kids_mode', enabled.toString());
-  }, []);
+  };
 
-  const setLanguage = useCallback((lang: LanguageCode) => {
+  const setLanguage = (lang: LanguageCode) => {
     setLanguageState(lang);
     if (typeof window !== 'undefined') localStorage.setItem('playverse_language', lang);
-  }, []);
+  };
 
-  const toggleFavorite = useCallback((gameId: string): boolean => {
+  const toggleFavorite = (gameId: string): boolean => {
     const actorKey = user ? user.id : 'guest';
     const isFav = mockStore.toggleFavorite(actorKey, gameId);
     setFavorites([...mockStore.getFavorites(actorKey)]);
     return isFav;
-  }, [user]);
+  };
 
-  const rateGame = useCallback((gameId: string, isLike: boolean) => {
+  const rateGame = (gameId: string, isLike: boolean) => {
     const actorKey = user ? user.id : 'guest';
     return mockStore.rateGame(gameId, isLike, user ? user.id : undefined, actorKey);
-  }, [user]);
+  };
 
-  const getUserRating = useCallback((gameId: string) => {
+  const getUserRating = (gameId: string) => {
     const actorKey = user ? user.id : 'guest';
     return mockStore.getUserGameRating(gameId, user ? user.id : undefined, actorKey);
-  }, [user]);
+  };
 
   // Sign in
-  const signIn = useCallback(async (email: string, pass: string): Promise<Result> => {
+  const signIn = async (email: string, pass: string): Promise<Result> => {
     if (!real) {
       const username = email.split('@')[0];
       const matched = mockStore.getProfileByUsername(username) || mockStore.getProfiles()[0];
@@ -370,10 +340,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       return { success: false, error: err?.message || 'Authentication error' };
     }
-  }, [real, loadRealUser]);
+  };
 
   // Sign in with Google (OAuth)
-  const signInWithGoogle = useCallback(async (): Promise<Result> => {
+  const signInWithGoogle = async (): Promise<Result> => {
     if (real) {
       try {
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -439,20 +409,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       success: false,
       error: 'Supabase authentication is not configured. Please verify your environment variables.',
     };
-  }, [real]);
-
-  // Profile
-  const checkUsernameAvailable = useCallback(async (username: string): Promise<boolean> => {
-    const clean = cleanUsername(username);
-    if (clean.length < 3) return false;
-    if (user && user.username === clean) return true;
-    if (!real) return !mockStore.getProfileByUsername(clean);
-    const { data } = await supabase.from('profiles').select('id').eq('username', clean).maybeSingle();
-    return !data;
-  }, [real, user]);
+  };
 
   // Sign up
-  const signUp = useCallback(async (email: string, pass: string, username: string, displayName: string) => {
+  const signUp = async (email: string, pass: string, username: string, displayName: string) => {
     const clean = cleanUsername(username);
     if (clean.length < 3) return { success: false, error: 'Username must be 3-20 characters (letters, numbers, underscore).' };
 
@@ -502,9 +462,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     await loadRealUser(data.user!.id, data.user!.user_metadata);
     return { success: true };
-  }, [real, checkUsernameAvailable, loadRealUser]);
+  };
 
-  const signOut = useCallback(async () => {
+  const signOut = async () => {
     try {
       if (real && userRef.current) {
         await supabase.from('profiles').update({ status: 'offline' }).eq('id', userRef.current.id);
@@ -518,11 +478,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     setPreferences(defaultPreferences);
     setFavorites(mockStore.getFavorites('guest'));
-  }, [real]);
+  };
 
+  // Profile
+  const checkUsernameAvailable = async (username: string): Promise<boolean> => {
+    const clean = cleanUsername(username);
+    if (clean.length < 3) return false;
+    if (user && user.username === clean) return true;
+    if (!real) return !mockStore.getProfileByUsername(clean);
+    const { data } = await supabase.from('profiles').select('id').eq('username', clean).maybeSingle();
+    return !data;
+  };
 
-
-  const updateProfile = useCallback(async (updates: Partial<Profile>): Promise<Result> => {
+  const updateProfile = async (updates: Partial<Profile>): Promise<Result> => {
     if (!user) return { success: false, error: 'You are not signed in.' };
 
     if (!real) {
@@ -547,9 +515,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!data) return { success: false, error: 'Could not save your profile. Check the database policies (run migration 00005).' };
     setUser(rowToProfile(data));
     return { success: true };
-  }, [real, user]);
+  };
 
-  const uploadAvatar = useCallback(async (file: File): Promise<Result & { url?: string }> => {
+  const uploadAvatar = async (file: File): Promise<Result & { url?: string }> => {
     if (!user) return { success: false, error: 'You are not signed in.' };
     const problem = validateImageFile(file);
     if (problem) return { success: false, error: problem };
@@ -577,9 +545,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (e: any) {
       return { success: false, error: e?.message || 'Could not process that image.' };
     }
-  }, [real, user]);
+  };
 
-  const updatePreferences = useCallback((updates: Partial<UserPreferences>) => {
+  const updatePreferences = (updates: Partial<UserPreferences>) => {
     const next = { ...preferences, ...updates };
     setPreferences(next);
     if (typeof window !== 'undefined') {
@@ -594,86 +562,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         })
         .catch(() => {});
     }
-  }, [preferences, real, user]);
+  };
 
-  const switchUser = useCallback((username: string) => {
+  const switchUser = (username: string) => {
     const target = mockStore.getProfileByUsername(username);
     if (target) {
       setUser(target);
       if (typeof window !== 'undefined') localStorage.setItem('playverse_current_user_id', target.id);
       setFavorites(mockStore.getFavorites(target.id));
     }
-  }, []);
-
-  const stateValue: AuthState = React.useMemo(() => ({
-    user,
-    preferences,
-    isAuthenticated: !!user,
-    isLoading,
-    isRealBackend: real,
-    kidsMode,
-    language,
-    favorites,
-  }), [user, preferences, real, isLoading, kidsMode, language, favorites]);
-
-  const actionsValue: AuthActions = React.useMemo(() => ({
-    setKidsMode,
-    setLanguage,
-    toggleFavorite,
-    rateGame,
-    getUserRating,
-    signIn,
-    signInWithGoogle,
-    signUp,
-    signOut,
-    updateProfile,
-    uploadAvatar,
-    checkUsernameAvailable,
-    updatePreferences,
-    switchUser,
-  }), [
-    setKidsMode,
-    setLanguage,
-    toggleFavorite,
-    rateGame,
-    getUserRating,
-    signIn,
-    signInWithGoogle,
-    signUp,
-    signOut,
-    updateProfile,
-    uploadAvatar,
-    checkUsernameAvailable,
-    updatePreferences,
-    switchUser,
-  ]);
-
-  const combinedValue: AuthContextType = React.useMemo(() => ({
-    ...stateValue,
-    ...actionsValue,
-  }), [stateValue, actionsValue]);
+  };
 
   return (
-    <AuthStateContext.Provider value={stateValue}>
-      <AuthActionsContext.Provider value={actionsValue}>
-        <AuthContext.Provider value={combinedValue}>
-          {children}
-        </AuthContext.Provider>
-      </AuthActionsContext.Provider>
-    </AuthStateContext.Provider>
+    <AuthContext.Provider
+      value={{
+        user, preferences, isAuthenticated: !!user, isLoading, isRealBackend: real,
+        kidsMode, language, favorites,
+        setKidsMode, setLanguage, toggleFavorite, rateGame, getUserRating,
+        signIn, signInWithGoogle, signUp, signOut, updateProfile, uploadAvatar, checkUsernameAvailable,
+        updatePreferences, switchUser,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
   );
-}
-
-export function useAuthState() {
-  const context = useContext(AuthStateContext);
-  if (!context) throw new Error('useAuthState must be used within an AuthProvider');
-  return context;
-}
-
-export function useAuthActions() {
-  const context = useContext(AuthActionsContext);
-  if (!context) throw new Error('useAuthActions must be used within an AuthProvider');
-  return context;
 }
 
 export function useAuth() {

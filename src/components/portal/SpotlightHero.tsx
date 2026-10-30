@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import {
   Play,
   Sparkles,
@@ -213,12 +212,9 @@ export function SpotlightHero({ games }: SpotlightHeroProps) {
                 </div>
 
                 {/* Game Cover Artwork: Stays 100% visible, bright, and scales smoothly without blackout */}
-                <Image
+                <img
                   src={current.banner_url || current.thumbnail_url}
                   alt={current.title}
-                  width={560}
-                  height={380}
-                  priority
                   className="relative z-10 w-full h-full object-contain rounded-xl drop-shadow-[0_12px_32px_rgba(0,0,0,0.9)] transition-transform duration-300 group-hover/cover:scale-105"
                 />
 

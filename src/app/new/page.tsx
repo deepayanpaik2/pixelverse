@@ -1,13 +1,13 @@
-import React from 'react';
+'use client';
+
+import React, { useMemo } from 'react';
 import { Sparkles } from 'lucide-react';
 import { getNewGames } from '@/lib/games';
 import { GameGrid } from '@/components/portal/GameGrid';
 import { CategoryChips } from '@/components/portal/CategoryChips';
 
-export const revalidate = 3600; // ISR 1 hour
-
 export default function NewGamesPage() {
-  const games = getNewGames();
+  const games = useMemo(() => getNewGames(), []);
 
   return (
     <div className="space-y-8 pb-16">
@@ -39,7 +39,7 @@ export default function NewGamesPage() {
 
       <CategoryChips />
 
-      <GameGrid games={games} mosaic={true} pageSize={24} />
+      <GameGrid games={games} mosaic={true} />
     </div>
   );
 }

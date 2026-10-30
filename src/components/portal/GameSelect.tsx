@@ -1,12 +1,7 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-
-interface GameOption {
-  id: string;
-  title: string;
-  author?: string;
-}
+import React, { useMemo, useState } from 'react';
+import { FEATURED_GAMES } from '@/lib/games';
 
 interface GameSelectProps {
   value: string;
@@ -14,36 +9,26 @@ interface GameSelectProps {
   className?: string;
   /** extra fixed options shown at the end, e.g. { value: 'other', label: 'Other / Custom URL' } */
   extraOptions?: { value: string; label: string }[];
-  renderLabel?: (title: string, author?: string) => string;
+  renderLabel?: (title: string, author: string) => string;
 }
 
-/** A search box + dropdown that stays fast with thousands of games via lightweight API fetch. */
+/** A search box + dropdown that stays fast with thousands of games (shows at most 60 matches). */
 export function GameSelect({ value, onChange, className = '', extraOptions = [], renderLabel }: GameSelectProps) {
   const [query, setQuery] = useState('');
-  const [options, setOptions] = useState<GameOption[]>([]);
 
-  useEffect(() => {
-    let active = true;
-    const fetchGames = async () => {
-      try {
-        const q = query.trim().toLowerCase();
-        const url = q ? `/api/games?search=${encodeURIComponent(q)}&limit=30` : `/api/games?limit=30`;
-        const res = await fetch(url);
-        if (res.ok && active) {
-          const data = await res.json();
-          if (data?.games) {
-            setOptions(data.games.map((g: any) => ({ id: g.id, title: g.title, author: g.developer_name })));
-          }
-        }
-      } catch {}
-    };
-
-    const timer = setTimeout(fetchGames, 200);
-    return () => {
-      active = false;
-      clearTimeout(timer);
-    };
-  }, [query]);
+  const options = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const out = [] as typeof FEATURED_GAMES;
+    for (const g of FEATURED_GAMES) {
+      if (!q || g.title.toLowerCase().includes(q)) {
+        out.push(g);
+        if (out.length >= 60) break;
+      }
+    }
+    const selected = FEATURED_GAMES.find((g) => g.id === value);
+    if (selected && !out.some((g) => g.id === selected.id)) out.unshift(selected);
+    return out;
+  }, [query, value]);
 
   return (
     <div className="space-y-1.5">

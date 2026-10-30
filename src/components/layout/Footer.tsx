@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Shield, Sparkles, Gamepad2, Heart } from 'lucide-react';
 import { BrandMark } from './BrandMark';
-import { STATIC_CATEGORIES } from '@/lib/games/static-categories';
+import { CATEGORIES } from '@/lib/games';
 import { playSfx } from '@/lib/sfx';
 
 export function Footer() {
@@ -39,7 +39,7 @@ export function Footer() {
               <Gamepad2 className="w-4 h-4 text-[var(--accent)]" /> Categories
             </h4>
             <div className="flex flex-col space-y-1.5 text-xs font-semibold">
-              {STATIC_CATEGORIES.slice(0, 6).map((c) => (
+              {CATEGORIES.slice(0, 6).map((c) => (
                 <Link
                   key={c.slug}
                   href={`/category/${c.slug}`}

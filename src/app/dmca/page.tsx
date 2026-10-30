@@ -12,6 +12,7 @@ import {
   AlertTriangle,
   Info
 } from 'lucide-react';
+import { FEATURED_GAMES } from '@/lib/games';
 import { GameSelect } from '@/components/portal/GameSelect';
 import { mockStore } from '@/lib/supabase/mock-store';
 
@@ -20,7 +21,7 @@ export default function DmcaPolicyPage() {
     claimant_name: '',
     claimant_email: '',
     copyright_owner: '',
-    game_id: '',
+    game_id: FEATURED_GAMES[0]?.id || '',
     infringing_url: '',
     original_work_url: '',
     description: '',
@@ -227,10 +228,11 @@ export default function DmcaPolicyPage() {
                 <GameSelect
                   value={formData.game_id}
                   onChange={(id) => {
+                    const sel = FEATURED_GAMES.find(g => g.id === id);
                     setFormData({
                       ...formData,
                       game_id: id,
-                      infringing_url: id && id !== 'other' ? `${typeof window !== 'undefined' ? window.location.origin : ''}/game/${id}` : formData.infringing_url
+                      infringing_url: sel ? `${typeof window !== 'undefined' ? window.location.origin : ''}/game/${sel.slug}` : formData.infringing_url
                     });
                   }}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-arcade-midnight border border-arcade-border text-white text-sm focus:outline-none focus:border-arcade-rose"

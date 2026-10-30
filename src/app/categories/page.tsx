@@ -1,4 +1,4 @@
-export const revalidate = 3600;
+'use client';
 
 import React from 'react';
 import Link from 'next/link';
@@ -76,7 +76,7 @@ export default function CategoriesPage() {
             <Link
               key={cat.slug}
               href={`/category/${cat.slug}`}
-              data-sfx="tap"
+              onClick={() => playSfx('tap')}
               className="card-3d drawer-neon p-6 rounded-2xl border border-white/15 hover:border-[var(--accent)] transition-all group flex items-start gap-4 relative overflow-hidden"
             >
               <div 

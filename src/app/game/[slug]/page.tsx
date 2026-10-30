@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
-import Script from 'next/script';
 import { useParams, useRouter } from 'next/navigation';
 import { 
   Play, 
@@ -36,12 +35,7 @@ import { mockStore } from '@/lib/supabase/mock-store';
 import { GameTile } from '@/components/portal/GameTile';
 import { playSfx } from '@/lib/sfx';
 import { createRoom, getIdentity } from '@/lib/party/rooms';
-import dynamic from 'next/dynamic';
-
-const ChallengeDuelModal = dynamic(
-  () => import('@/components/portal/ChallengeDuelModal').then((m) => m.ChallengeDuelModal),
-  { ssr: false }
-);
+import { ChallengeDuelModal } from '@/components/portal/ChallengeDuelModal';
 import { GameHowToPlayGuide } from '@/components/portal/GameHowToPlayGuide';
 
 export default function GamePlayerPage() {
@@ -408,10 +402,6 @@ export default function GamePlayerPage() {
 
   return (
     <div className="space-y-8 pb-16">
-      <Script
-        src="https://integration.gamepix.com/v1/gamepix.js"
-        strategy="lazyOnload"
-      />
       {/* JSON-LD Structured Data for Search Engines */}
       <script
         type="application/ld+json"
@@ -624,14 +614,14 @@ export default function GamePlayerPage() {
                 key={iframeKey}
                 src={launchUrl}
                 title={game.title}
-                loading="lazy"
+                loading="eager"
                 onLoad={() => {
                   setIframeLoaded(true);
                   try { iframeRef.current?.focus(); } catch {}
                 }}
                 referrerPolicy="strict-origin-when-cross-origin"
                 sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-pointer-lock allow-orientation-lock allow-presentation allow-modals allow-downloads"
-                allow="autoplay; fullscreen; accelerometer; gamepad; gyroscope; picture-in-picture; payment; clipboard-read; clipboard-write; microphone"
+                allow="accelerometer; autoplay; camera; clipboard-read; clipboard-write; display-capture; fullscreen; gamepad; geolocation; gyroscope; microphone; midi; payment; picture-in-picture; screen-wake-lock; web-share"
                 allowFullScreen
                 className="relative z-10 w-full h-full border-none bg-black block"
                 style={{ contain: 'strict' }}

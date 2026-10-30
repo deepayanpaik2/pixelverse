@@ -582,7 +582,7 @@ function RoomView({ room, client, onLeft }: { room: PartyRoom; client: PartyRoom
                     src={game ? getLaunchUrl(game, typeof window !== 'undefined' ? window.location.origin : '') : undefined}
                     title={game?.title}
                     sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-pointer-lock allow-orientation-lock allow-presentation allow-modals"
-                    loading="lazy" allow="autoplay; fullscreen; gamepad; accelerometer; gyroscope"
+                    allow="autoplay; fullscreen; gamepad; accelerometer; gyroscope"
                     allowFullScreen
                     className="w-full h-full border-none"
                   />
@@ -744,13 +744,6 @@ function RoomPageContent() {
   );
   const [joining, setJoining] = useState(false);
   const [client, setClient] = useState<PartyRoomClient | null>(null);
-
-  // Unsubscribe and disconnect on unmount
-  useEffect(() => {
-    return () => {
-      client?.leave(); // Room unmount cleanup
-    };
-  }, [client]);
   const [endedMsg, setEndedMsg] = useState('');
 
   const joinPreviewRef = useRef<HTMLVideoElement>(null);

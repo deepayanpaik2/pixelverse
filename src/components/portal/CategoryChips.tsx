@@ -2,21 +2,13 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { STATIC_CATEGORIES } from '@/lib/games/static-categories';
-
-export interface CategoryChipItem {
-  id: string;
-  slug: string;
-  name: string;
-  game_count?: number;
-}
+import { CATEGORIES } from '@/lib/games';
 
 interface CategoryChipsProps {
   activeCategory?: string;
-  categories?: CategoryChipItem[];
 }
 
-export function CategoryChips({ activeCategory, categories = STATIC_CATEGORIES }: CategoryChipsProps) {
+export function CategoryChips({ activeCategory }: CategoryChipsProps) {
   const active = activeCategory ? decodeURIComponent(activeCategory).toLowerCase() : undefined;
 
   return (
@@ -29,7 +21,7 @@ export function CategoryChips({ activeCategory, categories = STATIC_CATEGORIES }
         <span>All Games</span>
       </Link>
 
-      {categories.map((cat) => (
+      {CATEGORIES.map((cat) => (
         <Link
           key={cat.slug}
           href={`/category/${cat.slug}`}
@@ -37,11 +29,9 @@ export function CategoryChips({ activeCategory, categories = STATIC_CATEGORIES }
           className="glass-chip flex items-center gap-1.5 sm:gap-2 px-3.5 py-2 sm:px-5 sm:py-2.5 rounded-full text-xs sm:text-[13px] font-extrabold whitespace-nowrap text-slate-200 hover:text-white transition-all shadow-sm shrink-0"
         >
           <span>{cat.name}</span>
-          {typeof cat.game_count === 'number' && cat.game_count > 0 && (
-            <span className="text-[9.5px] sm:text-[10px] opacity-75 tabular-nums bg-white/10 px-1.5 sm:px-2 py-0.5 rounded-full font-mono">
-              {cat.game_count.toLocaleString()}
-            </span>
-          )}
+          <span className="text-[9.5px] sm:text-[10px] opacity-75 tabular-nums bg-white/10 px-1.5 sm:px-2 py-0.5 rounded-full font-mono">
+            {cat.game_count.toLocaleString()}
+          </span>
         </Link>
       ))}
     </div>

@@ -1,13 +1,11 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import type { VoiceEngine as VoiceEngineType, VoiceParticipantState } from '@/lib/webrtc/voice-engine';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { VoiceEngine, VoiceParticipantState } from '@/lib/webrtc/voice-engine';
 import { useAuth } from '../auth/AuthContext';
 import { mockStore } from '@/lib/supabase/mock-store';
 
-export type { VoiceParticipantState };
-
-export interface VoiceState {
+interface VoiceContextType {
   currentRoomId: string | null;
   isVoiceConnected: boolean;
   isMuted: boolean;
@@ -15,41 +13,12 @@ export interface VoiceState {
   isSpeaking: boolean;
   audioLevel: number;
   participants: VoiceParticipantState[];
-}
-
-export interface VoiceActions {
   joinVoiceRoom: (roomId: string) => Promise<boolean>;
   leaveVoiceRoom: () => void;
   toggleMute: () => void;
   toggleDeafen: () => void;
 }
 
-export type VoiceContextType = VoiceState & VoiceActions;
-
-const defaultVoiceState: VoiceState = {
-  currentRoomId: null,
-  isVoiceConnected: false,
-  isMuted: false,
-  isDeafened: false,
-  isSpeaking: false,
-  audioLevel: 0,
-  participants: [],
-};
-
-const defaultVoiceActions: VoiceActions = {
-  joinVoiceRoom: async () => false,
-  leaveVoiceRoom: () => {},
-  toggleMute: () => {},
-  toggleDeafen: () => {},
-};
-
-const defaultVoiceContext: VoiceContextType = {
-  ...defaultVoiceState,
-  ...defaultVoiceActions,
-};
-
-const VoiceStateContext = createContext<VoiceState | undefined>(undefined);
-const VoiceActionsContext = createContext<VoiceActions | undefined>(undefined);
 const VoiceContext = createContext<VoiceContextType | undefined>(undefined);
 
 export function VoiceProvider({ children }: { children: React.ReactNode }) {
@@ -62,41 +31,35 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
   const [audioLevel, setAudioLevel] = useState(0);
   const [participants, setParticipants] = useState<VoiceParticipantState[]>([]);
 
-  const voiceEngineRef = useRef<VoiceEngineType | null>(null);
+  const voiceEngineRef = useRef<VoiceEngine | null>(null);
 
   useEffect(() => {
-    let active = true;
-    import('@/lib/webrtc/voice-engine').then(({ VoiceEngine }) => {
-      if (!active) return;
-      voiceEngineRef.current = new VoiceEngine();
-      voiceEngineRef.current.onSpeakingChange((speaking, level) => {
-        setIsSpeaking(speaking);
-        setAudioLevel(level);
+    voiceEngineRef.current = new VoiceEngine();
+    voiceEngineRef.current.onSpeakingChange((speaking, level) => {
+      setIsSpeaking(speaking);
+      setAudioLevel(level);
 
-        if (user) {
-          setParticipants(prev =>
-            prev.map(p => (p.id === user.id ? { ...p, isSpeaking: speaking, audioLevel: level } : p))
-          );
-        }
-      });
+      // Update current user in participant list
+      if (user) {
+        setParticipants(prev =>
+          prev.map(p => (p.id === user.id ? { ...p, isSpeaking: speaking, audioLevel: level } : p))
+        );
+      }
     });
 
     return () => {
-      active = false;
       voiceEngineRef.current?.stop();
     };
   }, [user]);
 
-  const joinVoiceRoom = useCallback(async (roomId: string): Promise<boolean> => {
-    if (!voiceEngineRef.current) {
-      const { VoiceEngine } = await import('@/lib/webrtc/voice-engine');
-      voiceEngineRef.current = new VoiceEngine();
-    }
+  const joinVoiceRoom = async (roomId: string): Promise<boolean> => {
+    if (!voiceEngineRef.current) return false;
 
     await voiceEngineRef.current.startLocalAudio();
     setCurrentRoomId(roomId);
     setIsVoiceConnected(true);
 
+    // Populate participant roster with room members + simulated chatter
     const profiles = mockStore.getProfiles();
     const otherUsers = profiles.filter(p => p.id !== user?.id).slice(0, 3);
 
@@ -127,92 +90,69 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
 
     setParticipants(initialParticipants);
     return true;
-  }, [user, isMuted, isDeafened]);
+  };
 
-  const leaveVoiceRoom = useCallback(() => {
+  const leaveVoiceRoom = () => {
     voiceEngineRef.current?.stop();
     setCurrentRoomId(null);
     setIsVoiceConnected(false);
     setIsSpeaking(false);
     setAudioLevel(0);
     setParticipants([]);
-  }, []);
+  };
 
-  const toggleMute = useCallback(() => {
+  const toggleMute = () => {
     if (!voiceEngineRef.current) return;
-    setIsMuted(prev => {
-      const nextMuted = !prev;
-      voiceEngineRef.current?.setMute(nextMuted);
-      if (user) {
-        setParticipants(pList =>
-          pList.map(p => (p.id === user.id ? { ...p, isMuted: nextMuted } : p))
-        );
-      }
-      return nextMuted;
-    });
-  }, [user]);
+    const nextMuted = !isMuted;
+    voiceEngineRef.current.setMute(nextMuted);
+    setIsMuted(nextMuted);
+    if (user) {
+      setParticipants(prev =>
+        prev.map(p => (p.id === user.id ? { ...p, isMuted: nextMuted } : p))
+      );
+    }
+  };
 
-  const toggleDeafen = useCallback(() => {
+  const toggleDeafen = () => {
     if (!voiceEngineRef.current) return;
-    setIsDeafened(prev => {
-      const nextDeaf = !prev;
-      voiceEngineRef.current?.setDeafen(nextDeaf);
-      if (nextDeaf) {
-        setIsMuted(true);
-      }
-      if (user) {
-        setParticipants(pList =>
-          pList.map(p => (p.id === user.id ? { ...p, isDeafened: nextDeaf, isMuted: nextDeaf || p.isMuted } : p))
-        );
-      }
-      return nextDeaf;
-    });
-  }, [user]);
-
-  const stateValue: VoiceState = useMemo(() => ({
-    currentRoomId,
-    isVoiceConnected,
-    isMuted,
-    isDeafened,
-    isSpeaking,
-    audioLevel,
-    participants,
-  }), [currentRoomId, isVoiceConnected, isMuted, isDeafened, isSpeaking, audioLevel, participants]);
-
-  const actionsValue: VoiceActions = useMemo(() => ({
-    joinVoiceRoom,
-    leaveVoiceRoom,
-    toggleMute,
-    toggleDeafen,
-  }), [joinVoiceRoom, leaveVoiceRoom, toggleMute, toggleDeafen]);
-
-  const combinedValue: VoiceContextType = useMemo(() => ({
-    ...stateValue,
-    ...actionsValue,
-  }), [stateValue, actionsValue]);
+    const nextDeaf = !isDeafened;
+    voiceEngineRef.current.setDeafen(nextDeaf);
+    setIsDeafened(nextDeaf);
+    if (nextDeaf) {
+      setIsMuted(true);
+    }
+    if (user) {
+      setParticipants(prev =>
+        prev.map(p => (p.id === user.id ? { ...p, isDeafened: nextDeaf, isMuted: nextDeaf || p.isMuted } : p))
+      );
+    }
+  };
 
   return (
-    <VoiceStateContext.Provider value={stateValue}>
-      <VoiceActionsContext.Provider value={actionsValue}>
-        <VoiceContext.Provider value={combinedValue}>
-          {children}
-        </VoiceContext.Provider>
-      </VoiceActionsContext.Provider>
-    </VoiceStateContext.Provider>
+    <VoiceContext.Provider
+      value={{
+        currentRoomId,
+        isVoiceConnected,
+        isMuted,
+        isDeafened,
+        isSpeaking,
+        audioLevel,
+        participants,
+        joinVoiceRoom,
+        leaveVoiceRoom,
+        toggleMute,
+        toggleDeafen,
+      }}
+    >
+      {children}
+    </VoiceContext.Provider>
   );
-}
-
-export function useVoiceState() {
-  const context = useContext(VoiceStateContext);
-  return context ?? defaultVoiceState;
-}
-
-export function useVoiceActions() {
-  const context = useContext(VoiceActionsContext);
-  return context ?? defaultVoiceActions;
 }
 
 export function useVoice() {
   const context = useContext(VoiceContext);
-  return context ?? defaultVoiceContext;
+  if (!context) {
+    throw new Error('useVoice must be used within a VoiceProvider');
+  }
+  return context;
 }

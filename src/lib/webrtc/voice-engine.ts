@@ -1,4 +1,3 @@
-import { getSharedAudioContext } from '@/lib/audio/shared-audio';
 /**
  * Pixelverse WebRTC Audio & Voice Engine
  * Handles microphone capture, audio spectrum analysis, speaking detection,
@@ -51,8 +50,8 @@ export class VoiceEngine {
       });
 
       this.mediaStream = stream;
-      this.audioContext = getSharedAudioContext();
-      if (!this.audioContext) return false;
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      this.audioContext = new AudioCtx();
       this.analyser = this.audioContext.createAnalyser();
       this.analyser.fftSize = 256;
       this.analyser.smoothingTimeConstant = 0.5;
@@ -91,38 +90,24 @@ export class VoiceEngine {
 
     const bufferLength = this.analyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
-    let lastTime = 0;
-    const intervalMs = 1000 / 30; // Throttled to ~30fps for CPU / battery efficiency
 
-    const checkLevel = (time: number) => {
+    const checkLevel = () => {
       if (!this.analyser) return;
+      this.analyser.getByteFrequencyData(dataArray);
 
-      // Throttle and only calculate while document tab is visible
-      if (typeof document !== 'undefined' && document.hidden) {
-        this.animationFrameId = requestAnimationFrame(checkLevel);
-        return;
+      let sum = 0;
+      for (let i = 0; i < bufferLength; i++) {
+        sum += dataArray[i];
       }
+      const avg = sum / bufferLength;
+      const normalizedLevel = Math.min(100, Math.round((avg / 128) * 100));
 
-      const delta = time - lastTime;
-      if (delta >= intervalMs) {
-        lastTime = time - (delta % intervalMs);
+      this.audioLevel = this.isMuted ? 0 : normalizedLevel;
+      const speakingNow = !this.isMuted && this.audioLevel > 18;
 
-        this.analyser.getByteFrequencyData(dataArray);
-
-        let sum = 0;
-        for (let i = 0; i < bufferLength; i++) {
-          sum += dataArray[i];
-        }
-        const avg = sum / bufferLength;
-        const normalizedLevel = Math.min(100, Math.round((avg / 128) * 100));
-
-        this.audioLevel = this.isMuted ? 0 : normalizedLevel;
-        const speakingNow = !this.isMuted && this.audioLevel > 18;
-
-        if (speakingNow !== this.isSpeaking || Math.abs(normalizedLevel - this.audioLevel) > 5) {
-          this.isSpeaking = speakingNow;
-          this.notifySpeaking(this.isSpeaking, this.audioLevel);
-        }
+      if (speakingNow !== this.isSpeaking || Math.abs(normalizedLevel - this.audioLevel) > 5) {
+        this.isSpeaking = speakingNow;
+        this.notifySpeaking(this.isSpeaking, this.audioLevel);
       }
 
       this.animationFrameId = requestAnimationFrame(checkLevel);
@@ -165,7 +150,10 @@ export class VoiceEngine {
       this.mediaStream.getTracks().forEach(track => track.stop());
       this.mediaStream = null;
     }
-    this.audioContext = null;
+    if (this.audioContext && this.audioContext.state !== 'closed') {
+      this.audioContext.close();
+      this.audioContext = null;
+    }
     this.isSpeaking = false;
     this.audioLevel = 0;
   }

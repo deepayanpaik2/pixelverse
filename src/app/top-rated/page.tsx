@@ -1,13 +1,13 @@
-import React from 'react';
+'use client';
+
+import React, { useMemo } from 'react';
 import { Star } from 'lucide-react';
 import { getTopRatedGames } from '@/lib/games';
 import { GameGrid } from '@/components/portal/GameGrid';
 import { CategoryChips } from '@/components/portal/CategoryChips';
 
-export const revalidate = 3600; // ISR 1 hour
-
 export default function TopRatedPage() {
-  const games = getTopRatedGames();
+  const games = useMemo(() => getTopRatedGames(), []);
 
   return (
     <div className="space-y-6 pb-16">
@@ -22,7 +22,7 @@ export default function TopRatedPage() {
 
       <CategoryChips />
 
-      <GameGrid games={games} mosaic={false} pageSize={24} />
+      <GameGrid games={games} mosaic={false} />
     </div>
   );
 }

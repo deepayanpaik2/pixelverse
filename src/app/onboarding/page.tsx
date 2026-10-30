@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { LazyMotion, domAnimation, m, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowRight,
   ArrowLeft,
@@ -135,8 +135,7 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-[calc(100vh-160px)] flex items-start sm:items-center justify-center p-2 sm:p-4 py-6 sm:py-10">
-    <LazyMotion features={domAnimation}>
-      <m.div
+      <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
@@ -147,7 +146,7 @@ export default function OnboardingPage() {
         <AnimatePresence mode="wait">
           {step === 2 ? (
             /* Avatar customizer */
-            <m.div
+            <motion.div
               key="step-2"
               initial={{ opacity: 0, x: -16 }}
               animate={{ opacity: 1, x: 0 }}
@@ -190,10 +189,10 @@ export default function OnboardingPage() {
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
-            </m.div>
+            </motion.div>
           ) : (
             /* Profile details */
-            <m.div
+            <motion.div
               key="step-3"
               initial={{ opacity: 0, x: 16 }}
               animate={{ opacity: 1, x: 0 }}
@@ -307,7 +306,7 @@ export default function OnboardingPage() {
                       {CATEGORIES.map((c) => {
                         const on = cats.includes(c.name);
                         return (
-                          <m.button
+                          <motion.button
                             key={c.id}
                             type="button"
                             whileTap={{ scale: 0.92 }}
@@ -319,7 +318,7 @@ export default function OnboardingPage() {
                             }`}
                           >
                             {on && <Check className="w-3 h-3" />} {c.name}
-                          </m.button>
+                          </motion.button>
                         );
                       })}
                     </div>
@@ -363,16 +362,16 @@ export default function OnboardingPage() {
                   </div>
 
                   {error && (
-                    <m.div
+                    <motion.div
                       initial={{ opacity: 0, x: -8 }}
                       animate={{ opacity: 1, x: 0 }}
                       className="p-3 rounded-lg bg-arcade-rose/15 border border-arcade-rose/30 text-arcade-rose font-semibold"
                     >
                       {error}
-                    </m.div>
+                    </motion.div>
                   )}
 
-                  <m.button
+                  <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.97 }}
                     type="submit"
@@ -388,7 +387,7 @@ export default function OnboardingPage() {
                         Enter Pixelverse <ArrowRight className="w-4 h-4" />
                       </>
                     )}
-                  </m.button>
+                  </motion.button>
                 </div>
 
                 {/* Right Column: Live Profile Identity Card */}
@@ -459,11 +458,10 @@ export default function OnboardingPage() {
                   </div>
                 </aside>
               </form>
-            </m.div>
+            </motion.div>
           )}
         </AnimatePresence>
-      </m.div>
-    </LazyMotion>
+      </motion.div>
     </div>
   );
 }

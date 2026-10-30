@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { LazyMotion, domAnimation, m, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Lock, Mail, User, ArrowRight, Sparkles, Eye, EyeOff, CheckCircle2, XCircle, Loader2, MailCheck } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { SignupStepper } from '@/components/profile/SignupStepper';
@@ -81,8 +81,7 @@ export default function SignUpPage() {
 
   return (
     <div className="min-h-[calc(100vh-160px)] flex items-center justify-center p-4">
-    <LazyMotion features={domAnimation}>
-      <m.div
+      <motion.div
         initial={{ opacity: 0, y: 24, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
@@ -92,7 +91,7 @@ export default function SignUpPage() {
 
         <AnimatePresence mode="wait">
           {needsConfirmation ? (
-            <m.div key="confirm" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="text-center space-y-4 py-4">
+            <motion.div key="confirm" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="text-center space-y-4 py-4">
               <div className="w-14 h-14 mx-auto bg-arcade-champagne/10 border border-arcade-champagne/30 rounded-2xl flex items-center justify-center text-arcade-champagne shadow-champagne-glow">
                 <MailCheck className="w-7 h-7" />
               </div>
@@ -102,9 +101,9 @@ export default function SignUpPage() {
                 Open it and you will land straight on the profile-creation step.
               </p>
               <Link href="/auth/sign-in" className="inline-block text-xs text-arcade-champagne font-bold hover:underline">Back to sign in</Link>
-            </m.div>
+            </motion.div>
           ) : (
-            <m.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+            <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
               <div className="text-center space-y-2">
                 <div className="w-12 h-12 mx-auto bg-arcade-sage/10 border border-arcade-sage/30 rounded-xl flex items-center justify-center text-arcade-sage shadow-sage-glow">
                   <Sparkles className="w-6 h-6" />
@@ -114,7 +113,7 @@ export default function SignUpPage() {
               </div>
 
               {errorMsg && (
-                <m.div initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} className="p-3 rounded-lg bg-arcade-rose/15 border border-arcade-rose/30 text-arcade-rose text-xs font-semibold leading-relaxed">
+                <motion.div initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} className="p-3 rounded-lg bg-arcade-rose/15 border border-arcade-rose/30 text-arcade-rose text-xs font-semibold leading-relaxed">
                   <p>{errorMsg}</p>
                   {errorMsg.includes('Supabase Dashboard') && (
                     <div className="mt-2 pt-2 border-t border-arcade-rose/20 flex justify-end">
@@ -128,7 +127,7 @@ export default function SignUpPage() {
                       </a>
                     </div>
                   )}
-                </m.div>
+                </motion.div>
               )}
 
               {/* Google OAuth Button */}
@@ -221,24 +220,23 @@ export default function SignUpPage() {
                   </div>
                 </div>
 
-                <m.button
+                <motion.button
                   whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
                   type="submit" disabled={isSubmitting || isGoogleLoading || nameState === 'taken'}
                   className="w-full py-2.5 rounded-xl bg-arcade-sage text-arcade-dark font-extrabold text-xs shadow-sage-glow hover:bg-white transition-colors flex items-center justify-center gap-1.5 mt-2 disabled:opacity-60"
                 >
                   {isSubmitting ? 'Creating account...' : 'Continue to profile'} <ArrowRight className="w-3.5 h-3.5" />
-                </m.button>
+                </motion.button>
               </form>
 
               <div className="pt-3 border-t border-arcade-border text-center text-xs text-slate-400">
                 Already registered?{' '}
                 <Link href="/auth/sign-in" className="text-arcade-sage font-bold hover:underline">Sign In</Link>
               </div>
-            </m.div>
+            </motion.div>
           )}
         </AnimatePresence>
-      </m.div>
-    </LazyMotion>
+      </motion.div>
     </div>
   );
 }
