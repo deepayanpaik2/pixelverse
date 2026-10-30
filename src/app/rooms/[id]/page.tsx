@@ -26,10 +26,15 @@ import {
   AlertTriangle,
   Users,
   Swords,
+  Maximize2,
+  Minimize2,
+  RotateCw,
+  RotateCcw,
 } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { FEATURED_GAMES } from '@/lib/games';
 import { getLaunchUrl } from '@/lib/games/launch';
+import { playSfx } from '@/lib/sfx';
 import {
   getRoomByCode,
   getIdentity,
@@ -171,12 +176,150 @@ function RoomView({ room, client, onLeft }: { room: PartyRoom; client: PartyRoom
   const [text, setText] = useState('');
   const [copied, setCopied] = useState(false);
   const [showControlsGuide, setShowControlsGuide] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [pseudoFs, setPseudoFs] = useState(false);
+  const [isMobileDevice, setIsMobileDevice] = useState(false);
+  const [mobileFsOrientation, setMobileFsOrientation] = useState<'landscape' | 'portrait'>('landscape');
+  const [iframeKey, setIframeKey] = useState(1);
+  const gameContainerRef = useRef<HTMLDivElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const lastGameSignal = useRef(0);
   const countRef = useRef(1);
 
   const game = FEATURED_GAMES.find((g) => g.id === room.selected_game_id);
   const me = snap.me;
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const ua = navigator.userAgent || '';
+      const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua) || window.innerWidth < 768;
+      setIsMobileDevice(mobile);
+    }
+
+    const onFsChange = () => {
+      const isFs = !!(document.fullscreenElement || (document as any).webkitFullscreenElement);
+      if (!isFs) {
+        setPseudoFs(false);
+        setIsFullscreen(false);
+        try {
+          if (typeof screen !== 'undefined' && screen.orientation && (screen.orientation as any).unlock) {
+            (screen.orientation as any).unlock();
+          }
+        } catch {}
+        document.body.style.removeProperty('overflow');
+        document.body.style.removeProperty('position');
+        document.documentElement.style.removeProperty('overflow');
+      }
+    };
+
+    document.addEventListener('fullscreenchange', onFsChange);
+    document.addEventListener('webkitfullscreenchange', onFsChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', onFsChange);
+      document.removeEventListener('webkitfullscreenchange', onFsChange);
+    };
+  }, []);
+
+  const exitFullscreenCleanly = useCallback(() => {
+    setPseudoFs(false);
+    setIsFullscreen(false);
+
+    if (typeof document !== 'undefined') {
+      const exitFs =
+        document.exitFullscreen ||
+        (document as any).webkitExitFullscreen ||
+        (document as any).webkitCancelFullScreen ||
+        (document as any).mozCancelFullScreen ||
+        (document as any).msExitFullscreen;
+      if (document.fullscreenElement || (document as any).webkitFullscreenElement) {
+        try {
+          exitFs?.call(document);
+        } catch {}
+      }
+
+      try {
+        if (typeof screen !== 'undefined' && screen.orientation && (screen.orientation as any).unlock) {
+          (screen.orientation as any).unlock();
+        }
+      } catch {}
+
+      document.body.style.removeProperty('overflow');
+      document.body.style.removeProperty('position');
+      document.body.style.removeProperty('height');
+      document.body.style.removeProperty('width');
+      document.documentElement.style.removeProperty('overflow');
+      document.documentElement.style.removeProperty('height');
+
+      if (document.activeElement && document.activeElement !== document.body) {
+        try {
+          (document.activeElement as HTMLElement).blur();
+        } catch {}
+      }
+      window.scrollBy(0, 1);
+      window.scrollBy(0, -1);
+    }
+  }, []);
+
+  const toggleMobileOrientation = () => {
+    const next = mobileFsOrientation === 'landscape' ? 'portrait' : 'landscape';
+    setMobileFsOrientation(next);
+    playSfx('tap');
+
+    try {
+      if (typeof screen !== 'undefined' && screen.orientation && (screen.orientation as any).lock) {
+        (screen.orientation as any).lock(next).catch(() => {});
+      }
+    } catch {}
+  };
+
+  const toggleFullscreen = () => {
+    const el = gameContainerRef.current || document.documentElement;
+    if (!el) return;
+
+    if (pseudoFs || isFullscreen) {
+      exitFullscreenCleanly();
+      playSfx('tap');
+      return;
+    }
+
+    playSfx('launch');
+    const initialOrientation = game?.orientation === 'portrait' ? 'portrait' : 'landscape';
+    setMobileFsOrientation(initialOrientation);
+
+    const requestFs =
+      el.requestFullscreen ||
+      (el as any).webkitRequestFullscreen ||
+      (el as any).webkitRequestFullScreen ||
+      (el as any).mozRequestFullScreen ||
+      (el as any).msRequestFullscreen;
+
+    if (requestFs) {
+      try {
+        const res = requestFs.call(el, { navigationUI: 'hide' });
+        if (res && typeof res.catch === 'function') {
+          res.catch(() => {
+            try { requestFs.call(el).catch(() => {}); } catch {}
+          });
+        }
+      } catch {
+        try { requestFs.call(el); } catch {}
+      }
+    }
+
+    setPseudoFs(true);
+    setIsFullscreen(true);
+
+    try {
+      if (typeof screen !== 'undefined' && screen.orientation && (screen.orientation as any).lock) {
+        (screen.orientation as any).lock(initialOrientation).catch(() => {});
+      }
+    } catch {}
+
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+    }
+  };
 
   useEffect(() => {
     countRef.current = snap.peers.length;
@@ -326,10 +469,79 @@ function RoomView({ room, client, onLeft }: { room: PartyRoom; client: PartyRoom
                   <Tile key={p.id} p={p} deafened={me.deafened} compact onFlipCamera={() => client.flipCamera()} />
                 ))}
               </div>
-              <div className="glass-panel rounded-2xl overflow-hidden border border-arcade-border h-[62vh] min-h-[420px] flex flex-col">
-                <div className="flex items-center justify-between px-4 py-2 bg-arcade-midnight border-b border-arcade-border gap-2">
+              <div
+                ref={gameContainerRef}
+                className={`flex flex-col overflow-hidden ${
+                  pseudoFs || isFullscreen
+                    ? 'fixed inset-0 z-[99999] w-screen h-[100dvh] bg-black m-0 p-0 rounded-none border-0'
+                    : 'glass-panel rounded-2xl border border-arcade-border h-[62vh] min-h-[420px]'
+                }`}
+              >
+                {/* Mobile Fullscreen Floating HUD Pill (Rotate, Restart, Exit) */}
+                {(pseudoFs || isFullscreen) && isMobileDevice && (
+                  <div className="fixed top-2.5 right-2.5 z-[100000] flex items-center gap-1.5 p-1 rounded-full bg-black/80 hover:bg-black/95 border border-white/25 shadow-2xl backdrop-blur-md opacity-75 hover:opacity-100 transition-opacity">
+                    <button
+                      type="button"
+                      onClick={toggleMobileOrientation}
+                      className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 hover:bg-[var(--accent)] text-slate-200 hover:text-black font-extrabold text-[10px] active:scale-95 transition-all cursor-pointer"
+                      title={`Rotate Screen (${mobileFsOrientation === 'landscape' ? 'Landscape' : 'Portrait'} active)`}
+                      aria-label="Rotate screen orientation"
+                    >
+                      <RotateCw className="w-3.5 h-3.5 text-[var(--accent)]" />
+                      <span className="uppercase font-mono text-[9px] font-bold">
+                        {mobileFsOrientation === 'landscape' ? 'Land' : 'Port'}
+                      </span>
+                    </button>
+                    <div className="w-[1px] h-3 bg-white/20" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIframeKey((k) => k + 1);
+                        playSfx('tap');
+                      }}
+                      className="p-1 rounded-full text-slate-300 hover:text-white active:scale-90 transition-transform cursor-pointer"
+                      title="Restart Game"
+                      aria-label="Restart game"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                    </button>
+                    <div className="w-[1px] h-3 bg-white/20" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        exitFullscreenCleanly();
+                        playSfx('tap');
+                      }}
+                      className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-500/20 hover:bg-rose-500 text-rose-200 hover:text-white font-extrabold text-[10px] active:scale-95 transition-all cursor-pointer border border-rose-500/30"
+                      title="Exit Fullscreen"
+                      aria-label="Exit fullscreen"
+                    >
+                      <Minimize2 className="w-3 h-3 fill-current" />
+                      <span>Exit</span>
+                    </button>
+                  </div>
+                )}
+
+                {/* Desktop Fallback Fullscreen Exit Button */}
+                {(pseudoFs || isFullscreen) && !isMobileDevice && (
+                  <button
+                    type="button"
+                    onClick={exitFullscreenCleanly}
+                    className="fixed top-4 right-4 z-[100000] flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-black/85 hover:bg-black border border-white/30 text-white font-extrabold text-xs shadow-2xl backdrop-blur-md active:scale-95 transition-all cursor-pointer"
+                    aria-label="Exit fullscreen"
+                  >
+                    <Minimize2 className="w-4 h-4 text-[var(--accent)]" />
+                    <span>Exit</span>
+                  </button>
+                )}
+
+                <div
+                  className={`items-center justify-between px-4 py-2 bg-arcade-midnight border-b border-arcade-border gap-2 ${
+                    (pseudoFs || isFullscreen) && isMobileDevice ? 'hidden' : 'flex'
+                  }`}
+                >
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="text-xs font-bold text-white truncate">{game?.title}</span>
+                    <span className="text-xs font-bold text-white truncate max-w-[140px] sm:max-w-none">{game?.title}</span>
                     {game && (
                       <button
                         type="button"
@@ -338,21 +550,35 @@ function RoomView({ room, client, onLeft }: { room: PartyRoom; client: PartyRoom
                         title="Show how to play on PC & Mobile"
                       >
                         <Gamepad2 className="w-3 h-3 text-arcade-champagne" />
-                        <span>{showControlsGuide ? 'Hide Controls' : 'How to Play'}</span>
+                        <span>{showControlsGuide ? 'Hide' : 'How to Play'}</span>
                       </button>
                     )}
                   </div>
-                  <button onClick={() => setTab('lobby')} className="text-xs font-bold text-arcade-sage hover:underline shrink-0">
-                    ← Back to party
-                  </button>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={toggleFullscreen}
+                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-[var(--accent)] border border-white/15 text-slate-200 hover:text-black text-[11px] font-extrabold transition-all active:scale-95 cursor-pointer shadow-sm"
+                      title={isFullscreen || pseudoFs ? 'Exit Fullscreen' : 'Fullscreen'}
+                      aria-label={isFullscreen || pseudoFs ? 'Exit Fullscreen' : 'Fullscreen'}
+                    >
+                      {isFullscreen || pseudoFs ? <Minimize2 className="w-3.5 h-3.5 fill-current" /> : <Maximize2 className="w-3.5 h-3.5" />}
+                      <span className="hidden xs:inline">{isFullscreen || pseudoFs ? 'Exit' : 'Fullscreen'}</span>
+                    </button>
+                    <button onClick={() => setTab('lobby')} className="text-xs font-bold text-arcade-sage hover:underline shrink-0">
+                      ← Back to party
+                    </button>
+                  </div>
                 </div>
-                {showControlsGuide && game && (
+
+                {showControlsGuide && game && !isFullscreen && !pseudoFs && (
                   <div className="p-3 bg-arcade-midnight/95 border-b border-arcade-border backdrop-blur-md animate-in slide-in-from-top-2 duration-200 overflow-y-auto max-h-48 scrollbar-thin">
                     <GameHowToPlayGuide game={game} variant="compact" />
                   </div>
                 )}
                 <div className="flex-1 min-h-0 bg-black">
                   <iframe
+                    key={iframeKey}
                     src={game ? getLaunchUrl(game, typeof window !== 'undefined' ? window.location.origin : '') : undefined}
                     title={game?.title}
                     sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-pointer-lock allow-orientation-lock allow-presentation allow-modals"
