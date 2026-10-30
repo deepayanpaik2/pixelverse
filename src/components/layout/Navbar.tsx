@@ -240,8 +240,8 @@ export function Navbar() {
   const currentTheme = preferences?.theme || 'dark';
 
   return (
-    <header className="sticky top-0 z-50 w-full drawer-neon border-b border-white/[0.12] px-3 sm:px-6 py-2.5 pt-[calc(0.625rem+env(safe-area-inset-top))] sm:backdrop-blur-2xl">
-      <div className="max-w-[1920px] mx-auto flex items-center justify-between gap-2 sm:gap-6">
+    <header className="sticky top-0 z-50 w-full drawer-neon border-b border-white/[0.12] px-3 sm:px-5 py-2.5 pt-[calc(0.625rem+env(safe-area-inset-top))] sm:backdrop-blur-2xl">
+      <div className="max-w-[1920px] mx-auto flex items-center justify-between gap-2 sm:gap-4">
         {/* Left Section: Mobile Menu Button & Brand Logo */}
         <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 shrink-0">
           <button
@@ -281,7 +281,7 @@ export function Navbar() {
         </div>
 
         {/* Center Section: 3D Cyber Search Terminal */}
-        <div className="hidden md:flex flex-1 min-w-[140px] max-w-xs lg:max-w-sm xl:max-w-md relative">
+        <div className="hidden md:flex flex-1 min-w-[80px] max-w-xs lg:max-w-sm relative">
           <form onSubmit={handleSearchSubmit} className="relative w-full">
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-focus-within:text-[var(--accent)] transition-colors" />
             <input
@@ -394,7 +394,7 @@ export function Navbar() {
           <Link
             href="/avatar"
             onClick={() => playSfx('tap')}
-            className="hidden xl:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-pink-500/15 via-purple-500/15 to-cyan-500/15 border border-pink-500/30 hover:border-pink-400 text-xs font-black text-white hover:shadow-[0_0_15px_rgba(236,72,153,0.35)] transition-all btn-3d shrink-0"
+            className="hidden 2xl:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-pink-500/15 via-purple-500/15 to-cyan-500/15 border border-pink-500/30 hover:border-pink-400 text-xs font-black text-white hover:shadow-[0_0_15px_rgba(236,72,153,0.35)] transition-all btn-3d shrink-0"
             title="Custom Roblox & Cyberpunk Avatar Studio"
           >
             <Sparkles className="w-3.5 h-3.5 text-pink-400 animate-pulse" />
@@ -416,12 +416,12 @@ export function Navbar() {
               setShowRoulette(true);
               playSfx('tap');
             }}
-            className="flex items-center gap-1.5 p-2 sm:px-3 sm:py-2 rounded-xl bg-gradient-to-r from-[var(--accent)]/15 via-purple-500/15 to-pink-500/15 border border-[var(--accent)]/40 hover:border-[var(--accent)] text-white hover:shadow-[0_0_15px_var(--accent-glow)] transition-all btn-3d shrink-0 cursor-pointer"
+            className="flex items-center gap-1.5 p-2 sm:px-2.5 sm:py-2 rounded-xl bg-gradient-to-r from-[var(--accent)]/15 via-purple-500/15 to-pink-500/15 border border-[var(--accent)]/40 hover:border-[var(--accent)] text-white hover:shadow-[0_0_15px_var(--accent-glow)] transition-all btn-3d shrink-0 cursor-pointer"
             title="Surprise Me! (Instant Game Roulette)"
             aria-label="Surprise Me! (Instant Game Roulette)"
           >
             <Dices className="w-4 h-4 text-[var(--accent)] drop-shadow-[0_0_8px_var(--accent)] shrink-0" />
-            <span className="hidden xl:inline text-[11px] font-black uppercase tracking-wide">Surprise</span>
+            <span className="hidden 2xl:inline text-[11px] font-black uppercase tracking-wide">Surprise</span>
           </button>
 
           {/* 3D THEME CUSTOMIZER BUTTON & MENU */}
@@ -433,7 +433,7 @@ export function Navbar() {
                 setShowUserMenu(false);
                 playSfx('tap');
               }}
-              className={`p-2 sm:px-3 sm:py-2 rounded-xl bg-black/60 border text-xs font-black transition-all flex items-center gap-2 btn-3d shrink-0 ${
+              className={`p-2 sm:px-2.5 sm:py-2 rounded-xl bg-black/60 border text-xs font-black transition-all flex items-center gap-1.5 btn-3d shrink-0 ${
                 showThemeMenu
                   ? 'border-[var(--accent)] text-[var(--accent)] shadow-[0_0_16px_var(--accent-glow)]'
                   : 'border-white/15 text-slate-200 hover:text-white hover:border-[var(--accent)]/60'
@@ -525,7 +525,7 @@ export function Navbar() {
           </div>
 
           {/* i18n Language Dropdown */}
-          <div className="relative hidden lg:block" ref={langRef}>
+          <div className="relative hidden 2xl:block" ref={langRef}>
             <button
               onClick={() => {
                 setShowLangMenu(!showLangMenu);
@@ -593,7 +593,7 @@ export function Navbar() {
                   setShowLangMenu(false);
                   playSfx('tap');
                 }}
-                className="flex items-center gap-2 p-1.5 rounded-xl bg-black/60 border border-white/15 hover:border-[var(--accent)] transition-all btn-3d shrink-0 cursor-pointer"
+                className="flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-xl bg-black/60 border border-white/15 hover:border-[var(--accent)] hover:shadow-[0_0_14px_var(--accent-glow)] transition-all btn-3d shrink-0 cursor-pointer"
                 aria-label="User account menu"
                 aria-expanded={showUserMenu}
                 aria-haspopup="true"
@@ -603,7 +603,7 @@ export function Navbar() {
                   alt=""
                   className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg object-cover border border-white/20 shrink-0"
                 />
-                <span className="text-xs font-black text-white hidden md:block max-w-[65px] lg:max-w-[80px] xl:max-w-[95px] truncate pr-0.5">
+                <span className="text-xs font-black text-white max-w-[130px] sm:max-w-[170px] truncate">
                   {user.display_name}
                 </span>
               </button>

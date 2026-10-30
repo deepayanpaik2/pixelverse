@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { Dices, X, Star, ArrowRight, RotateCw, Zap } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -15,11 +16,16 @@ interface GameRouletteModalProps {
 
 export function GameRouletteModal({ isOpen, onClose }: GameRouletteModalProps) {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const [candidates, setCandidates] = useState<GameManifest[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
   const [winner, setWinner] = useState<GameManifest | null>(null);
   const spinTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const startSpin = () => {
     const pool = getRandomGamePool(16);
@@ -31,14 +37,13 @@ export function GameRouletteModal({ isOpen, onClose }: GameRouletteModalProps) {
     let currentIdx = 0;
     let speed = 40; // ms per tick
     let elapsed = 0;
-    const totalSpinTime = 1500; // ms
+    const totalSpinTime = 1400; // ms
 
     const tick = () => {
       currentIdx = (currentIdx + 1) % pool.length;
       setActiveIndex(currentIdx);
       elapsed += speed;
 
-      // Decelerate smoothly toward the end
       if (elapsed > totalSpinTime * 0.6) {
         speed += 22;
       }
@@ -46,13 +51,11 @@ export function GameRouletteModal({ isOpen, onClose }: GameRouletteModalProps) {
       if (elapsed < totalSpinTime) {
         spinTimerRef.current = setTimeout(tick, speed);
       } else {
-        // Locked in winner!
         const winningGame = pool[currentIdx];
         setWinner(winningGame);
         setIsSpinning(false);
         playSfx('like');
 
-        // Confetti celebratory burst
         try {
           confetti({
             particleCount: 45,
@@ -81,20 +84,30 @@ export function GameRouletteModal({ isOpen, onClose }: GameRouletteModalProps) {
     };
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  // Esc key closes modal
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !isSpinning) onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isOpen, isSpinning, onClose]);
+
+  if (!isOpen || !mounted) return null;
 
   const displayGame = winner || candidates[activeIndex] || null;
 
-  return (
+  const modalContent = (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md overflow-y-auto overscroll-contain animate-in fade-in"
+      className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md overflow-y-auto overscroll-contain animate-in fade-in duration-200"
       style={{ opacity: 1, pointerEvents: 'auto' }}
       onClick={(e) => {
         if (e.target === e.currentTarget && !isSpinning) onClose();
       }}
     >
       <div
-        className="relative w-full max-w-sm sm:max-w-md my-auto drawer-neon rounded-2xl sm:rounded-3xl border-2 border-[var(--accent)]/50 p-4 sm:p-5 shadow-[0_20px_50px_-10px_var(--accent-glow)] overflow-hidden text-center flex flex-col items-center gap-3 sm:gap-3.5 max-h-[calc(100dvh-1.5rem)]"
+        className="relative w-full max-w-sm sm:max-w-md my-auto drawer-neon rounded-2xl sm:rounded-3xl border-2 border-[var(--accent)]/50 p-4 sm:p-5 shadow-[0_25px_60px_-15px_var(--accent-glow)] overflow-hidden text-center flex flex-col items-center gap-3 sm:gap-3.5 max-h-[min(90dvh,540px)]"
         style={{ opacity: 1, pointerEvents: 'auto' }}
       >
         {/* Top Radial Glow */}
@@ -198,4 +211,6 @@ export function GameRouletteModal({ isOpen, onClose }: GameRouletteModalProps) {
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : null;
 }
