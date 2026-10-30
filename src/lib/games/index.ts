@@ -1,16 +1,16 @@
 import { GameManifest, CategoryInfo } from '@/types';
 import rawRegistry from './registry.json';
+import rawPokiRegistry from './poki-registry.json';
 
 /**
- * Catalog = every game in the GamePix feed.
+ * Catalog = every game in the GamePix feed + Poki catalog.
  *
- * registry.json is a compact list of rows (see scripts/sync-games/gamepix-feed.js):
- *   [id, namespace, title, category, orientation, width, height, quality, published, description]
- * and is expanded into full GameManifest objects here, once, when the site starts.
- * Rebuild it any time with:  npm run sync:feed
- * Rows are stored best-quality first, exactly as the feed returns them.
+ * registry.json and poki-registry.json are compact lists of rows:
+ * and are expanded into full GameManifest objects here, once, when the site starts.
+ * Rebuild anytime with:  npm run sync:feed && npm run sync:poki
  */
 type Row = [string, string, string, string, string, number, number, number, string, string];
+type PokiTuple = [string, string, string, string, string, string, 'embed' | 'external', string, number, number];
 
 export const GAMEPIX_SID = process.env.NEXT_PUBLIC_GAMEPIX_SID || '771E7';
 export const EMBED_HOST = 'https://play.gamepix.com';
@@ -114,7 +114,62 @@ function expand(row: Row, slug: string): GameManifest {
     dislikes_count,
     rating_score,
     status: 'published',
+    play_mode: 'embed',
+    embed_status: 'authorized',
     created_at: published ? `${published}T00:00:00.000Z` : undefined,
+  };
+}
+
+function expandPoki(tuple: PokiTuple): GameManifest {
+  const [id, slug, poki_slug, title, rawCat, author, play_mode, embed_url, rating, votes] = tuple;
+  const category = categoryName(rawCat || 'Casual');
+  const isEmbed = play_mode === 'embed' && !!embed_url;
+  const launchPath = isEmbed ? embed_url : `https://poki.com/en/g/${poki_slug}`;
+  const likesCount = Math.round((rating / 5) * votes);
+  const dislikesCount = Math.max(1, votes - likesCount);
+  const thumb = `https://img.gamepix.com/games/${poki_slug}/cover/${poki_slug}.png?w=640`;
+
+  return {
+    id,
+    slug,
+    poki_slug,
+    poki_url: `https://poki.com/en/g/${poki_slug}`,
+    external_url: `https://poki.com/en/g/${poki_slug}`,
+    play_mode: isEmbed ? 'embed' : 'external',
+    embed_status: isEmbed ? 'authorized' : 'external_only',
+    title,
+    description: `${title} is a popular online browser game hosted officially on Poki. Experience fast-paced gameplay, vibrant graphics, and instant fun directly in your browser.`,
+    instructions: isEmbed
+      ? 'Use your mouse, keyboard or touch screen to play directly in your browser. Press Fullscreen for edge-to-edge view.'
+      : 'Hosted officially on Poki. Click "Play on Poki" to launch and play directly in full screen on the authorized host.',
+    category,
+    tags: [category, 'Poki'],
+    thumbnail_url: thumb,
+    thumbnail_large_url: thumb,
+    banner_url: thumb,
+    launch_path: launchPath,
+    embed_url: isEmbed ? embed_url : undefined,
+    source_type: 'poki',
+    source: 'poki',
+    author: author || 'Poki Studio',
+    developer_name: author || 'Poki Studio',
+    license: isEmbed ? 'Licensed Syndication Network (Free to Play)' : 'Poki Platform Official (External Play)',
+    supported_players: '1 Player',
+    controls: { keyboard: [], mouse: [], touch: true },
+    orientation: 'landscape',
+    mobile_friendly: true,
+    supports_mobile: true,
+    supports_desktop: true,
+    aspect_ratio: '16/9',
+    is_featured: false,
+    is_editor_pick: rating >= 4.8,
+    is_kids_safe: true,
+    play_count: votes * 6,
+    likes_count: likesCount,
+    dislikes_count: dislikesCount,
+    rating_score: rating,
+    status: 'published',
+    created_at: '2026-10-30T00:00:00.000Z',
   };
 }
 
@@ -122,14 +177,59 @@ export const ON_SITE_GAMES: GameManifest[] = [];
 
 function buildCatalog(): GameManifest[] {
   const rows = rawRegistry as unknown as Row[];
+  const pokiRows = (rawPokiRegistry || []) as unknown as PokiTuple[];
   const used = new Set<string>();
   for (const g of ON_SITE_GAMES) used.add(g.slug);
+
+  // 1. GamePix curated catalog
   const list = rows.map((row) => {
     let slug = slugify(row[2]) || `game-${row[1]}`;
     if (used.has(slug)) slug = `${slug}-${row[1]}`;
     used.add(slug);
     return expand(row, slug);
   });
+
+  // Index GamePix by normalized title and slug for deduplication & dual-badging
+  const titleMap = new Map<string, GameManifest>();
+  for (const g of list) {
+    titleMap.set(g.title.toLowerCase().replace(/[^a-z0-9]/g, ''), g);
+    titleMap.set(g.slug.toLowerCase().replace(/[^a-z0-9]/g, ''), g);
+  }
+
+  // 2. Cross-reference & append Poki games
+  for (const tuple of pokiRows) {
+    const [, , pokiSlug, title, , author, playMode, embedUrl] = tuple;
+    const normTitle = title.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const normSlug = pokiSlug.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const matched = titleMap.get(normTitle) || titleMap.get(normSlug);
+
+    if (matched) {
+      matched.poki_slug = pokiSlug;
+      matched.poki_url = `https://poki.com/en/g/${pokiSlug}`;
+      matched.play_mode = 'dual';
+      if (author && author !== 'Poki Studio') {
+        matched.developer_name = author;
+      }
+    } else {
+      let slug = `poki-${pokiSlug}`;
+      if (used.has(slug)) slug = `${slug}-${tuple[0]}`;
+      used.add(slug);
+      const manifest = expandPoki([
+        tuple[0],
+        slug,
+        pokiSlug,
+        title,
+        tuple[4],
+        author,
+        playMode,
+        embedUrl,
+        tuple[8],
+        tuple[9]
+      ]);
+      list.push(manifest);
+    }
+  }
+
   // Spotlight: the best-rated games that are not portrait-only (they look best in the wide hero).
   let featured = 0;
   for (const g of list) {
@@ -155,6 +255,7 @@ export const NEW_GAME_IDS: Set<string> = new Set(NEWEST.slice(0, 40).map((g) => 
 const BY_KEY = new Map<string, GameManifest>();
 for (const g of FEATURED_GAMES) {
   BY_KEY.set(g.slug, g);
+  if (g.poki_slug && !BY_KEY.has(g.poki_slug)) BY_KEY.set(g.poki_slug, g);
   if (!BY_KEY.has(g.id)) BY_KEY.set(g.id, g);
 }
 

@@ -8,14 +8,15 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node --test tests/gamepix.test.js tests/playverse.test.js tests/pixelverse.test.js",
+    "test": "node --test tests/gamepix.test.js tests/poki.test.js tests/playverse.test.js tests/pixelverse.test.js",
     "test:playverse": "node --test tests/playverse.test.js",
     "test:pixelverse": "node --test tests/pixelverse.test.js",
     "test:watch": "vitest",
     "sync:feed": "node scripts/sync-games/gamepix-feed.js",
+    "sync:poki": "node scripts/sync-games/poki-feed.js",
     "test:feed": "node --test tests/gamepix.test.js",
-    "prebuild": "node scripts/sync-games/gamepix-feed.js --soft",
-    "predev": "node scripts/sync-games/gamepix-feed.js --soft"
+    "prebuild": "node scripts/sync-games/gamepix-feed.js --soft && node scripts/sync-games/poki-feed.js --soft",
+    "predev": "node scripts/sync-games/gamepix-feed.js --soft && node scripts/sync-games/poki-feed.js --soft"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.1",

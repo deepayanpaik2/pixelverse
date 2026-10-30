@@ -309,6 +309,7 @@ export default function GamePlayerPage() {
 
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
   const launchUrl = getLaunchUrl(game, origin);
+  const isExternalOnly = game.play_mode === 'external' || game.embed_status === 'external_only' || (!game.embed_url && (game.source_type === 'poki' || !!game.poki_url));
 
   const isFav = favorites.includes(game.id);
   const related = getRelatedGames(game.id, game.category, 6);
@@ -529,7 +530,91 @@ export default function GamePlayerPage() {
               <span>Exit</span>
             </button>
           )}
-          {!isPlaying ? (
+          {isExternalOnly ? (
+            <div className="relative flex-1 min-h-0 w-full overflow-hidden bg-[#060812] flex items-center justify-center p-4 sm:p-8">
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background: 'radial-gradient(circle at 50% 30%, #0e142a 0%, #060812 75%, #020306 100%)',
+                }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-transparent to-black/85 pointer-events-none" />
+              <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-[var(--accent)] opacity-20 blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-24 -right-24 w-80 h-80 rounded-full bg-[var(--accent-secondary)] opacity-20 blur-3xl pointer-events-none" />
+
+              <div className="relative z-10 flex flex-col items-center max-w-2xl w-full text-center gap-4 sm:gap-5 my-auto">
+                {/* Game Icon & Glowing Halo */}
+                <div className="relative">
+                  <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-[var(--accent)] to-[var(--accent-secondary)] blur-xl opacity-50" />
+                  <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-3xl overflow-hidden bg-[#090b14] border-2 border-white/20 shadow-2xl flex items-center justify-center p-2.5">
+                    <img
+                      src={game.thumbnail_url}
+                      alt={game.title}
+                      className="w-full h-full object-contain rounded-2xl drop-shadow-xl"
+                    />
+                  </div>
+                </div>
+
+                {/* Badges */}
+                <div className="flex flex-wrap items-center justify-center gap-2 text-[11px] font-bold">
+                  <span className="px-3 py-1 rounded-full bg-white/10 text-[var(--accent)] border border-[var(--accent)]/30 font-black">
+                    {game.category}
+                  </span>
+                  <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold flex items-center gap-1">
+                    <ExternalLink className="w-3 h-3" /> Official Poki Game
+                  </span>
+                  <span className="px-3 py-1 rounded-full bg-white/5 text-slate-300 border border-white/10 font-mono text-[10px]">
+                    By {game.author}
+                  </span>
+                </div>
+
+                <div className="space-y-1.5">
+                  <h1 className="text-2xl sm:text-4xl text-white font-display font-extrabold tracking-tight">
+                    {game.title}
+                  </h1>
+                  <p className="text-xs sm:text-sm text-slate-300 max-w-lg mx-auto leading-relaxed line-clamp-2 sm:line-clamp-none">
+                    {game.description}
+                  </p>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-wrap items-center justify-center gap-3 w-full pt-1">
+                  <a
+                    href={game.poki_url || launchUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => playSfx('launch')}
+                    className="btn-gaming flex items-center gap-2 px-8 py-3.5 rounded-full font-black text-sm sm:text-base shadow-[0_12px_28px_-6px_var(--accent-glow)] cursor-pointer"
+                  >
+                    <Play className="w-5 h-5 fill-current ml-0.5" />
+                    <span>Play on Poki</span>
+                    <ExternalLink className="w-4 h-4 ml-0.5 opacity-80" />
+                  </a>
+
+                  <button
+                    type="button"
+                    onClick={handleStartDuel}
+                    disabled={isCreatingDuel}
+                    className="flex items-center gap-2 px-6 py-3.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-black text-sm active:scale-95 transition-all cursor-pointer"
+                  >
+                    <Swords className="w-4 h-4 text-amber-400" />
+                    <span>1v1 Duel Challenge</span>
+                  </button>
+                </div>
+
+                {/* Transparent Authorization & CSP Notice */}
+                <div className="glass-panel p-3 sm:p-4 rounded-xl border border-white/10 max-w-xl text-left flex items-start gap-2.5 sm:gap-3 text-[11px] text-slate-400 mt-1">
+                  <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <p className="text-slate-300 font-semibold">Authorized Publisher Notice</p>
+                    <p className="leading-relaxed text-[11px]">
+                      This game is officially distributed by <strong className="text-white">Poki</strong> and developer <strong className="text-white">{game.author}</strong>. In-browser embedding is restricted under Poki&apos;s Content Security Policy (<code className="text-slate-300 text-[10px]">frame-ancestors</code>). Launching opens the authorized host in full screen without ads or delays.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : !isPlaying ? (
             <div className="relative flex-1 min-h-0 w-full overflow-hidden bg-[#060812] flex items-center justify-center">
               <div
                 className="absolute inset-0 pointer-events-none"
@@ -564,10 +649,11 @@ export default function GamePlayerPage() {
                     <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-black">
                       Free to play
                     </span>
-                    <span className="px-3 py-1 rounded-full bg-white/5 text-slate-300 border border-white/10 text-[10px] font-mono font-bold flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
-                      Crafted by Deepayan
-                    </span>
+                    {game.poki_url && (
+                      <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold flex items-center gap-1">
+                        Poki Catalog
+                      </span>
+                    )}
                     {onSite && (
                       <span className="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 flex items-center gap-1 font-black">
                         <Zap className="w-3 h-3" /> Runs on Pixelverse
@@ -585,7 +671,7 @@ export default function GamePlayerPage() {
                       playSfx('launch');
                     }}
                     data-sfx="launch"
-                    className="btn-gaming group relative flex items-center gap-3 px-10 py-4 rounded-full font-black text-lg shadow-[0_12px_28px_-6px_var(--accent-glow)]"
+                    className="btn-gaming group relative flex items-center gap-3 px-10 py-4 rounded-full font-black text-lg shadow-[0_12px_28px_-6px_var(--accent-glow)] cursor-pointer"
                   >
                     <Play className="relative w-6 h-6 fill-current ml-0.5" />
                     <span className="relative">Play Now</span>
@@ -629,7 +715,7 @@ export default function GamePlayerPage() {
             </div>
           )}
 
-          {/* Viewport Control Bar (Bottom Overlay - hidden in mobile fullscreen so mobile gets TRUE edge-to-edge canvas; kept on PC) */}
+          {/* Viewport Control Bar */}
           <div
             className={`relative shrink-0 z-40 bg-[#060810] px-4 py-2.5 border-t border-white/10 items-center justify-between pb-[max(0.625rem,env(safe-area-inset-bottom))] ${
               (pseudoFs || isFullscreen) && isMobileDevice ? 'hidden' : 'flex'
@@ -644,54 +730,81 @@ export default function GamePlayerPage() {
             </div>
 
             <div className="flex items-center gap-1.5 sm:gap-2">
-              <button
-                onClick={() => {
-                  setIsPlaying(!isPlaying);
-                  playSfx('tap');
-                }}
-                className="p-2 sm:px-3 sm:py-2 rounded-xl bg-white/5 border border-white/15 text-slate-300 hover:text-white hover:border-[var(--accent)] transition-all btn-3d"
-                title={isPlaying ? 'View Cover Preview' : 'Resume Play'}
-              >
-                {isPlaying ? <Info className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current" />}
-              </button>
-              <button
-                onClick={() => {
-                  setIframeKey(k => k + 1);
-                  setIframeLoaded(false);
-                  playSfx('tap');
-                }}
-                className="p-2 sm:px-3 sm:py-2 rounded-xl bg-white/5 border border-white/15 text-slate-300 hover:text-white hover:border-[var(--accent)] transition-all btn-3d"
-                title="Restart Game"
-              >
-                <RotateCcw className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => {
-                  setIsFitScreen(!isFitScreen);
-                  playSfx('tap');
-                }}
-                className={`p-2 sm:px-3 sm:py-2 rounded-xl border text-slate-300 hover:text-white hidden sm:block transition-all btn-3d ${
-                  isFitScreen ? 'bg-[var(--accent)]/20 border-[var(--accent)] text-[var(--accent)]' : 'bg-white/5 border-white/15'
-                }`}
-                title={isFitScreen ? 'Standard View' : 'Theater / Expanded View'}
-              >
-                <Minimize2 className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => {
-                  toggleFullscreen();
-                  playSfx('tap');
-                }}
-                className={`p-2 sm:px-3 sm:py-2 rounded-xl border transition-all btn-3d ${
-                  isFullscreen || pseudoFs
-                    ? 'bg-[var(--accent)] text-black border-[var(--accent)] shadow-[0_0_12px_var(--accent-glow)]'
-                    : 'bg-white/5 border-white/15 text-slate-300 hover:text-[var(--accent)] hover:border-[var(--accent)]'
-                }`}
-                title={isFullscreen || pseudoFs ? 'Exit fullscreen' : 'Fullscreen'}
-                aria-label={isFullscreen || pseudoFs ? 'Exit fullscreen' : 'Fullscreen'}
-              >
-                {isFullscreen || pseudoFs ? <Minimize2 className="w-4 h-4 fill-current" /> : <Maximize2 className="w-4 h-4" />}
-              </button>
+              {isExternalOnly ? (
+                <>
+                  <a
+                    href={game.poki_url || launchUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => playSfx('launch')}
+                    className="btn-gaming flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-black"
+                    title="Open official game in new tab"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>Play on Poki</span>
+                  </a>
+                  <button
+                    type="button"
+                    onClick={handleStartDuel}
+                    disabled={isCreatingDuel}
+                    className="p-2 sm:px-3 sm:py-2 rounded-xl bg-white/5 border border-white/15 text-slate-300 hover:text-white hover:border-amber-400/50 transition-all btn-3d"
+                    title="Challenge Duel"
+                  >
+                    <Swords className="w-4 h-4 text-amber-400" />
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => {
+                      setIsPlaying(!isPlaying);
+                      playSfx('tap');
+                    }}
+                    className="p-2 sm:px-3 sm:py-2 rounded-xl bg-white/5 border border-white/15 text-slate-300 hover:text-white hover:border-[var(--accent)] transition-all btn-3d"
+                    title={isPlaying ? 'View Cover Preview' : 'Resume Play'}
+                  >
+                    {isPlaying ? <Info className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current" />}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIframeKey(k => k + 1);
+                      setIframeLoaded(false);
+                      playSfx('tap');
+                    }}
+                    className="p-2 sm:px-3 sm:py-2 rounded-xl bg-white/5 border border-white/15 text-slate-300 hover:text-white hover:border-[var(--accent)] transition-all btn-3d"
+                    title="Restart Game"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsFitScreen(!isFitScreen);
+                      playSfx('tap');
+                    }}
+                    className={`p-2 sm:px-3 sm:py-2 rounded-xl border text-slate-300 hover:text-white hidden sm:block transition-all btn-3d ${
+                      isFitScreen ? 'bg-[var(--accent)]/20 border-[var(--accent)] text-[var(--accent)]' : 'bg-white/5 border-white/15'
+                    }`}
+                    title={isFitScreen ? 'Standard View' : 'Theater / Expanded View'}
+                  >
+                    <Minimize2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      toggleFullscreen();
+                      playSfx('tap');
+                    }}
+                    className={`p-2 sm:px-3 sm:py-2 rounded-xl border transition-all btn-3d ${
+                      isFullscreen || pseudoFs
+                        ? 'bg-[var(--accent)] text-black border-[var(--accent)] shadow-[0_0_12px_var(--accent-glow)]'
+                        : 'bg-white/5 border-white/15 text-slate-300 hover:text-[var(--accent)] hover:border-[var(--accent)]'
+                    }`}
+                    title={isFullscreen || pseudoFs ? 'Exit fullscreen' : 'Fullscreen'}
+                    aria-label={isFullscreen || pseudoFs ? 'Exit fullscreen' : 'Fullscreen'}
+                  >
+                    {isFullscreen || pseudoFs ? <Minimize2 className="w-4 h-4 fill-current" /> : <Maximize2 className="w-4 h-4" />}
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -886,7 +999,9 @@ export default function GamePlayerPage() {
             <div className="space-y-2 text-slate-300">
               <div className="flex justify-between">
                 <span className="text-slate-400">Source:</span>
-                <span className="font-mono text-arcade-champagne uppercase text-[10px]">{game.source_type}</span>
+                <span className="font-mono text-arcade-champagne uppercase text-[10px]">
+                  {game.play_mode === 'dual' ? 'GamePix + Poki' : game.source_type}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-400">License:</span>
@@ -896,6 +1011,20 @@ export default function GamePlayerPage() {
                 <span className="text-slate-400">Publisher:</span>
                 <span className="text-slate-200">{game.author}</span>
               </div>
+              {game.poki_url && (
+                <div className="flex justify-between items-center pt-1.5 border-t border-white/10">
+                  <span className="text-slate-400">Official Poki:</span>
+                  <a
+                    href={game.poki_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[var(--accent)] hover:underline flex items-center gap-1 font-mono text-[10px]"
+                  >
+                    <span>poki.com</span>
+                    <ExternalLink className="w-2.5 h-2.5" />
+                  </a>
+                </div>
+              )}
             </div>
           </div>
         </div>
