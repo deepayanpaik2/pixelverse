@@ -34,6 +34,7 @@ import {
   Puzzle,
   LogOut,
   User,
+  Swords,
 } from 'lucide-react';
 import { BrandMark } from './BrandMark';
 import { SoundToggle } from './SoundToggle';
@@ -181,6 +182,8 @@ export function Navbar() {
   const themeRef = useRef<HTMLDivElement>(null);
   const langRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
+  const mobileThemeRef = useRef<HTMLButtonElement>(null);
+  const mobileLangRef = useRef<HTMLDivElement>(null);
 
   const t = TRANSLATIONS[language] || TRANSLATIONS.en;
 
@@ -188,10 +191,18 @@ export function Navbar() {
   useEffect(() => {
     function handleClickOutside(e: MouseEvent | TouchEvent) {
       const target = e.target as Node;
-      if (themeRef.current && !themeRef.current.contains(target)) {
+      if (
+        themeRef.current &&
+        !themeRef.current.contains(target) &&
+        !mobileThemeRef.current?.contains(target)
+      ) {
         setShowThemeMenu(false);
       }
-      if (langRef.current && !langRef.current.contains(target)) {
+      if (
+        langRef.current &&
+        !langRef.current.contains(target) &&
+        !mobileLangRef.current?.contains(target)
+      ) {
         setShowLangMenu(false);
       }
       if (userRef.current && !userRef.current.contains(target)) {
@@ -415,7 +426,7 @@ export function Navbar() {
               setShowRoulette(true);
               playSfx('tap');
             }}
-            className="flex items-center gap-2 px-3 sm:px-3.5 py-2 rounded-xl bg-gradient-to-r from-pink-500/20 via-purple-600/25 to-[var(--accent)]/20 hover:from-pink-500/35 hover:to-[var(--accent)]/35 border-2 border-[var(--accent)] hover:border-pink-400 text-white shadow-[0_0_18px_var(--accent-glow)] hover:shadow-[0_0_25px_rgba(236,72,153,0.5)] active:scale-95 transition-all btn-3d shrink-0 cursor-pointer group"
+            className="hidden sm:flex items-center gap-2 px-3 sm:px-3.5 py-2 rounded-xl bg-gradient-to-r from-pink-500/20 via-purple-600/25 to-[var(--accent)]/20 hover:from-pink-500/35 hover:to-[var(--accent)]/35 border-2 border-[var(--accent)] hover:border-pink-400 text-white shadow-[0_0_18px_var(--accent-glow)] hover:shadow-[0_0_25px_rgba(236,72,153,0.5)] active:scale-95 transition-all btn-3d shrink-0 cursor-pointer group"
             title="Surprise Me! (Instant Game Roulette)"
             aria-label="Surprise Me! (Instant Game Roulette)"
           >
@@ -607,7 +618,7 @@ export function Navbar() {
                   alt=""
                   className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg object-cover border border-white/20 shrink-0"
                 />
-                <span className="text-xs font-black text-white max-w-[130px] sm:max-w-[170px] truncate">
+                <span className="hidden sm:inline text-xs font-black text-white max-w-[130px] sm:max-w-[170px] truncate">
                   {user.display_name}
                 </span>
               </button>
@@ -689,6 +700,219 @@ export function Navbar() {
           )}
         </div>
       </div>
+
+      
+      {/* Mobile Cyber Quick Feature Strip (Always visible at top of mobile browsers) */}
+      <div className="sm:hidden -mx-3 mt-2 px-3 pt-2 border-t border-white/[0.08] flex items-center gap-1.5 overflow-x-auto scrollbar-none snap-x overscroll-x-contain pb-0.5">
+        {/* 1. Quick Search Terminal */}
+        <button
+          type="button"
+          onClick={() => {
+            setShowMobileSearch(!showMobileSearch);
+            setShowLangMenu(false);
+            setShowThemeMenu(false);
+            playSfx('tap');
+          }}
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-[11px] font-bold shrink-0 snap-start transition-all ${
+            showMobileSearch
+              ? 'bg-[var(--accent)] text-black border-[var(--accent)] shadow-[0_0_12px_var(--accent-glow)]'
+              : 'bg-black/50 border-white/15 text-slate-200 hover:text-white hover:border-white/30'
+          }`}
+          aria-label="Search 14,000+ Games"
+        >
+          <Search className="w-3.5 h-3.5" />
+          <span>Search</span>
+        </button>
+
+        {/* 2. Maximized Surprise Me! Roulette */}
+        <button
+          type="button"
+          onClick={() => {
+            setShowRoulette(true);
+            playSfx('tap');
+          }}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-pink-500/25 via-purple-600/30 to-[var(--accent)]/25 border border-[var(--accent)]/60 text-white text-[11px] font-black shadow-[0_0_14px_var(--accent-glow)] shrink-0 snap-start active:scale-95 transition-all group"
+          aria-label="Surprise Me! (Instant Game Roulette)"
+        >
+          <Dices className="w-3.5 h-3.5 text-pink-300 drop-shadow-[0_0_6px_rgba(244,114,182,0.9)] group-hover:rotate-180 transition-transform duration-300 shrink-0" />
+          <span className="font-display uppercase tracking-wide">Surprise Me!</span>
+          <span className="text-[8px] font-mono font-black uppercase px-1.5 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-black">
+            ROLL
+          </span>
+        </button>
+
+        {/* 3. Avatar Studio (HOT) */}
+        <Link
+          href="/avatar"
+          onClick={() => playSfx('tap')}
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-pink-500/15 border border-pink-500/40 text-pink-100 hover:text-white text-[11px] font-black shadow-[0_0_10px_rgba(236,72,153,0.3)] shrink-0 snap-start active:scale-95 transition-all"
+        >
+          <Sparkles className="w-3.5 h-3.5 text-pink-400 animate-pulse shrink-0" />
+          <span>Avatar Studio</span>
+          <span className="text-[8px] font-mono font-black uppercase px-1.5 py-0.5 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-sm">
+            HOT
+          </span>
+        </Link>
+
+        {/* 4. Kids Mode 1-Tap Toggle */}
+        <button
+          type="button"
+          onClick={() => {
+            setKidsMode(!kidsMode);
+            playSfx('toggle');
+          }}
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-[11px] font-black shrink-0 snap-start active:scale-95 transition-all ${
+            kidsMode
+              ? 'bg-emerald-400 text-black border-emerald-300 shadow-[0_0_14px_rgba(52,211,153,0.6)]'
+              : 'bg-black/50 border-white/15 text-slate-300 hover:text-white'
+          }`}
+          title="Toggle Kids Mode"
+        >
+          <Baby className="w-3.5 h-3.5 shrink-0" />
+          <span>Kids Mode</span>
+          <span
+            className={`text-[8px] font-mono font-black px-1.5 py-0.5 rounded ${
+              kidsMode ? 'bg-black/25 text-black' : 'bg-white/10 text-slate-400'
+            }`}
+          >
+            {kidsMode ? 'ON' : 'OFF'}
+          </span>
+        </button>
+
+        {/* 5. Favorites with Live Count */}
+        <Link
+          href="/favorites"
+          onClick={() => playSfx('tap')}
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-black/50 border border-white/15 text-slate-200 hover:text-white text-[11px] font-bold shrink-0 snap-start active:scale-95 transition-all"
+        >
+          <Heart className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+          <span>Favorites</span>
+          {favorites.length > 0 && (
+            <span className="text-[9px] font-mono font-black px-1.5 py-0.5 rounded-full bg-rose-500 text-white shadow-[0_0_8px_rgba(244,63,94,0.6)]">
+              {favorites.length}
+            </span>
+          )}
+        </Link>
+
+        {/* 6. Language Switcher Trigger */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowLangMenu(!showLangMenu);
+            setShowThemeMenu(false);
+            setShowMobileSearch(false);
+            playSfx('tap');
+          }}
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-[11px] font-bold shrink-0 snap-start active:scale-95 transition-all ${
+            showLangMenu
+              ? 'bg-[var(--accent)] text-black border-[var(--accent)] shadow-[0_0_12px_var(--accent-glow)]'
+              : 'bg-black/50 border-white/15 text-slate-200 hover:text-white'
+          }`}
+          aria-label="Change Language"
+        >
+          <span className="text-xs">{languages.find((l) => l.code === language)?.flag || '🌐'}</span>
+          <span className="uppercase">{language}</span>
+        </button>
+
+        {/* 7. Theme Customizer Trigger */}
+        <button
+          type="button"
+          ref={mobileThemeRef}
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowThemeMenu(!showThemeMenu);
+            setShowLangMenu(false);
+            setShowMobileSearch(false);
+            playSfx('tap');
+          }}
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-[11px] font-bold shrink-0 snap-start active:scale-95 transition-all ${
+            showThemeMenu
+              ? 'border-[var(--accent)] text-[var(--accent)] shadow-[0_0_12px_var(--accent-glow)] bg-[var(--accent)]/15'
+              : 'bg-black/50 border-white/15 text-slate-200 hover:text-white'
+          }`}
+          aria-label="Select Theme"
+        >
+          <Palette className="w-3.5 h-3.5 text-[var(--accent)] shrink-0" />
+          <span>Themes</span>
+          <span
+            className="w-2.5 h-2.5 rounded-full border border-white/30 shrink-0"
+            style={{ backgroundColor: THEME_OPTIONS.find((t) => t.id === currentTheme)?.primary || 'var(--accent)' }}
+          />
+        </button>
+
+        {/* 8. 1v1 PvP Duels */}
+        <Link
+          href="/duels"
+          onClick={() => playSfx('tap')}
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-violet-500/15 border border-violet-500/40 text-violet-200 hover:text-white text-[11px] font-bold shrink-0 snap-start active:scale-95 transition-all"
+        >
+          <Swords className="w-3.5 h-3.5 text-violet-400 shrink-0" />
+          <span>1v1 Duels</span>
+        </Link>
+
+        {/* 9. Submit Game */}
+        <Link
+          href="/submit"
+          onClick={() => playSfx('tap')}
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-black/50 border border-white/15 text-slate-200 hover:text-white text-[11px] font-bold shrink-0 snap-start active:scale-95 transition-all"
+        >
+          <Upload className="w-3.5 h-3.5 text-[var(--accent)] shrink-0" />
+          <span>Submit</span>
+        </Link>
+
+        {/* 10. Party Rooms */}
+        <Link
+          href="/rooms"
+          onClick={() => playSfx('tap')}
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-cyan-500/15 border border-cyan-500/40 text-cyan-200 hover:text-white text-[11px] font-bold shrink-0 snap-start active:scale-95 transition-all"
+        >
+          <Users className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+          <span>Rooms</span>
+        </Link>
+      </div>
+
+      {/* Mobile Language Selector Popup */}
+      {showLangMenu && (
+        <div
+          ref={mobileLangRef}
+          className="sm:hidden mt-2 p-3 drawer-neon rounded-2xl border border-white/20 shadow-2xl animate-in fade-in slide-in-from-top-1 duration-150 space-y-2 z-50"
+          style={{ opacity: 1, pointerEvents: 'auto' }}
+        >
+          <div className="flex items-center justify-between pb-1.5 border-b border-white/10">
+            <div className="flex items-center gap-1.5">
+              <Globe className="w-3.5 h-3.5 text-[var(--accent)]" />
+              <span className="text-xs font-black uppercase tracking-wider text-white">Select Language</span>
+            </div>
+            <button
+              onClick={() => setShowLangMenu(false)}
+              className="p-1 rounded-lg text-slate-400 hover:text-white"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {languages.map((l) => (
+              <button
+                key={l.code}
+                onClick={() => {
+                  setLanguage(l.code);
+                  setShowLangMenu(false);
+                  playSfx('toggle');
+                }}
+                className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  language === l.code
+                    ? 'bg-[var(--accent)] text-black font-black shadow-md'
+                    : 'bg-black/50 border border-white/10 text-slate-200 hover:text-white'
+                }`}
+              >
+                <span className="text-lg">{l.flag}</span>
+                <span className="truncate">{l.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Mobile drawer navigation */}
       {mobileMenu && (
