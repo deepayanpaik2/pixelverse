@@ -390,18 +390,17 @@ export function Navbar() {
             <span>Submit</span>
           </Link>
 
-          {/* Avatar Studio Link */}
+          {/* Minimized Avatar Studio Icon Link */}
           <Link
             href="/avatar"
             onClick={() => playSfx('tap')}
-            className="hidden 2xl:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-pink-500/15 via-purple-500/15 to-cyan-500/15 border border-pink-500/30 hover:border-pink-400 text-xs font-black text-white hover:shadow-[0_0_15px_rgba(236,72,153,0.35)] transition-all btn-3d shrink-0"
-            title="Custom Roblox & Cyberpunk Avatar Studio"
+            className="hidden 2xl:flex items-center justify-center p-2 sm:px-2.5 sm:py-2 rounded-xl bg-black/60 border border-white/15 hover:border-pink-500/60 text-slate-200 hover:text-white hover:shadow-[0_0_15px_rgba(236,72,153,0.4)] transition-all btn-3d shrink-0 relative group"
+            title="Avatar Studio (Hot!)"
+            aria-label="Avatar Studio"
           >
-            <Sparkles className="w-3.5 h-3.5 text-pink-400 animate-pulse" />
-            <span>Avatar Studio</span>
-            <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-mono shadow-sm">
-              HOT
-            </span>
+            <Sparkles className="w-4 h-4 text-pink-400 group-hover:scale-115 transition-transform shrink-0 animate-pulse" />
+            <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-pink-500 shadow-[0_0_8px_#ec4899] animate-ping" />
+            <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-pink-500" />
           </Link>
 
           {/* Sound Toggle (Available on both mobile and PC) */}
@@ -409,19 +408,24 @@ export function Navbar() {
             <SoundToggle />
           </div>
 
-          {/* Surprise Me! / Instant Game Roulette 3D Button */}
+          {/* Maximized Surprise Me! (Instant Game Roulette) 3D Button */}
           <button
             type="button"
             onClick={() => {
               setShowRoulette(true);
               playSfx('tap');
             }}
-            className="flex items-center gap-1.5 p-2 sm:px-2.5 sm:py-2 rounded-xl bg-gradient-to-r from-[var(--accent)]/15 via-purple-500/15 to-pink-500/15 border border-[var(--accent)]/40 hover:border-[var(--accent)] text-white hover:shadow-[0_0_15px_var(--accent-glow)] transition-all btn-3d shrink-0 cursor-pointer"
+            className="flex items-center gap-2 px-3 sm:px-3.5 py-2 rounded-xl bg-gradient-to-r from-pink-500/20 via-purple-600/25 to-[var(--accent)]/20 hover:from-pink-500/35 hover:to-[var(--accent)]/35 border-2 border-[var(--accent)] hover:border-pink-400 text-white shadow-[0_0_18px_var(--accent-glow)] hover:shadow-[0_0_25px_rgba(236,72,153,0.5)] active:scale-95 transition-all btn-3d shrink-0 cursor-pointer group"
             title="Surprise Me! (Instant Game Roulette)"
             aria-label="Surprise Me! (Instant Game Roulette)"
           >
-            <Dices className="w-4 h-4 text-[var(--accent)] drop-shadow-[0_0_8px_var(--accent)] shrink-0" />
-            <span className="hidden 2xl:inline text-[11px] font-black uppercase tracking-wide">Surprise</span>
+            <Dices className="w-4 h-4 text-pink-300 drop-shadow-[0_0_8px_rgba(244,114,182,0.9)] group-hover:rotate-180 transition-transform duration-500 shrink-0" />
+            <span className="font-display font-black text-xs uppercase tracking-wider text-white drop-shadow-sm whitespace-nowrap">
+              Surprise Me!
+            </span>
+            <span className="hidden sm:inline-flex items-center text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-black font-mono shadow-sm">
+              ROLL
+            </span>
           </button>
 
           {/* 3D THEME CUSTOMIZER BUTTON & MENU */}
