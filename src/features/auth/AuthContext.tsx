@@ -91,6 +91,9 @@ function friendlyAuthError(message: string): string {
   if (m.includes('already registered') || m.includes('already been registered')) return 'That email already has an account. Try signing in.';
   if (m.includes('password') && m.includes('characters')) return 'Password is too short. Use at least 8 characters.';
   if (m.includes('rate limit')) return 'Too many attempts. Please wait a minute and try again.';
+  if (m.includes('provider is not enabled') || m.includes('unsupported provider')) {
+    return 'Google Sign-In is not enabled in your Supabase project yet. Please enable Google in Supabase Dashboard > Authentication > Providers.';
+  }
   return message;
 }
 
@@ -121,11 +124,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const googleName = meta?.full_name || meta?.name || '';
       const emailPrefix = meta?.email ? meta.email.split('@')[0] : '';
       const rawUser = meta?.username || meta?.user_name || emailPrefix || googleName.replace(/\s+/g, '_') || `user_${userId.slice(0, 8)}`;
-      const username = cleanUsername(rawUser) || `user_${userId.slice(0, 8)}`;
+      let username = cleanUsername(rawUser) || `user_${userId.slice(0, 8)}`;
+      if (username.length < 3) username = `user_${userId.slice(0, 8)}`;
       const displayName = meta?.display_name || googleName || username;
       const avatarUrl = meta?.avatar_url || meta?.picture || DEFAULT_AVATAR(username);
 
-      const ins = await supabase
+      let ins = await supabase
         .from('profiles')
         .insert({
           id: userId,
@@ -137,7 +141,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         })
         .select('*')
         .maybeSingle();
+
+      // If collision occurred on username, retry with collision-proof unique suffix
+      if (!ins.data) {
+        const uniqueSuffix = userId.replace(/-/g, '').slice(0, 5);
+        const uniqueUsername = `${username.slice(0, 14)}_${uniqueSuffix}`.toLowerCase();
+        ins = await supabase
+          .from('profiles')
+          .insert({
+            id: userId,
+            username: uniqueUsername,
+            display_name: displayName,
+            avatar_url: avatarUrl,
+            status: 'online',
+            profile_completed: true,
+          })
+          .select('*')
+          .maybeSingle();
+      }
       row = ins.data;
+    } else {
+      // If user profile exists with default avatar, and Google provides a real profile photo, sync it
+      const googleAvatar = meta?.avatar_url || meta?.picture;
+      if (
+        googleAvatar &&
+        (!row.avatar_url ||
+          row.avatar_url.includes('dicebear.com') ||
+          row.avatar_url.includes('multiavatar.com'))
+      ) {
+        await supabase.from('profiles').update({ avatar_url: googleAvatar }).eq('id', userId);
+        row.avatar_url = googleAvatar;
+      }
     }
     if (!row) return null;
 
@@ -218,6 +252,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(null);
           setPreferences(defaultPreferences);
           setFavorites(mockStore.getFavorites('guest'));
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('playverse_current_user_id');
+            localStorage.removeItem('playverse_auth_cache');
+          }
         }
       }, 0);
     });
@@ -304,70 +342,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Sign in with Google (OAuth) with Fail-Safe Auto-Probe
+  // Sign in with Google (OAuth)
   const signInWithGoogle = async (): Promise<Result> => {
-    // If real Supabase backend is configured, probe provider availability first
     if (real) {
       try {
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-        let providerEnabled = true;
-
-        if (supabaseUrl && supabaseUrl.startsWith('http')) {
-          try {
-            const probe = await fetch(`${supabaseUrl}/auth/v1/authorize?provider=google`, { method: 'GET' })
-              .then((r) => (r.status === 400 ? r.json() : null))
-              .catch(() => null);
-
-            if (probe?.msg?.includes('provider is not enabled') || probe?.error_code === 'validation_failed') {
-              providerEnabled = false;
-            }
-          } catch {
-            // Network probe failed, proceed to standard flow
-          }
-        }
-
-        // If Google provider is not yet enabled in Supabase, provide seamless instant Google account access
-        if (!providerEnabled) {
-          const googleProfile: Profile = {
-            id: 'usr-google-' + Date.now().toString(36),
-            username: 'google_gamer',
-            display_name: 'Google Gamer',
-            avatar_url: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80',
-            bio: 'Pixelverse Player via Google Auth',
-            status: 'online',
-            favorite_categories: ['action', 'arcade'],
-            level: 3,
-            xp: 750,
-            is_admin: false,
-            is_moderator: false,
-            created_at: new Date().toISOString(),
-            profile_completed: true,
-          };
-
-          mockStore.createProfile(googleProfile);
-          setUser(googleProfile);
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('playverse_current_user_id', googleProfile.id);
-            localStorage.setItem(
-              'playverse_auth_cache',
-              JSON.stringify({ profile: googleProfile, prefs: defaultPreferences })
-            );
-          }
-          mockStore.mergeGuestFavorites(googleProfile.id);
-          setFavorites(mockStore.getFavorites(googleProfile.id));
-
-          return { success: true };
-        }
-
         const origin =
           typeof window !== 'undefined'
             ? window.location.origin
-            : process.env.NEXT_PUBLIC_SITE_URL || 'https://pixelverse-lilac.vercel.app';
+            : (process.env.NEXT_PUBLIC_SITE_URL || 'https://pixelverse-lilac.vercel.app');
+
+        const cleanOrigin = origin.replace(/\/+$/, '');
+        const redirectTo = `${cleanOrigin}/auth/callback`;
 
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
           options: {
-            redirectTo: `${origin}/auth/callback`,
+            redirectTo,
             queryParams: {
               access_type: 'offline',
               prompt: 'consent',
@@ -385,27 +375,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    // Fallback demo mode when Supabase is not configured
-    const mockGoogle = mockStore.getProfiles()[0] || {
-      id: 'usr-google',
-      username: 'google_gamer',
-      display_name: 'Google Gamer',
-      avatar_url: DEFAULT_AVATAR('google_gamer'),
-      bio: 'Pixelverse Gamer',
-      status: 'online',
-      favorite_categories: [],
-      level: 1,
-      xp: 0,
-      is_admin: false,
-      is_moderator: false,
-      created_at: new Date().toISOString(),
-      profile_completed: true,
+    return {
+      success: false,
+      error: 'Supabase authentication is not configured. Please verify your environment variables.',
     };
-    setUser(mockGoogle as any);
-    if (typeof window !== 'undefined') localStorage.setItem('playverse_current_user_id', mockGoogle.id);
-    mockStore.mergeGuestFavorites(mockGoogle.id);
-    setFavorites(mockStore.getFavorites(mockGoogle.id));
-    return { success: true };
   };
 
   // Sign up
@@ -468,7 +441,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await supabase.auth.signOut();
       }
     } catch {}
-    if (typeof window !== 'undefined') localStorage.removeItem('playverse_current_user_id');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('playverse_current_user_id');
+      localStorage.removeItem('playverse_auth_cache');
+    }
     setUser(null);
     setPreferences(defaultPreferences);
     setFavorites(mockStore.getFavorites('guest'));

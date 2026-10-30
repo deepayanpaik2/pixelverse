@@ -25,48 +25,66 @@ export default function AuthCallbackPage() {
       const params = new URLSearchParams(window.location.search);
       const code = params.get('code');
       const err = params.get('error_description') || params.get('error');
+      const nextParam = params.get('next');
+      const safeNext = nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//') ? nextParam : '/';
 
       if (err) {
         setStatus('error');
-        setErrorMsg(err);
-        setTimeout(() => router.replace(`/auth/sign-in?error=${encodeURIComponent(err)}`), 3000);
+        const isCancelled =
+          err.toLowerCase().includes('access_denied') ||
+          err.toLowerCase().includes('denied') ||
+          err.toLowerCase().includes('cancel');
+        const friendly = isCancelled ? 'Google Sign-In was cancelled.' : decodeURIComponent(err);
+        setErrorMsg(friendly);
+        setTimeout(() => router.replace(`/auth/sign-in?error=${encodeURIComponent(friendly)}`), 2500);
         return;
       }
 
       if (code) {
         supabase.auth
           .exchangeCodeForSession(code)
-          .then(({ data, error }) => {
+          .then(async ({ data, error }) => {
             if (error) {
               console.warn('[auth/callback] exchangeCodeForSession warning:', error.message);
               // Fallback to getSession in case listener already grabbed it
-              supabase.auth.getSession().then(({ data: sessData }) => {
-                if (sessData?.session) {
-                  go('/');
-                } else {
-                  setStatus('error');
-                  setErrorMsg(error.message);
-                  setTimeout(() => router.replace(`/auth/sign-in?error=${encodeURIComponent(error.message)}`), 3000);
-                }
-              });
+              const { data: sessData } = await supabase.auth.getSession();
+              if (sessData?.session) {
+                go(safeNext);
+              } else {
+                setStatus('error');
+                setErrorMsg(error.message);
+                setTimeout(() => router.replace(`/auth/sign-in?error=${encodeURIComponent(error.message)}`), 3000);
+              }
             } else if (data?.session) {
-              go('/');
+              go(safeNext);
             }
           })
           .catch((e) => {
             console.error('[auth/callback] exception:', e);
-            go('/auth/sign-in');
+            setStatus('error');
+            setErrorMsg('Authentication error occurred.');
+            setTimeout(() => router.replace('/auth/sign-in'), 2500);
           });
       }
     }
 
     // Listen for Supabase session / auth state change
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) go('/');
+      if (session) {
+        const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+        const nextParam = params?.get('next');
+        const safeNext = nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//') ? nextParam : '/';
+        go(safeNext);
+      }
     });
 
     supabase.auth.getSession().then(({ data }) => {
-      if (data?.session) go('/');
+      if (data?.session) {
+        const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+        const nextParam = params?.get('next');
+        const safeNext = nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//') ? nextParam : '/';
+        go(safeNext);
+      }
     });
 
     const timeout = setTimeout(() => {
@@ -123,6 +141,13 @@ export default function AuthCallbackPage() {
             <h2 className="text-base font-black text-white">Sign-In Notice</h2>
             <p className="text-xs text-rose-300 mt-1">{errorMsg || 'Could not verify session. Redirecting...'}</p>
           </div>
+          <button
+            type="button"
+            onClick={() => router.replace('/auth/sign-in')}
+            className="w-full py-2 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors cursor-pointer"
+          >
+            Return to Sign In
+          </button>
         </div>
       )}
     </div>
