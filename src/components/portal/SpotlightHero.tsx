@@ -121,13 +121,17 @@ export function SpotlightHero({ games }: SpotlightHeroProps) {
           </div>
 
           {/* Mobile Clean Uncropped Game Preview (Zero Blurs) */}
-          <div className="block md:hidden w-full aspect-[16/9] rounded-xl overflow-hidden bg-[#060812] border border-white/15 relative p-2">
+          <Link
+            href={`/game/${current.slug}`}
+            onClick={() => playSfx('launch')}
+            className="block md:hidden w-full aspect-[16/9] rounded-xl overflow-hidden bg-gradient-to-b from-[#0b0e1a] to-[#04060c] border border-white/15 active:border-[var(--accent)] relative p-2 shadow-lg cursor-pointer"
+          >
             <img
               src={current.banner_url || current.thumbnail_url}
               alt={current.title}
               className="relative z-10 w-full h-full object-contain rounded-lg drop-shadow-md"
             />
-          </div>
+          </Link>
 
           {/* Spotlight Index HUD */}
           <div className="flex items-center gap-2">
@@ -192,26 +196,52 @@ export function SpotlightHero({ games }: SpotlightHeroProps) {
           >
             <div
               ref={coverRef}
-              className="relative rounded-[2.25rem] p-2 border border-white/20 bg-white/[0.04] backdrop-blur-md shadow-[0_30px_60px_-15px_rgba(0,0,0,0.9)] transition-transform duration-300 ease-out [transform:rotateY(-8deg)_rotateX(4deg)] group-hover/cover:border-[var(--accent)]"
+              className="relative rounded-[2.25rem] p-2 border border-white/20 bg-[#0a0d1d]/85 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.9)] transition-all duration-300 ease-out [transform:rotateY(-8deg)_rotateX(4deg)] group-hover/cover:border-[var(--accent)] group-hover/cover:shadow-[0_0_35px_var(--accent-glow),0_30px_60px_-15px_rgba(0,0,0,0.95)]"
             >
-              <div className="absolute -inset-4 rounded-[2.5rem] blur-[50px] opacity-50 bg-gradient-to-tr from-[var(--accent)] to-[var(--accent-secondary)] pointer-events-none group-hover/cover:opacity-80 transition-opacity duration-500" />
+              {/* Outer Neon Atmospheric Glow Aura */}
+              <div className="absolute -inset-4 rounded-[2.5rem] blur-[50px] opacity-50 bg-gradient-to-tr from-[var(--accent)] to-[var(--accent-secondary)] pointer-events-none group-hover/cover:opacity-95 group-hover/cover:scale-105 transition-all duration-500" />
 
-              <div className="relative w-full aspect-[4/3] rounded-[1.75rem] overflow-hidden bg-[#060812] border border-white/10 shadow-2xl flex items-center justify-center p-3">
+              {/* Inner Chassis Container */}
+              <div className="relative w-full aspect-[4/3] rounded-[1.75rem] overflow-hidden bg-gradient-to-b from-[#0e1224] to-[#04060d] border border-white/10 group-hover/cover:border-[var(--accent)]/50 shadow-2xl flex items-center justify-center p-3 transition-colors duration-300">
+                {/* Radial energy flare that blooms behind the game artwork on hover */}
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--accent)_0%,transparent_70%)] opacity-20 group-hover/cover:opacity-60 transition-opacity duration-500 pointer-events-none" />
+
+                {/* Prismatic Holographic Light Streak that sweeps across on hover */}
+                <div className="absolute inset-0 z-20 pointer-events-none overflow-hidden">
+                  <div className="w-[180%] h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover/cover:translate-x-full transition-transform duration-1000 ease-out" />
+                </div>
+
+                {/* Game Cover Artwork: Stays 100% visible, bright, and scales smoothly without blackout */}
                 <img
                   src={current.banner_url || current.thumbnail_url}
                   alt={current.title}
-                  className="relative z-10 w-full h-full object-contain rounded-xl drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)] transition-transform duration-300 group-hover/cover:scale-105"
+                  className="relative z-10 w-full h-full object-contain rounded-xl drop-shadow-[0_12px_32px_rgba(0,0,0,0.9)] transition-transform duration-300 group-hover/cover:scale-105"
                 />
+
+                {/* Cyber Corner HUD Accents */}
+                <div className="absolute top-2.5 left-2.5 z-20 w-3 h-3 border-t-2 border-l-2 border-white/30 group-hover/cover:border-[var(--accent)] transition-colors pointer-events-none" />
+                <div className="absolute bottom-2.5 right-2.5 z-20 w-3 h-3 border-b-2 border-r-2 border-white/30 group-hover/cover:border-[var(--accent)] transition-colors pointer-events-none" />
+
+                {/* Center Floating Radiant Play Orb with Pulse & Pill Badge (Zero blackout!) */}
+                <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
+                  <div className="flex flex-col items-center gap-2 opacity-0 scale-75 group-hover/cover:opacity-100 group-hover/cover:scale-100 transition-all duration-300 ease-out">
+                    <div className="relative flex items-center justify-center">
+                      <div className="absolute -inset-2.5 rounded-full bg-[var(--accent)] opacity-60 blur-md animate-pulse" />
+                      <div className="relative w-16 h-16 rounded-full bg-gradient-to-tr from-[var(--accent)] to-[var(--accent-secondary)] text-black flex items-center justify-center shadow-[0_0_30px_var(--accent-glow)] border-2 border-white/90">
+                        <Play className="w-7 h-7 fill-black ml-1 drop-shadow" />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-black/85 border border-[var(--accent)]/60 text-[var(--accent)] text-[10px] font-black uppercase tracking-wider shadow-[0_4px_16px_rgba(0,0,0,0.85)]">
+                      <Sparkles className="w-3 h-3 text-[var(--accent)]" />
+                      <span>Play Now</span>
+                    </div>
+                  </div>
+                </div>
               </div>
 
+              {/* Top-Right Glowing Crown Badge */}
               <div className="absolute -top-3 -right-3 bg-gradient-to-r from-amber-400 to-amber-600 text-black rounded-full px-3.5 py-1.5 text-[11px] font-black shadow-[0_6px_20px_rgba(245,158,11,0.5)] flex items-center gap-1.5 border border-amber-300/60 lift-z-2">
                 <Crown className="w-3.5 h-3.5 fill-black" /> TOP RATED
-              </div>
-
-              <div className="absolute inset-2 rounded-[1.75rem] bg-black/40 backdrop-blur-[2px] opacity-0 group-hover/cover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                <div className="w-16 h-16 rounded-full btn-gaming flex items-center justify-center shadow-[0_0_30px_var(--accent)]">
-                  <Play className="w-7 h-7 fill-current ml-1" />
-                </div>
               </div>
             </div>
           </Link>
