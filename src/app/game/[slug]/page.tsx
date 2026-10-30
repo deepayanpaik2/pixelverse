@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { 
@@ -51,6 +51,7 @@ export default function GamePlayerPage() {
   const [iframeKey, setIframeKey] = useState(1);
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [pseudoFs, setPseudoFs] = useState(false); // fullscreen fallback for iPhone Safari
+  const [isMobileDevice, setIsMobileDevice] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [showDuelModal, setShowDuelModal] = useState(false);
   const [duelCode, setDuelCode] = useState('');
@@ -141,21 +142,118 @@ export default function GamePlayerPage() {
     return () => { delete el.dataset.playing; };
   }, [isPlaying]);
 
-  // Keep React state in sync with the real browser fullscreen state (Esc key, etc.)
+  // Detect mobile touchscreen devices
   useEffect(() => {
-    const onFsChange = () => setIsFullscreen(!!document.fullscreenElement);
-    document.addEventListener('fullscreenchange', onFsChange);
-    return () => document.removeEventListener('fullscreenchange', onFsChange);
+    const updateDeviceType = () => {
+      const isTouch =
+        typeof window !== 'undefined' &&
+        (window.matchMedia('(pointer: coarse)').matches ||
+          window.matchMedia('(hover: none)').matches ||
+          /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '') ||
+          (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
+      setIsMobileDevice(isTouch);
+    };
+
+    updateDeviceType();
+    window.addEventListener('resize', updateDeviceType);
+    window.addEventListener('orientationchange', updateDeviceType);
+    return () => {
+      window.removeEventListener('resize', updateDeviceType);
+      window.removeEventListener('orientationchange', updateDeviceType);
+    };
   }, []);
 
-  // Esc closes the fallback fullscreen too
+  // Cleanly and completely exit fullscreen, unlocking mobile body scroll without any residual locks
+  const exitFullscreenCleanly = useCallback(() => {
+    setPseudoFs(false);
+
+    if (typeof document !== 'undefined') {
+      const exitFs =
+        document.exitFullscreen ||
+        (document as any).webkitExitFullscreen ||
+        (document as any).mozCancelFullScreen ||
+        (document as any).msExitFullscreen;
+      if (document.fullscreenElement || (document as any).webkitFullscreenElement) {
+        exitFs?.call(document).catch(() => {});
+      }
+
+      // Fully unlock body & documentElement on mobile
+      document.body.style.removeProperty('overflow');
+      document.body.style.removeProperty('position');
+      document.body.style.removeProperty('height');
+      document.body.style.removeProperty('width');
+      document.documentElement.style.removeProperty('overflow');
+      document.documentElement.style.removeProperty('height');
+
+      // Unfocus iframe to immediately restore touch scrolling to parent window
+      if (document.activeElement && document.activeElement !== document.body) {
+        try {
+          (document.activeElement as HTMLElement).blur();
+        } catch {}
+      }
+      try {
+        window.focus();
+      } catch {}
+
+      // Force mobile compositor to re-enable touch panning
+      setTimeout(() => {
+        document.body.style.removeProperty('overflow');
+        document.documentElement.style.removeProperty('overflow');
+        window.scrollBy({ top: 0, left: 0, behavior: 'auto' });
+      }, 50);
+    }
+  }, []);
+
+  // Keep React state in sync with all browser fullscreen changes
   useEffect(() => {
-    if (!pseudoFs) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setPseudoFs(false); };
+    const onFsChange = () => {
+      const isFs = !!(
+        document.fullscreenElement ||
+        (document as any).webkitFullscreenElement ||
+        (document as any).mozFullScreenElement ||
+        (document as any).msFullscreenElement
+      );
+      setIsFullscreen(isFs);
+      if (!isFs) {
+        exitFullscreenCleanly();
+      }
+    };
+
+    document.addEventListener('fullscreenchange', onFsChange);
+    document.addEventListener('webkitfullscreenchange', onFsChange);
+    document.addEventListener('mozfullscreenchange', onFsChange);
+    document.addEventListener('MSFullscreenChange', onFsChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', onFsChange);
+      document.removeEventListener('webkitfullscreenchange', onFsChange);
+      document.removeEventListener('mozfullscreenchange', onFsChange);
+      document.removeEventListener('MSFullscreenChange', onFsChange);
+    };
+  }, [exitFullscreenCleanly]);
+
+  // Esc closes the fallback fullscreen too, and handles scroll-lock cleanup
+  useEffect(() => {
+    if (!pseudoFs) {
+      document.body.style.removeProperty('overflow');
+      document.documentElement.style.removeProperty('overflow');
+      return;
+    }
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') exitFullscreenCleanly();
+    };
+
     window.addEventListener('keydown', onKey);
     document.body.style.overflow = 'hidden';
-    return () => { window.removeEventListener('keydown', onKey); document.body.style.overflow = ''; };
-  }, [pseudoFs]);
+    document.documentElement.style.overflow = 'hidden';
+
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.removeProperty('overflow');
+      document.documentElement.style.removeProperty('overflow');
+    };
+  }, [pseudoFs, exitFullscreenCleanly]);
 
   useEffect(() => {
     if (game) {
@@ -216,24 +314,23 @@ export default function GamePlayerPage() {
   const toggleFullscreen = () => {
     const el = containerRef.current;
     if (!el) return;
-    if (pseudoFs) { setPseudoFs(false); return; }
 
-    // Mobile WebKit does not support standard Element.requestFullscreen(); fall back to CSS pseudo-fullscreen.
-    const isIOS =
-      typeof navigator !== 'undefined' &&
-      (/iPad|iPhone|iPod/.test(navigator.userAgent || '') ||
-        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
+    if (pseudoFs || isFullscreen) {
+      exitFullscreenCleanly();
+      return;
+    }
 
-    if (isIOS) {
+    if (isMobileDevice) {
+      // On mobile phones: enter true edge-to-edge pseudo fullscreen (100% reliable across iOS & Android)
       setPseudoFs(true);
+      if (typeof document !== 'undefined') {
+        document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
+      }
       return;
     }
 
-    if (document.fullscreenElement) {
-      document.exitFullscreen().catch(() => {});
-      return;
-    }
-
+    // On PC: Native browser requestFullscreen
     const request =
       el.requestFullscreen ||
       (el as any).webkitRequestFullscreen ||
@@ -322,13 +419,48 @@ export default function GamePlayerPage() {
                     ? 'rounded-3xl h-[88vh] min-h-[480px] w-full transition-[height] duration-300'
                     : game.orientation === 'portrait'
                     ? 'rounded-2xl sm:rounded-3xl h-[68svh] min-h-[420px] max-h-[620px] max-w-2xl mx-auto w-full'
-                    : 'rounded-2xl sm:rounded-3xl h-[54svh] min-h-[320px] max-h-[560px] sm:h-[76vh] sm:min-h-[520px] sm:max-h-none w-full'
+                    : 'rounded-2xl sm:rounded-3xl h-[54svh] min-h-[300px] max-h-[560px] sm:h-[76vh] sm:min-h-[480px] sm:max-h-none landscape:max-h-[82vh] md:landscape:max-h-none w-full'
                 }`
           }`}
         >
-          {pseudoFs && (
+          {/* Mobile Fullscreen Floating HUD Pill (True Fullscreen with Zero Canvas Intrusion) */}
+          {(pseudoFs || isFullscreen) && isMobileDevice && (
+            <div className="fixed top-[calc(env(safe-area-inset-top,8px)+6px)] right-3 z-[100000] flex items-center gap-1.5 p-1 rounded-full bg-black/85 hover:bg-black border border-white/25 shadow-2xl backdrop-blur-md animate-in fade-in duration-200">
+              <button
+                type="button"
+                onClick={() => {
+                  setIframeKey((k) => k + 1);
+                  setIframeLoaded(false);
+                  playSfx('tap');
+                }}
+                className="p-1.5 rounded-full text-slate-300 hover:text-white active:scale-90 transition-all"
+                title="Restart Game"
+                aria-label="Restart game"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+              </button>
+              <div className="w-[1px] h-3 bg-white/20" />
+              <button
+                type="button"
+                onClick={() => {
+                  exitFullscreenCleanly();
+                  playSfx('tap');
+                }}
+                className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--accent)] text-black font-black text-xs shadow-md active:scale-95 transition-all cursor-pointer"
+                title="Exit Fullscreen"
+                aria-label="Exit fullscreen"
+              >
+                <Minimize2 className="w-3.5 h-3.5 fill-current" />
+                <span>Exit Fullscreen</span>
+              </button>
+            </div>
+          )}
+
+          {/* Desktop Fallback Fullscreen Exit Button */}
+          {pseudoFs && !isMobileDevice && (
             <button
-              onClick={() => setPseudoFs(false)}
+              type="button"
+              onClick={exitFullscreenCleanly}
               className="fixed top-[calc(env(safe-area-inset-top,12px)+8px)] right-4 z-[100000] flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-black/85 hover:bg-black border border-white/30 text-white font-extrabold text-xs shadow-2xl backdrop-blur-md active:scale-95 transition-all"
               aria-label="Exit fullscreen"
             >
@@ -436,8 +568,12 @@ export default function GamePlayerPage() {
             </div>
           )}
 
-          {/* Viewport Control Bar (Bottom Overlay) */}
-          <div className="relative shrink-0 z-40 bg-[#060810] px-4 py-2.5 border-t border-white/10 flex items-center justify-between pb-[max(0.625rem,env(safe-area-inset-bottom))]">
+          {/* Viewport Control Bar (Bottom Overlay - hidden in mobile fullscreen so mobile gets TRUE edge-to-edge canvas; kept on PC) */}
+          <div
+            className={`relative shrink-0 z-40 bg-[#060810] px-4 py-2.5 border-t border-white/10 items-center justify-between pb-[max(0.625rem,env(safe-area-inset-bottom))] ${
+              (pseudoFs || isFullscreen) && isMobileDevice ? 'hidden' : 'flex'
+            }`}
+          >
             <div className="flex items-center gap-2.5 min-w-0">
               <span className="w-2 h-2 rounded-full bg-[var(--accent)] animate-pulse shrink-0" />
               <h2 className="font-display font-extrabold text-sm text-white truncate max-w-[170px] sm:max-w-xs">{game.title}</h2>
@@ -485,11 +621,15 @@ export default function GamePlayerPage() {
                   toggleFullscreen();
                   playSfx('tap');
                 }}
-                className="p-2 sm:px-3 sm:py-2 rounded-xl bg-white/5 border border-white/15 text-slate-300 hover:text-[var(--accent)] hover:border-[var(--accent)] transition-all btn-3d"
+                className={`p-2 sm:px-3 sm:py-2 rounded-xl border transition-all btn-3d ${
+                  isFullscreen || pseudoFs
+                    ? 'bg-[var(--accent)] text-black border-[var(--accent)] shadow-[0_0_12px_var(--accent-glow)]'
+                    : 'bg-white/5 border-white/15 text-slate-300 hover:text-[var(--accent)] hover:border-[var(--accent)]'
+                }`}
                 title={isFullscreen || pseudoFs ? 'Exit fullscreen' : 'Fullscreen'}
                 aria-label={isFullscreen || pseudoFs ? 'Exit fullscreen' : 'Fullscreen'}
               >
-                {isFullscreen || pseudoFs ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                {isFullscreen || pseudoFs ? <Minimize2 className="w-4 h-4 fill-current" /> : <Maximize2 className="w-4 h-4" />}
               </button>
             </div>
           </div>
