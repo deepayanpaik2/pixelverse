@@ -23,8 +23,11 @@ function mosaicSize(idx: number): '1x1' | '2x2' | 'wide' {
   return '1x1';
 }
 
-export function GameGrid({ games, pageSize = 48, mosaic = false, className }: GameGridProps) {
-  const [count, setCount] = useState(pageSize);
+export function GameGrid({ games, pageSize = 36, mosaic = false, className }: GameGridProps) {
+  const [count, setCount] = useState(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 640) return 20;
+    return pageSize;
+  });
   const sentinel = useRef<HTMLDivElement>(null);
   const ioRef = useRef<IntersectionObserver | null>(null);
 
@@ -55,7 +58,7 @@ export function GameGrid({ games, pageSize = 48, mosaic = false, className }: Ga
           }
         }
       },
-      { rootMargin: '1200px 0px' }
+      { rootMargin: '600px 0px' }
     );
     io.observe(el);
     ioRef.current = io;

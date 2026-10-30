@@ -417,8 +417,10 @@ interface GameIconOutlineProps {
 export function GameIconOutline({ theme }: GameIconOutlineProps) {
   return (
     <div className="absolute inset-0 z-20 pointer-events-none rounded-[1.1rem] overflow-hidden">
-      {/* Dynamic Theme Corner Ornaments */}
-      {theme.renderCorners()}
+      {/* Dynamic Theme Corner Ornaments (Desktop only for zero mobile DOM overhead) */}
+      <div className="hidden sm:block absolute inset-0 pointer-events-none">
+        {theme.renderCorners()}
+      </div>
 
       {/* Subtle Specular Top Arc Reflection */}
       <div className="absolute inset-x-2 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />

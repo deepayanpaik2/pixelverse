@@ -37,11 +37,23 @@ function GameTileBase({ game, size = '1x1', priority = false }: GameTileProps) {
 
   // Deterministic creative outline theme unique to this game
   const outlineTheme = getOutlineTheme(game.id, game.category);
+  const rectRef = useRef<{ left: number; top: number; width: number; height: number } | null>(null);
+
+  const onTiltEnter = (e: React.PointerEvent<HTMLAnchorElement>) => {
+    if (e.pointerType !== 'mouse') return;
+    const r = e.currentTarget.getBoundingClientRect();
+    rectRef.current = { left: r.left, top: r.top, width: r.width, height: r.height };
+  };
 
   const onTilt = (e: React.PointerEvent<HTMLAnchorElement>) => {
     if (e.pointerType !== 'mouse') return;
     const el = e.currentTarget;
-    const r = el.getBoundingClientRect();
+    let r = rectRef.current;
+    if (!r) {
+      const b = el.getBoundingClientRect();
+      r = { left: b.left, top: b.top, width: b.width, height: b.height };
+      rectRef.current = r;
+    }
     const px = (e.clientX - r.left) / r.width;
     const py = (e.clientY - r.top) / r.height;
     el.style.setProperty('--ry', `${((px - 0.5) * 14).toFixed(2)}deg`);
@@ -51,6 +63,7 @@ function GameTileBase({ game, size = '1x1', priority = false }: GameTileProps) {
   };
 
   const onTiltEnd = (e: React.PointerEvent<HTMLAnchorElement>) => {
+    rectRef.current = null;
     e.currentTarget.style.setProperty('--rx', '0deg');
     e.currentTarget.style.setProperty('--ry', '0deg');
   };
@@ -65,6 +78,7 @@ function GameTileBase({ game, size = '1x1', priority = false }: GameTileProps) {
     <Link
       href={`/game/${game.slug}`}
       title={game.title}
+      onPointerEnter={onTiltEnter}
       onPointerMove={onTilt}
       onPointerLeave={onTiltEnd}
       className={`game-tile group relative rounded-[1.2rem] sm:rounded-[1.4rem] p-1.5 sm:p-2 bg-[#090b14]/90 border border-white/[0.12] ${outlineTheme.tileHoverBorder} transition-all flex flex-col justify-between ${SIZE_CLASSES[size]}`}
