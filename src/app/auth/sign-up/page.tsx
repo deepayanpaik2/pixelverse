@@ -53,7 +53,11 @@ export default function SignUpPage() {
     playSfx('launch');
 
     const res = await signInWithGoogle();
-    if (!res.success) {
+    if (res.success) {
+      setTimeout(() => {
+        router.replace('/');
+      }, 450);
+    } else {
       setIsGoogleLoading(false);
       setErrorMsg(res.error || 'Failed to initialize Google Sign-In.');
     }

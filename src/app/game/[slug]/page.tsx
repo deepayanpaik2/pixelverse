@@ -166,16 +166,27 @@ export default function GamePlayerPage() {
   // Cleanly and completely exit fullscreen, unlocking mobile body scroll without any residual locks
   const exitFullscreenCleanly = useCallback(() => {
     setPseudoFs(false);
+    setIsFullscreen(false);
 
     if (typeof document !== 'undefined') {
       const exitFs =
         document.exitFullscreen ||
         (document as any).webkitExitFullscreen ||
+        (document as any).webkitCancelFullScreen ||
         (document as any).mozCancelFullScreen ||
         (document as any).msExitFullscreen;
       if (document.fullscreenElement || (document as any).webkitFullscreenElement) {
-        exitFs?.call(document).catch(() => {});
+        try {
+          exitFs?.call(document);
+        } catch {}
       }
+
+      // Unlock orientation
+      try {
+        if (typeof screen !== 'undefined' && screen.orientation && (screen.orientation as any).unlock) {
+          (screen.orientation as any).unlock();
+        }
+      } catch {}
 
       // Fully unlock body & documentElement on mobile
       document.body.style.removeProperty('overflow');
@@ -312,7 +323,7 @@ export default function GamePlayerPage() {
   };
 
   const toggleFullscreen = () => {
-    const el = containerRef.current;
+    const el = containerRef.current || document.documentElement;
     if (!el) return;
 
     if (pseudoFs || isFullscreen) {
@@ -320,27 +331,46 @@ export default function GamePlayerPage() {
       return;
     }
 
-    if (isMobileDevice) {
-      // On mobile phones: enter true edge-to-edge pseudo fullscreen (100% reliable across iOS & Android)
-      setPseudoFs(true);
-      if (typeof document !== 'undefined') {
-        document.body.style.overflow = 'hidden';
-        document.documentElement.style.overflow = 'hidden';
-      }
-      return;
-    }
-
-    // On PC: Native browser requestFullscreen
-    const request =
+    // Call native requestFullscreen across all browser engines (Android Brave, Chrome, Samsung Internet, Firefox, Edge, PC)
+    const requestFs =
       el.requestFullscreen ||
       (el as any).webkitRequestFullscreen ||
+      (el as any).webkitRequestFullScreen ||
       (el as any).mozRequestFullScreen ||
       (el as any).msRequestFullscreen;
 
-    if (request) {
-      request.call(el).catch(() => setPseudoFs(true));
-    } else {
-      setPseudoFs(true);
+    if (requestFs) {
+      try {
+        const res = requestFs.call(el, { navigationUI: 'hide' });
+        if (res && typeof res.catch === 'function') {
+          res.catch(() => {
+            // Fallback without options for older engines
+            try {
+              requestFs.call(el).catch(() => {});
+            } catch {}
+          });
+        }
+      } catch {
+        try {
+          requestFs.call(el);
+        } catch {}
+      }
+    }
+
+    // Always engage pseudoFs so CSS fixed inset-0 fills the entire display simultaneously
+    setPseudoFs(true);
+    setIsFullscreen(true);
+
+    // Try locking orientation to landscape for games on mobile devices
+    try {
+      if (typeof screen !== 'undefined' && screen.orientation && (screen.orientation as any).lock) {
+        (screen.orientation as any).lock('landscape').catch(() => {});
+      }
+    } catch {}
+
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
     }
   };
 
@@ -425,7 +455,7 @@ export default function GamePlayerPage() {
         >
           {/* Mobile Fullscreen Floating HUD Pill (True Fullscreen with Zero Canvas Intrusion) */}
           {(pseudoFs || isFullscreen) && isMobileDevice && (
-            <div className="fixed top-[calc(env(safe-area-inset-top,8px)+6px)] right-3 z-[100000] flex items-center gap-1.5 p-1 rounded-full bg-black/85 hover:bg-black border border-white/25 shadow-2xl backdrop-blur-md animate-in fade-in duration-200">
+            <div className="fixed top-2.5 right-2.5 z-[100000] flex items-center gap-1 p-1 rounded-full bg-black/60 hover:bg-black/90 border border-white/20 shadow-2xl backdrop-blur-md opacity-60 hover:opacity-100 transition-opacity">
               <button
                 type="button"
                 onClick={() => {
@@ -433,7 +463,7 @@ export default function GamePlayerPage() {
                   setIframeLoaded(false);
                   playSfx('tap');
                 }}
-                className="p-1.5 rounded-full text-slate-300 hover:text-white active:scale-90 transition-all"
+                className="p-1 rounded-full text-slate-300 hover:text-white active:scale-90 transition-transform"
                 title="Restart Game"
                 aria-label="Restart game"
               >
@@ -446,12 +476,12 @@ export default function GamePlayerPage() {
                   exitFullscreenCleanly();
                   playSfx('tap');
                 }}
-                className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--accent)] text-black font-black text-xs shadow-md active:scale-95 transition-all cursor-pointer"
+                className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 hover:bg-[var(--accent)] text-slate-200 hover:text-black font-extrabold text-[10px] active:scale-95 transition-all cursor-pointer"
                 title="Exit Fullscreen"
                 aria-label="Exit fullscreen"
               >
-                <Minimize2 className="w-3.5 h-3.5 fill-current" />
-                <span>Exit Fullscreen</span>
+                <Minimize2 className="w-3 h-3 fill-current" />
+                <span>Exit</span>
               </button>
             </div>
           )}

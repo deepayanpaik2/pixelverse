@@ -33,7 +33,12 @@ export default function SignInPage() {
     playSfx('launch');
 
     const res = await signInWithGoogle();
-    if (!res.success) {
+    if (res.success) {
+      setSignedInUser('Google Gamer');
+      setTimeout(() => {
+        router.replace('/');
+      }, 450);
+    } else {
       setIsGoogleLoading(false);
       setErrorMsg(res.error || 'Failed to initialize Google Sign-In.');
     }
