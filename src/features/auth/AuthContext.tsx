@@ -346,6 +346,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithGoogle = async (): Promise<Result> => {
     if (real) {
       try {
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+
+        // Pre-flight check: verify if Google provider is enabled in Supabase settings
+        // Prevents browser from ever redirecting to raw Supabase 400 "provider is not enabled" JSON page
+        if (supabaseUrl && supabaseAnonKey) {
+          try {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 2000);
+            const settingsRes = await fetch(`${supabaseUrl}/auth/v1/settings`, {
+              headers: { apikey: supabaseAnonKey },
+              signal: controller.signal,
+            });
+            clearTimeout(timer);
+
+            if (settingsRes.ok) {
+              const settings = await settingsRes.json();
+              if (settings?.external?.google === false) {
+                return {
+                  success: false,
+                  error:
+                    'Google Sign-In is not enabled in your Supabase project yet. Please turn on Google in Supabase Dashboard > Authentication > Providers.',
+                };
+              }
+            }
+          } catch {
+            // If settings check fails or times out, proceed to standard OAuth flow
+          }
+        }
+
         const origin =
           typeof window !== 'undefined'
             ? window.location.origin

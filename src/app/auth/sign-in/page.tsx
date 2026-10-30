@@ -97,8 +97,20 @@ export default function SignInPage() {
             </div>
 
             {errorMsg && (
-              <div className="p-3 rounded-lg bg-arcade-rose/15 border border-arcade-rose/30 text-arcade-rose text-xs font-semibold">
-                {errorMsg}
+              <div className="p-3 rounded-lg bg-arcade-rose/15 border border-arcade-rose/30 text-arcade-rose text-xs font-semibold leading-relaxed">
+                <p>{errorMsg}</p>
+                {errorMsg.includes('Supabase Dashboard') && (
+                  <div className="mt-2 pt-2 border-t border-arcade-rose/20 flex justify-end">
+                    <a
+                      href="https://supabase.com/dashboard/project/qgbrheqyavqjmgvxjmeh/auth/providers"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-white bg-arcade-rose/40 hover:bg-arcade-rose/60 py-1 px-2.5 rounded-lg text-[11px] font-bold inline-flex items-center gap-1.5 transition-colors shadow-sm"
+                    >
+                      Open Supabase Providers Settings ➔
+                    </a>
+                  </div>
+                )}
               </div>
             )}
 
