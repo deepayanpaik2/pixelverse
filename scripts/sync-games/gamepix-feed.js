@@ -52,7 +52,7 @@ function isoDay(s) {
   return Number.isNaN(d.getTime()) ? '' : d.toISOString().slice(0, 10);
 }
 
-function buildRegistry(items) {
+function buildRegistry(items, minQuality = 0) {
   if (!Array.isArray(items)) throw new Error('Expected an array of feed items');
   const rows = [];
   const seen = new Set();
@@ -146,7 +146,7 @@ async function main() {
     const limit = arg('--limit') ? parseInt(arg('--limit'), 10) : Infinity;
     items = await download(sid, limit);
   }
-  const { rows, skipped } = buildRegistry(items);
+  const { rows, skipped } = buildRegistry(items, 0.68);
   if (rows.length === 0) throw new Error('No games parsed, refusing to overwrite the registry.');
   fs.writeFileSync(OUT_FILE, JSON.stringify(rows));
   const byCat = {};
