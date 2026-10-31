@@ -78,6 +78,9 @@ interface Conn {
   state: PeerState['connection'];
   meta: Meta | null;
   seen: boolean; // has appeared in presence at least once
+  recoveryTimer: ReturnType<typeof setTimeout> | null;
+  handshakeTimer: ReturnType<typeof setTimeout> | null;
+  failCount: number;
 }
 
 interface Meter {
@@ -87,17 +90,46 @@ interface Meter {
   hold: number;
 }
 
-const ICE_SERVERS: RTCIceServer[] = [
-  { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302', 'stun:stun.cloudflare.com:3478'] },
+const DEFAULT_STUN_SERVERS: string[] = [
+  'stun:stun.l.google.com:19302',
+  'stun:stun1.l.google.com:19302',
+  'stun:stun2.l.google.com:19302',
+  'stun:stun3.l.google.com:19302',
+  'stun:stun4.l.google.com:19302',
+  'stun:stun.cloudflare.com:3478',
+  'stun:global.stun.twilio.com:3478',
+  'stun:stun.relay.metered.ca:80',
+  'stun:stun.schlund.de:3478',
+  'stun:stun.voipbuster.com:3478',
+  'stun:stun.1und1.de:3478',
+  'stun:stun.gmx.net:3478',
 ];
-// Optional free TURN relay (helps people on strict networks / mobile data).
-// Free options: Metered "Open Relay" or Cloudflare Calls TURN. Put the values in .env.local.
-if (process.env.NEXT_PUBLIC_TURN_URL) {
-  ICE_SERVERS.push({
-    urls: process.env.NEXT_PUBLIC_TURN_URL.split(',').map((u) => u.trim()),
-    username: process.env.NEXT_PUBLIC_TURN_USERNAME || '',
-    credential: process.env.NEXT_PUBLIC_TURN_CREDENTIAL || '',
+
+function getInitialIceServers(): RTCIceServer[] {
+  const servers: RTCIceServer[] = [{ urls: DEFAULT_STUN_SERVERS }];
+
+  // Configured TURN relay (Metered / Cloudflare Calls / Coturn / Twilio etc)
+  if (process.env.NEXT_PUBLIC_TURN_URL) {
+    servers.push({
+      urls: process.env.NEXT_PUBLIC_TURN_URL.split(',').map((u) => u.trim()),
+      username: process.env.NEXT_PUBLIC_TURN_USERNAME || '',
+      credential: process.env.NEXT_PUBLIC_TURN_CREDENTIAL || '',
+    });
+  }
+
+  // Fallback public / free open relay TURN servers for NAT & symmetric firewall traversal
+  servers.push({
+    urls: [
+      'turn:openrelay.metered.ca:80',
+      'turn:openrelay.metered.ca:443',
+      'turn:openrelay.metered.ca:443?transport=tcp',
+      'turns:openrelay.metered.ca:443?transport=tcp',
+    ],
+    username: 'openrelayproject',
+    credential: 'openrelayproject',
   });
+
+  return servers;
 }
 
 export class PartyRoomClient {
@@ -128,6 +160,7 @@ export class PartyRoomClient {
   private micError: string | null = null;
   private gameSignal = 0;
   private destroyed = false;
+  private iceServers: RTCIceServer[] = getInitialIceServers();
   private snap: RoomSnapshot;
 
   constructor(opts: { code: string; identity: Identity; maxParticipants: number; hostClientId: string }) {
@@ -221,6 +254,18 @@ export class PartyRoomClient {
       this.ac.resume().catch(() => {});
     } catch {
       this.ac = null;
+    }
+
+    // Refresh ICE servers in background from API
+    if (typeof window !== 'undefined') {
+      fetch('/api/party/ice')
+        .then((r) => r.json())
+        .then((servers) => {
+          if (Array.isArray(servers) && servers.length > 0) {
+            this.iceServers = servers;
+          }
+        })
+        .catch(() => {});
     }
 
     if (media.audio) await this.acquireAudio();
@@ -348,15 +393,22 @@ export class PartyRoomClient {
       present.add(m.id);
       let conn = this.conns.get(m.id);
       if (!conn) {
-        conn = this.createConn(m.id, this.me.id < m.id);
+        const isInitiator = this.me.id < m.id;
+        conn = this.createConn(m.id, isInitiator);
+        conn.meta = m;
+        conn.seen = true;
         if (conn.initiator) {
-          conn.meta = m;
-          conn.seen = true;
           this.makeOffer(conn);
+        } else {
+          this.signal(m.id, { type: 'ready-for-offer' });
+        }
+      } else {
+        conn.meta = m;
+        conn.seen = true;
+        if (conn.state === 'failed') {
+          this.scheduleRecovery(conn);
         }
       }
-      conn.meta = m;
-      conn.seen = true;
     });
 
     this.conns.forEach((c, id) => {
@@ -366,7 +418,12 @@ export class PartyRoomClient {
   }
 
   private createConn(id: string, initiator: boolean): Conn {
-    const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+    const pc = new RTCPeerConnection({
+      iceServers: this.iceServers,
+      iceCandidatePoolSize: 10,
+      bundlePolicy: 'max-bundle',
+      rtcpMuxPolicy: 'require',
+    });
     const conn: Conn = {
       id,
       pc,
@@ -378,22 +435,53 @@ export class PartyRoomClient {
       state: 'connecting',
       meta: null,
       seen: false,
+      recoveryTimer: null,
+      handshakeTimer: null,
+      failCount: 0,
     };
 
     pc.onicecandidate = (e) => {
-      if (e.candidate) this.signal(id, { type: 'ice', candidate: e.candidate.toJSON() });
+      if (e.candidate && e.candidate.candidate) {
+        try {
+          this.signal(id, { type: 'ice', candidate: e.candidate.toJSON() });
+        } catch {
+          /* ignore */
+        }
+      }
     };
+
     pc.ontrack = (e) => {
-      conn.stream.addTrack(e.track);
+      if (!conn.stream.getTracks().some((t) => t.id === e.track.id)) {
+        conn.stream.addTrack(e.track);
+      }
       if (e.track.kind === 'audio') this.watchAudio(id, e.track);
       this.emit();
     };
-    pc.onconnectionstatechange = () => {
-      const s = pc.connectionState;
-      conn.state = s === 'connected' ? 'connected' : s === 'failed' ? 'failed' : s === 'closed' ? 'closed' : 'connecting';
-      if (s === 'failed' && conn.initiator && !this.destroyed) this.makeOffer(conn, true);
+
+    const updateConnState = () => {
+      const connState = pc.connectionState;
+      const iceState = pc.iceConnectionState;
+
+      if (connState === 'connected' || iceState === 'connected' || iceState === 'completed') {
+        conn.state = 'connected';
+        conn.failCount = 0;
+        this.clearRecovery(conn);
+        this.clearHandshake(conn);
+      } else if (connState === 'failed' || iceState === 'failed') {
+        conn.state = 'failed';
+        this.scheduleRecovery(conn);
+      } else if (connState === 'closed' || iceState === 'closed') {
+        conn.state = 'closed';
+        this.clearRecovery(conn);
+        this.clearHandshake(conn);
+      } else {
+        conn.state = 'connecting';
+      }
       this.emit();
     };
+
+    pc.onconnectionstatechange = updateConnState;
+    pc.oniceconnectionstatechange = updateConnState;
 
     if (initiator) {
       const a = pc.addTransceiver('audio', { direction: 'sendrecv' });
@@ -402,19 +490,110 @@ export class PartyRoomClient {
       conn.videoSender = v.sender;
       a.sender.replaceTrack(this.audioTrack).catch(() => {});
       v.sender.replaceTrack(this.outVideo).catch(() => {});
+      this.optimizeVideoSender(v.sender);
     }
+
+    // Set handshake timeout to catch dropped signals (resend offer or request offer)
+    conn.handshakeTimer = setTimeout(() => {
+      if (this.destroyed || conn.state === 'connected' || conn.state === 'closed') return;
+      if (conn.initiator) {
+        this.makeOffer(conn);
+      } else {
+        this.signal(id, { type: 'ready-for-offer' });
+      }
+    }, 4500);
 
     this.conns.set(id, conn);
     return conn;
   }
 
+  private clearRecovery(conn: Conn) {
+    if (conn.recoveryTimer) {
+      clearTimeout(conn.recoveryTimer);
+      conn.recoveryTimer = null;
+    }
+  }
+
+  private clearHandshake(conn: Conn) {
+    if (conn.handshakeTimer) {
+      clearTimeout(conn.handshakeTimer);
+      conn.handshakeTimer = null;
+    }
+  }
+
+  private scheduleRecovery(conn: Conn) {
+    if (this.destroyed) return;
+    const id = conn.id;
+    if (conn.recoveryTimer) return;
+
+    conn.failCount = (conn.failCount || 0) + 1;
+    conn.recoveryTimer = setTimeout(async () => {
+      conn.recoveryTimer = null;
+      if (this.destroyed || !this.conns.has(id)) return;
+      if (conn.pc.connectionState === 'connected' || conn.pc.iceConnectionState === 'connected') return;
+
+      console.log(`[party] recovering peer ${id} (attempt ${conn.failCount})`);
+      if (conn.initiator) {
+        try {
+          if ('restartIce' in conn.pc && typeof (conn.pc as any).restartIce === 'function') {
+            (conn.pc as any).restartIce();
+          }
+          await this.makeOffer(conn, true);
+        } catch {
+          this.reconnect(id);
+        }
+      } else {
+        this.signal(id, { type: 'need-restart' });
+      }
+    }, 1200);
+  }
+
+  private optimizeVideoSender(sender: RTCRtpSender | null) {
+    if (!sender || !sender.getParameters) return;
+    try {
+      const params = sender.getParameters();
+      if (!params.encodings || params.encodings.length === 0) {
+        params.encodings = [{}];
+      }
+      // 600 kbps: high quality 360p mobile stream with zero packet drops
+      params.encodings[0].maxBitrate = 600_000;
+      params.encodings[0].networkPriority = 'high';
+      sender.setParameters(params).catch(() => {});
+    } catch {
+      /* ignore */
+    }
+  }
+
+  /** Manually or automatically reconnects to a specific peer */
+  reconnect(peerId: string) {
+    if (this.destroyed) return;
+    const existing = this.conns.get(peerId);
+    const meta = existing?.meta;
+    this.closeConn(peerId);
+
+    const isInitiator = this.me.id < peerId;
+    const conn = this.createConn(peerId, isInitiator);
+    if (meta) conn.meta = meta;
+    conn.seen = true;
+
+    if (conn.initiator) {
+      this.makeOffer(conn);
+    } else {
+      this.signal(peerId, { type: 'ready-for-offer' });
+    }
+    this.emit();
+  }
+
   private closeConn(id: string) {
     const conn = this.conns.get(id);
     if (!conn) return;
+    this.clearRecovery(conn);
+    this.clearHandshake(conn);
     try {
       conn.pc.onicecandidate = null;
       conn.pc.ontrack = null;
       conn.pc.onconnectionstatechange = null;
+      conn.pc.oniceconnectionstatechange = null;
       conn.pc.close();
     } catch {
       /* ignore */
@@ -441,23 +620,52 @@ export class PartyRoomClient {
   private async handleSignal(p: any) {
     if (this.destroyed || !p || p.to !== this.me.id || !p.from) return;
     let conn = this.conns.get(p.from);
-    if (!conn) conn = this.createConn(p.from, false);
+    if (!conn) {
+      const isInitiator = this.me.id < p.from;
+      conn = this.createConn(p.from, isInitiator);
+    }
     const pc = conn.pc;
 
     try {
-      if (p.type === 'offer') {
-        await pc.setRemoteDescription(p.sdp);
+      if (p.type === 'offer' && p.sdp) {
+        await pc.setRemoteDescription(new RTCSessionDescription(p.sdp));
         this.prepareAnswererSenders(conn);
         await this.flushIce(conn);
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
         this.signal(p.from, { type: 'answer', sdp: { type: answer.type, sdp: answer.sdp } });
-      } else if (p.type === 'answer') {
-        await pc.setRemoteDescription(p.sdp);
-        await this.flushIce(conn);
+      } else if (p.type === 'answer' && p.sdp) {
+        if (pc.signalingState === 'have-local-offer') {
+          await pc.setRemoteDescription(new RTCSessionDescription(p.sdp));
+          await this.flushIce(conn);
+        }
       } else if (p.type === 'ice' && p.candidate) {
-        if (pc.remoteDescription) await pc.addIceCandidate(p.candidate);
-        else conn.pendingIce.push(p.candidate);
+        const candidateInit = p.candidate;
+        if (!candidateInit || !candidateInit.candidate) return;
+        if (pc.remoteDescription && pc.signalingState !== 'closed') {
+          try {
+            await pc.addIceCandidate(new RTCIceCandidate(candidateInit));
+          } catch {
+            /* ignore duplicate or invalid candidate */
+          }
+        } else {
+          conn.pendingIce.push(candidateInit);
+        }
+      } else if (p.type === 'need-restart') {
+        if (conn.initiator && !this.destroyed) {
+          try {
+            if ('restartIce' in pc && typeof (pc as any).restartIce === 'function') {
+              (pc as any).restartIce();
+            }
+            await this.makeOffer(conn, true);
+          } catch {
+            this.reconnect(p.from);
+          }
+        }
+      } else if (p.type === 'ready-for-offer') {
+        if (conn.initiator && !this.destroyed && conn.state !== 'connected') {
+          await this.makeOffer(conn);
+        }
       }
     } catch (e) {
       console.warn('[party] signal error', p.type, e);
@@ -477,17 +685,21 @@ export class PartyRoomClient {
       } else {
         conn.videoSender = t.sender;
         t.sender.replaceTrack(this.outVideo).catch(() => {});
+        this.optimizeVideoSender(t.sender);
       }
     });
   }
 
   private async flushIce(conn: Conn) {
+    if (!conn.pc.remoteDescription) return;
     const list = conn.pendingIce.splice(0);
     for (const c of list) {
       try {
-        await conn.pc.addIceCandidate(c);
+        if (c && c.candidate) {
+          await conn.pc.addIceCandidate(new RTCIceCandidate(c));
+        }
       } catch {
-        /* ignore */
+        /* ignore invalid or expired candidate */
       }
     }
   }

@@ -53,11 +53,13 @@ function Tile({
   deafened,
   compact,
   onFlipCamera,
+  onReconnect,
 }: {
   p: PeerState;
   deafened: boolean;
   compact?: boolean;
   onFlipCamera?: () => void;
+  onReconnect?: () => void;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
   const showVideo = p.videoOn || p.screenOn;
@@ -66,12 +68,14 @@ function Tile({
     const el = ref.current;
     if (!el) return;
     if (p.stream && p.trackCount > 0) {
-      el.srcObject = new MediaStream(p.stream.getTracks());
+      if (el.srcObject !== p.stream) {
+        el.srcObject = p.stream;
+      }
       el.play().catch(() => {});
     } else {
       el.srcObject = null;
     }
-  }, [p.stream, p.trackCount]);
+  }, [p.stream, p.trackCount, showVideo]);
 
   useEffect(() => {
     if (ref.current) ref.current.muted = p.isLocal || deafened;
@@ -90,6 +94,10 @@ function Tile({
         ref={ref}
         autoPlay
         playsInline
+        muted={p.isLocal || deafened}
+        onLoadedMetadata={() => {
+          ref.current?.play().catch(() => {});
+        }}
         className={`absolute inset-0 w-full h-full ${p.screenOn ? 'object-contain bg-black' : 'object-cover'} ${
           showVideo ? 'opacity-100' : 'opacity-0 pointer-events-none'
         } ${p.isLocal && p.videoOn && !p.screenOn && p.cameraFacing !== 'environment' ? '-scale-x-100' : ''}`}
@@ -132,11 +140,19 @@ function Tile({
       )}
 
       {!p.isLocal && p.connection !== 'connected' && (
-        <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded bg-black/70 text-[10px] text-slate-200 flex items-center gap-1">
+        <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded bg-black/70 text-[10px] text-slate-200 flex items-center gap-1 z-20">
           {p.connection === 'failed' ? (
-            <>
-              <AlertTriangle className="w-3 h-3 text-arcade-rose" /> Failed
-            </>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onReconnect?.();
+              }}
+              className="flex items-center gap-1 text-arcade-rose hover:text-white transition-colors cursor-pointer font-bold"
+              title="Connection failed across networks. Click to reconnect"
+            >
+              <AlertTriangle className="w-3 h-3 text-arcade-rose" /> Failed • Reconnect
+            </button>
           ) : (
             <>
               <Loader2 className="w-3 h-3 animate-spin" /> Connecting
@@ -453,7 +469,7 @@ function RoomView({ room, client, onLeft }: { room: PartyRoom; client: PartyRoom
             <div className="glass-panel p-4 sm:p-5 rounded-2xl border border-arcade-border space-y-4">
               <div className={`grid gap-3 ${gridCols(snap.peers.length)}`}>
                 {snap.peers.map((p) => (
-                  <Tile key={p.id} p={p} deafened={me.deafened} onFlipCamera={() => client.flipCamera()} />
+                  <Tile key={p.id} p={p} deafened={me.deafened} onFlipCamera={() => client.flipCamera()} onReconnect={() => client.reconnect(p.id)} />
                 ))}
               </div>
               {snap.peers.length === 1 && (
@@ -466,7 +482,7 @@ function RoomView({ room, client, onLeft }: { room: PartyRoom; client: PartyRoom
             <div className="space-y-3">
               <div className="flex gap-2 overflow-x-auto pb-1">
                 {snap.peers.map((p) => (
-                  <Tile key={p.id} p={p} deafened={me.deafened} compact onFlipCamera={() => client.flipCamera()} />
+                  <Tile key={p.id} p={p} deafened={me.deafened} compact onFlipCamera={() => client.flipCamera()} onReconnect={() => client.reconnect(p.id)} />
                 ))}
               </div>
               <div
