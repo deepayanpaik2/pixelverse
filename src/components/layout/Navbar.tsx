@@ -180,6 +180,26 @@ export function Navbar() {
   const [showRoulette, setShowRoulette] = useState(false);
 
   const themeRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (
+        (e.key === 'k' && (e.metaKey || e.ctrlKey)) ||
+        (e.key === '/' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA')
+      ) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        setShowSuggestions(true);
+      }
+      if (e.key === 'Escape') {
+        setShowSuggestions(false);
+        searchInputRef.current?.blur();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
   const langRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
   const mobileThemeRef = useRef<HTMLButtonElement>(null);

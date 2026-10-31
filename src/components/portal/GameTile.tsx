@@ -2,11 +2,10 @@
 
 import React, { memo, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Play, Heart, Star, Sparkles } from 'lucide-react';
+import { Heart, Star, Sparkles } from 'lucide-react';
 import { GameManifest } from '@/types';
 import { useAuth } from '@/features/auth/AuthContext';
 import { NEW_GAME_IDS } from '@/lib/games';
-import { getOutlineTheme, GameIconOutline } from './GameIconOutline';
 
 interface GameTileProps {
   game: GameManifest;
@@ -35,39 +34,6 @@ function GameTileBase({ game, size = '1x1', priority = false }: GameTileProps) {
   const hasRating = game.likes_count + game.dislikes_count > 0;
   const big = size !== '1x1';
 
-  // Deterministic creative outline theme unique to this game
-  const outlineTheme = getOutlineTheme(game.id, game.category);
-  const rectRef = useRef<{ left: number; top: number; width: number; height: number } | null>(null);
-
-  const onTiltEnter = (e: React.PointerEvent<HTMLAnchorElement>) => {
-    if (e.pointerType !== 'mouse') return;
-    const r = e.currentTarget.getBoundingClientRect();
-    rectRef.current = { left: r.left, top: r.top, width: r.width, height: r.height };
-  };
-
-  const onTilt = (e: React.PointerEvent<HTMLAnchorElement>) => {
-    if (e.pointerType !== 'mouse') return;
-    const el = e.currentTarget;
-    let r = rectRef.current;
-    if (!r) {
-      const b = el.getBoundingClientRect();
-      r = { left: b.left, top: b.top, width: b.width, height: b.height };
-      rectRef.current = r;
-    }
-    const px = (e.clientX - r.left) / r.width;
-    const py = (e.clientY - r.top) / r.height;
-    el.style.setProperty('--ry', `${((px - 0.5) * 14).toFixed(2)}deg`);
-    el.style.setProperty('--rx', `${(-(py - 0.5) * 12).toFixed(2)}deg`);
-    el.style.setProperty('--mx', `${(px * 100).toFixed(1)}%`);
-    el.style.setProperty('--my', `${(py * 100).toFixed(1)}%`);
-  };
-
-  const onTiltEnd = (e: React.PointerEvent<HTMLAnchorElement>) => {
-    rectRef.current = null;
-    e.currentTarget.style.setProperty('--rx', '0deg');
-    e.currentTarget.style.setProperty('--ry', '0deg');
-  };
-
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -78,24 +44,11 @@ function GameTileBase({ game, size = '1x1', priority = false }: GameTileProps) {
     <Link
       href={`/game/${game.slug}`}
       title={game.title}
-      onPointerEnter={onTiltEnter}
-      onPointerMove={onTilt}
-      onPointerLeave={onTiltEnd}
-      className={`game-tile group relative rounded-[1.2rem] sm:rounded-[1.4rem] p-1.5 sm:p-2 bg-[#090b14]/90 border border-white/[0.12] ${outlineTheme.tileHoverBorder} transition-all flex flex-col justify-between ${SIZE_CLASSES[size]}`}
+      className={`group relative rounded-2xl p-2 bg-[#0a0e1c]/80 hover:bg-[#10172e] border border-white/[0.08] hover:border-[var(--accent)]/50 transition-all duration-300 flex flex-col justify-between shadow-md hover:shadow-[0_14px_30px_-10px_rgba(0,0,0,0.85)] hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-[var(--accent)] ${SIZE_CLASSES[size]}`}
     >
-      {/* 3D Depth Reactive Ambient Glow customized per game outline theme (desktop hover only) */}
-      <div className="hidden sm:block absolute inset-0 z-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        <div
-          className="absolute -inset-2 rounded-[1.6rem] blur-2xl opacity-40 transition-all duration-300"
-          style={{
-            background: `radial-gradient(circle, ${outlineTheme.accentGlow} 0%, transparent 70%)`,
-          }}
-        />
-      </div>
-
-      {/* Upper Image Frame (100% Whole Uncropped Artwork with Creative Outline Frame) */}
+      {/* Artwork Frame */}
       <div
-        className={`relative w-full rounded-[1rem] sm:rounded-[1.1rem] overflow-hidden bg-[#060812] border ${outlineTheme.borderClass} ${outlineTheme.hoverBorderClass} ${outlineTheme.glowShadowClass} transition-all duration-300 shrink-0 flex items-center justify-center ${
+        className={`relative w-full rounded-xl overflow-hidden bg-[#05070f] border border-white/[0.06] transition-all duration-300 shrink-0 flex items-center justify-center ${
           size === 'wide'
             ? 'aspect-[16/7]'
             : size === '2x2'
@@ -103,21 +56,20 @@ function GameTileBase({ game, size = '1x1', priority = false }: GameTileProps) {
             : 'aspect-[4/3]'
         }`}
       >
-        {/* Creative Outline Frame with Micro-Corner Ornaments and Edge Accents */}
-        <GameIconOutline theme={outlineTheme} />
-
         {!loaded && !broken && <div className="absolute inset-0 tile-skeleton z-10" />}
 
         {broken ? (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-gradient-to-br from-purple-900/40 to-cyan-900/40">
-            <span className="font-display text-4xl font-black text-white/70 drop-shadow-lg">{game.title.charAt(0)}</span>
+            <span className="font-display text-4xl font-black text-white/70 drop-shadow-lg">
+              {game.title.charAt(0)}
+            </span>
           </div>
         ) : (
           <>
-            {/* Ambient backdrop gradient */}
-            <div className="absolute inset-0 bg-gradient-to-b from-[#11162b]/40 via-[#060812] to-[#04050a] pointer-events-none" />
+            {/* Ambient subtle backdrop */}
+            <div className="absolute inset-0 bg-gradient-to-b from-white/[0.03] to-transparent pointer-events-none" />
 
-            {/* Whole, 100% Uncropped, Perfectly Fitted Game Photo */}
+            {/* Whole Uncropped Crisp Artwork */}
             <img
               ref={imgRef}
               src={game.thumbnail_url}
@@ -133,90 +85,72 @@ function GameTileBase({ game, size = '1x1', priority = false }: GameTileProps) {
               decoding="async"
               onLoad={() => setLoaded(true)}
               onError={() => setBroken(true)}
-              className={`relative z-10 w-full h-full object-contain p-2 rounded-xl transition-transform duration-300 ease-out group-hover:scale-105 ${
+              className={`relative z-10 w-full h-full object-contain p-1.5 rounded-lg transition-transform duration-300 ease-out group-hover:scale-105 ${
                 loaded ? 'opacity-100' : 'opacity-0'
               }`}
             />
           </>
         )}
 
-        {/* Subtle top/bottom sheen */}
-        <div className="absolute inset-0 z-15 bg-gradient-to-t from-black/50 via-transparent to-black/20 opacity-60 group-hover:opacity-30 transition-opacity pointer-events-none" />
+        {/* Subtle sheen */}
+        <div className="absolute inset-0 z-15 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60 group-hover:opacity-20 transition-opacity pointer-events-none" />
 
-        {/* Top Badges Strip inside Image Frame */}
-        <div className="tile-badge absolute top-2.5 left-2.5 right-2.5 z-30 flex items-start justify-between gap-1.5 pointer-events-none">
+        {/* Top Badges & Favorite Heart */}
+        <div className="absolute top-2 left-2 right-2 z-20 flex items-start justify-between gap-1 pointer-events-none">
           <div className="flex items-center gap-1 min-w-0">
             {isNew && (
-              <span
-                className="shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black text-black shadow-md"
-                style={{
-                  background: `linear-gradient(to right, #ffffff, ${outlineTheme.accentHex})`,
-                  boxShadow: `0 0 10px ${outlineTheme.accentGlow}`,
-                }}
-              >
+              <span className="shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black bg-[var(--accent)] text-[#05070f] shadow-sm">
                 <Sparkles className="w-2.5 h-2.5" /> NEW
               </span>
             )}
           </div>
 
-          {/* Favorite Tactile Button */}
+          {/* Tactile Favorite Button */}
           <button
             onClick={handleFavoriteClick}
             data-sfx="like"
-            className="shrink-0 pointer-events-auto p-1.5 rounded-full bg-black/70 border border-white/20 text-slate-200 opacity-80 sm:opacity-0 sm:group-hover:opacity-100 hover:text-rose-400 hover:border-rose-400/50 hover:scale-115 active:scale-90 transition-all duration-200 drop-shadow-lg backdrop-blur-md"
+            className="shrink-0 pointer-events-auto p-1.5 rounded-full bg-black/60 border border-white/15 text-slate-300 opacity-90 sm:opacity-0 sm:group-hover:opacity-100 hover:text-rose-400 hover:border-rose-400/50 hover:scale-110 active:scale-90 transition-all duration-200 shadow-md backdrop-blur-sm"
             title={isFav ? 'Remove from favorites' : 'Save to favorites'}
             aria-label={isFav ? 'Remove from favorites' : 'Save to favorites'}
           >
-            <Heart className={`w-3.5 h-3.5 ${isFav ? 'fill-rose-400 text-rose-400 drop-shadow-[0_0_8px_rgba(251,113,133,0.8)]' : ''}`} />
+            <Heart
+              className={`w-3.5 h-3.5 ${
+                isFav ? 'fill-rose-400 text-rose-400 drop-shadow-[0_0_8px_rgba(251,113,133,0.8)]' : ''
+              }`}
+            />
           </button>
-        </div>
-
-        {/* Center Floating 3D Play Orb on Hover colored to match Outline Theme */}
-        <div className="tile-play-orb absolute inset-0 z-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-          <div
-            className="w-12 h-12 rounded-full flex items-center justify-center scale-75 group-hover:scale-100 transition-transform duration-300 shadow-xl text-black font-black"
-            style={{
-              backgroundColor: outlineTheme.accentHex,
-              boxShadow: `0 0 24px ${outlineTheme.accentGlow}`,
-            }}
-          >
-            <Play className="w-5 h-5 fill-current ml-0.5" />
-          </div>
         </div>
       </div>
 
-      {/* Clean Info Area UNDER the Image (Zero artwork obstruction!) */}
-      <div className="w-full px-1 pt-1.5 sm:px-1.5 sm:pt-2.5 pb-0.5 sm:pb-1 flex flex-col justify-center min-w-0">
-        <div className="flex items-center justify-between gap-1 min-w-0">
+      {/* Info Area Beneath Artwork */}
+      <div className="w-full px-1 pt-2 pb-0.5 flex flex-col justify-center min-w-0">
+        <div className="flex items-center justify-between gap-1.5 min-w-0">
           <h3
-            className={`font-display font-extrabold text-white truncate group-hover:text-white transition-colors leading-tight ${
-              big ? 'text-sm sm:text-base lg:text-lg' : 'text-[11.5px] sm:text-[13px]'
+            className={`font-display font-extrabold text-white truncate group-hover:text-[var(--accent)] transition-colors leading-tight ${
+              big ? 'text-sm sm:text-base' : 'text-xs sm:text-[13px]'
             }`}
           >
             {game.title}
           </h3>
           {hasRating && (
-            <div className="flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-[11px] text-amber-300 font-black shrink-0 tabular-nums">
-              <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-amber-400 text-amber-400" />
-              <span>{game.rating_score}</span>
+            <div className="flex items-center gap-0.5 text-[10px] sm:text-[11px] text-amber-300 font-bold shrink-0 tabular-nums">
+              <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
+              <span>{game.rating_score.toFixed(1)}</span>
             </div>
           )}
         </div>
 
-        <div className="flex items-center justify-between text-[9px] sm:text-[10px] text-slate-400 font-medium mt-0.5 sm:mt-1 gap-1 min-w-0">
-          <span
-            className="truncate font-semibold tracking-wide text-[9.5px] sm:text-[10.5px]"
-            style={{ color: outlineTheme.accentHex }}
-          >
+        <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium mt-1 gap-1 min-w-0">
+          <span className="truncate text-slate-400 group-hover:text-slate-300 transition-colors">
             {game.category}
           </span>
-          <span className="shrink-0 text-slate-500 font-mono text-[8.5px] sm:text-[9px] uppercase tracking-wide">
+          <span className="shrink-0 text-slate-500 font-mono text-[9px] uppercase">
             {game.supported_players}
           </span>
         </div>
 
         {size === '2x2' && game.description && (
-          <p className="text-[10.5px] sm:text-[11px] text-slate-300 line-clamp-2 mt-1 sm:mt-1.5 leading-relaxed font-normal">
+          <p className="text-[11px] text-slate-300 line-clamp-2 mt-1.5 leading-relaxed font-normal">
             {game.description}
           </p>
         )}
