@@ -266,12 +266,16 @@
         this.ctx = null;
       }
       init() {
-        if (!this.ctx) {
-          const AC = window.AudioContext || window.webkitAudioContext;
-          if (AC) this.ctx = new AC();
-        }
-        if (this.ctx && this.ctx.state === 'suspended') {
-          this.ctx.resume();
+        try {
+          if (!this.ctx) {
+            const AC = window.AudioContext || window.webkitAudioContext;
+            if (AC) this.ctx = new AC();
+          }
+          if (this.ctx && this.ctx.state === 'suspended') {
+            this.ctx.resume().catch(() => {});
+          }
+        } catch (e) {
+          console.warn('AudioContext not available:', e);
         }
       }
       playCoin() {
@@ -354,7 +358,12 @@
     let targetX = 0;
     let runSpeed = 24; // Units per second
     let maxSpeed = 48;
-    let highscore = parseInt(localStorage.getItem('pixelverse_templerun_best') || '0', 10);
+    let highscore = 0;
+    try {
+      highscore = parseInt(localStorage.getItem('pixelverse_templerun_best') || '0', 10);
+    } catch (e) {
+      console.warn('Storage unavailable:', e);
+    }
 
     /* --- Setup Three.js Engine --- */
     const canvas = document.getElementById('game-canvas');
@@ -362,7 +371,7 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color('#0d0a07');
@@ -789,8 +798,24 @@
     document.getElementById('btn-slide').addEventListener('click', (e) => { e.stopPropagation(); sound.init(); slide(); });
 
     // Start & Restart buttons
-    document.getElementById('start-btn').addEventListener('click', () => { sound.init(); startGame(); });
-    document.getElementById('restart-btn').addEventListener('click', () => { sound.init(); restartGame(); });
+    const onStart = (e) => {
+      if (e) e.preventDefault();
+      sound.init();
+      startGame();
+    };
+    const onRestart = (e) => {
+      if (e) e.preventDefault();
+      sound.init();
+      restartGame();
+    };
+
+    const startBtn = document.getElementById('start-btn');
+    startBtn.addEventListener('click', onStart);
+    startBtn.addEventListener('pointerdown', onStart);
+
+    const restartBtn = document.getElementById('restart-btn');
+    restartBtn.addEventListener('click', onRestart);
+    restartBtn.addEventListener('pointerdown', onRestart);
 
     function startGame() {
       gameState = 'PLAYING';
@@ -807,7 +832,9 @@
 
       if (scoreDistance > highscore) {
         highscore = Math.floor(scoreDistance);
-        localStorage.setItem('pixelverse_templerun_best', highscore.toString());
+        try {
+          localStorage.setItem('pixelverse_templerun_best', highscore.toString());
+        } catch (e) {}
       }
       document.getElementById('final-best').innerText = highscore;
     }
