@@ -118,7 +118,49 @@ function expand(row: Row, slug: string): GameManifest {
   };
 }
 
-export const ON_SITE_GAMES: GameManifest[] = [];
+export const ON_SITE_GAMES: GameManifest[] = [
+  {
+    id: 'onsite-temple-run',
+    slug: 'temple-run',
+    title: 'Temple Run',
+    description: 'The legendary 3D endless runner! Dash down ancient Mayan temple pathways, dodge stone pillars and fire pits, slide under fallen logs, and escape the demon beast with ancient golden treasure.',
+    instructions: 'Use Arrow Keys or A/D to switch lanes. Up Arrow / W / Space to jump. Down Arrow / S to slide. On mobile, swipe or tap on-screen arrows.',
+    category: 'Action',
+    tags: ['Action', '3D', 'Arcade', 'Running'],
+    thumbnail_url: '/games/temple-run/cover.svg',
+    thumbnail_large_url: '/games/temple-run/cover.svg',
+    banner_url: '/games/temple-run/cover.svg',
+    launch_path: '/games/temple-run/index.html',
+    embed_url: '/games/temple-run/index.html',
+    source_type: 'in_house',
+    source: 'in_house',
+    author: 'Pixelverse Studio',
+    developer_name: 'Imangi Studios (Fan 3D Edition)',
+    license: 'In-House WebGL Edition',
+    license_url: 'https://pixelverse.local',
+    supported_players: '1 Player',
+    is_multiplayer: false,
+    controls: { keyboard: ['Arrow Keys', 'W', 'A', 'S', 'D', 'Space'], mouse: [], touch: true },
+    orientation: 'both',
+    mobile_friendly: true,
+    supports_mobile: true,
+    supports_desktop: true,
+    aspect_ratio: '16/9',
+    width: 1280,
+    height: 720,
+    is_featured: true,
+    featured: true,
+    is_editor_pick: true,
+    is_kids_safe: true,
+    quality_score: 0.99,
+    play_count: 94820,
+    likes_count: 6150,
+    dislikes_count: 32,
+    rating_score: 4.9,
+    status: 'published',
+    created_at: '2026-10-31T00:00:00.000Z',
+  },
+];
 
 function buildCatalog(): GameManifest[] {
   const rows = rawRegistry as unknown as Row[];
@@ -136,7 +178,7 @@ function buildCatalog(): GameManifest[] {
     if (featured >= 6) break;
     if (g.orientation !== 'portrait') { g.is_featured = true; g.featured = true; featured++; }
   }
-  return list;
+  return [...ON_SITE_GAMES, ...list];
 }
 
 /** Full catalog matching feed order. */

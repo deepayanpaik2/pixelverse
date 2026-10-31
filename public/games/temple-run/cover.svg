@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 384" width="512" height="384">
+  <defs>
+    <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1c120c"/>
+      <stop offset="60%" stop-color="#451e08"/>
+      <stop offset="100%" stop-color="#854d0e"/>
+    </linearGradient>
+    <radialGradient id="sunGlow" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.8"/>
+      <stop offset="60%" stop-color="#d97706" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="30%" stop-color="#f59e0b"/>
+      <stop offset="70%" stop-color="#b45309"/>
+      <stop offset="100%" stop-color="#78350f"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background Sky & Jungle Volcano -->
+  <rect width="512" height="384" fill="url(#skyGrad)"/>
+  <circle cx="256" cy="160" r="140" fill="url(#sunGlow)"/>
+
+  <!-- Ancient Pyramid Silhouettes in Background -->
+  <polygon points="40,250 140,140 240,250" fill="#2d170b" opacity="0.7"/>
+  <polygon points="180,260 256,120 332,260" fill="#1f0f07" opacity="0.9"/>
+  <polygon points="280,250 380,150 480,250" fill="#2d170b" opacity="0.7"/>
+
+  <!-- Stone Pathway -->
+  <polygon points="190,384 322,384 270,220 242,220" fill="#57402f"/>
+  <polygon points="200,384 312,384 266,220 246,220" fill="#71543d"/>
+  <line x1="256" y1="220" x2="256" y2="384" stroke="#453123" stroke-width="4"/>
+
+  <!-- Glowing Ancient Mayan Idol Mask in Center -->
+  <g transform="translate(256, 175) scale(1.1)">
+    <!-- Idol Base Shield -->
+    <path d="M-60,-50 L60,-50 L75,10 L0,75 L-75,10 Z" fill="url(#goldGrad)" stroke="#fef08a" stroke-width="4" filter="url(#glow)"/>
+    <!-- Eyes -->
+    <rect x="-35" y="-20" width="22" height="14" rx="4" fill="#000"/>
+    <circle cx="-24" cy="-13" r="5" fill="#ef4444"/>
+    <rect x="13" y="-20" width="22" height="14" rx="4" fill="#000"/>
+    <circle cx="24" cy="-13" r="5" fill="#ef4444"/>
+    <!-- Nose / Carvings -->
+    <polygon points="0,-10 8,15 -8,15" fill="#78350f"/>
+    <!-- Fierce Aztec Teeth -->
+    <rect x="-30" y="25" width="60" height="12" rx="3" fill="#000"/>
+    <rect x="-24" y="27" width="8" height="8" fill="#fef08a"/>
+    <rect x="-12" y="27" width="8" height="8" fill="#fef08a"/>
+    <rect x="0" y="27" width="8" height="8" fill="#fef08a"/>
+    <rect x="12" y="27" width="8" height="8" fill="#fef08a"/>
+  </g>
+
+  <!-- Torches on Sides -->
+  <rect x="110" y="280" width="16" height="70" fill="#451a03"/>
+  <circle cx="118" cy="275" r="14" fill="#f59e0b" filter="url(#glow)"/>
+  <rect x="386" y="280" width="16" height="70" fill="#451a03"/>
+  <circle cx="394" cy="275" r="14" fill="#f59e0b" filter="url(#glow)"/>
+
+  <!-- Golden 3D Title Banner -->
+  <g transform="translate(256, 75)">
+    <!-- Shadow / 3D extrusion -->
+    <text x="0" y="5" font-family="'Impact', 'Arial Black', sans-serif" font-size="48" font-weight="900" text-anchor="middle" fill="#451a03" letter-spacing="3">TEMPLE RUN</text>
+    <text x="0" y="0" font-family="'Impact', 'Arial Black', sans-serif" font-size="48" font-weight="900" text-anchor="middle" fill="url(#goldGrad)" stroke="#fff" stroke-width="1.5" letter-spacing="3" filter="url(#glow)">TEMPLE RUN</text>
+  </g>
+
+  <!-- Subtitle Tag -->
+  <g transform="translate(256, 345)">
+    <rect x="-110" y="-18" width="220" height="34" rx="17" fill="#000" fill-opacity="0.75" stroke="#f59e0b" stroke-width="2"/>
+    <text x="0" y="4" font-family="'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="900" text-anchor="middle" fill="#fef08a" letter-spacing="2">3D ENDLESS RUNNER</text>
+  </g>
+</svg>
