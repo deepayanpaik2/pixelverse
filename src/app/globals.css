@@ -1052,7 +1052,7 @@ body.gaming-bg { background: transparent !important; }
 .arcade-horizon {
   position: fixed;
   inset: 0;
-  z-index: -12;
+  z-index: 0;
   pointer-events: none;
   overflow: hidden;
   background-color: var(--background, #05070f);

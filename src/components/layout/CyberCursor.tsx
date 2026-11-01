@@ -82,13 +82,17 @@ export function CyberCursor() {
         )
         .onfinish = () => ripple.remove();
 
-      // Cyber Diamond Sparks
+      // Cyber Diamond Sparks using reactive route colors
+      const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#00f0ff';
+      const secondaryColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-secondary').trim() || '#8b5cf6';
+      const sparkPalette = [accentColor, '#ffffff', secondaryColor, '#38bdf8', '#ffffff'];
+
       const sparkCount = strong ? 8 : 5;
       for (let i = 0; i < sparkCount; i++) {
         const angle = (i / sparkCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
         const dist = (strong ? 32 : 18) + Math.random() * (strong ? 40 : 22);
         const size = 3 + Math.random() * 3;
-        const color = SPARK_COLORS[Math.floor(Math.random() * SPARK_COLORS.length)];
+        const color = sparkPalette[Math.floor(Math.random() * sparkPalette.length)];
 
         const spark = document.createElement('div');
         spark.className = 'cyber-touch-spark';

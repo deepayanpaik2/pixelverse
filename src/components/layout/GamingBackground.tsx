@@ -32,7 +32,7 @@ export function GamingBackground() {
   if (intensity === 'minimal' || isPlaying) {
     return (
       <div
-        className="fixed inset-0 pointer-events-none z-[-12] bg-[#05070f] transition-colors duration-500"
+        className="fixed inset-0 pointer-events-none z-0 bg-[#05070f] transition-colors duration-500"
         aria-hidden="true"
       />
     );
@@ -40,7 +40,7 @@ export function GamingBackground() {
 
   return (
     <div
-      className="arcade-horizon fixed inset-0 pointer-events-none overflow-hidden z-[-12] transition-opacity duration-700 select-none"
+      className="arcade-horizon fixed inset-0 pointer-events-none overflow-hidden z-0 transition-opacity duration-700 select-none"
       aria-hidden="true"
     >
       {/* Soft atmospheric radial depth */}
