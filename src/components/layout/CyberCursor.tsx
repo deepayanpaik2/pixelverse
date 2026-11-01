@@ -8,8 +8,6 @@ const INTERACTIVE_SELECTOR =
 
 const PLAYABLE_SELECTOR = '.game-card, .arcade-card, [data-sfx], a[href^="/game/"]';
 
-const SPARK_COLORS = ['#00f0ff', '#ffffff', '#8b5cf6', '#38bdf8', '#c084fc'];
-
 export function CyberCursor() {
   const containerRef = useRef<HTMLDivElement>(null);
   const dotRef = useRef<HTMLDivElement>(null);
@@ -19,10 +17,11 @@ export function CyberCursor() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
+    // Desktop vs Mobile Touch separation
     const isTouchOnly =
       window.matchMedia('(pointer: coarse)').matches && !window.matchMedia('(pointer: fine)').matches;
 
-    // Desktop Custom Cursor
+    // Desktop Custom Cursor state
     let mouseX = -100;
     let mouseY = -100;
     let ringX = -100;
@@ -30,7 +29,6 @@ export function CyberCursor() {
     let isHovering = false;
     let isMouseDown = false;
     let isVisible = false;
-    let isPlaying = document.documentElement.dataset.playing === 'true';
     let rafId: number | null = null;
     let isIdle = true;
     let idleTimer: ReturnType<typeof setTimeout> | null = null;
@@ -38,25 +36,6 @@ export function CyberCursor() {
     const dot = dotRef.current;
     const ring = ringRef.current;
     const fxLayer = fxLayerRef.current;
-
-    const updatePlayingState = () => {
-      isPlaying = document.documentElement.dataset.playing === 'true';
-      if (isPlaying) {
-        document.body.classList.remove('cyber-cursor-enabled');
-        dot?.classList.add('cyber-cursor-hidden');
-        ring?.classList.add('cyber-cursor-hidden');
-      } else if (!isTouchOnly && isVisible) {
-        document.body.classList.add('cyber-cursor-enabled');
-        dot?.classList.remove('cyber-cursor-hidden');
-        ring?.classList.remove('cyber-cursor-hidden');
-      }
-    };
-
-    const playingObserver = new MutationObserver(updatePlayingState);
-    playingObserver.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['data-playing'],
-    });
 
     // Touch / Mobile Shockwave Particle Spawner
     const spawnTouchEffect = (x: number, y: number, strong = false) => {
@@ -83,8 +62,10 @@ export function CyberCursor() {
         .onfinish = () => ripple.remove();
 
       // Cyber Diamond Sparks using reactive route colors
-      const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#00f0ff';
-      const secondaryColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-secondary').trim() || '#8b5cf6';
+      const accentColor =
+        getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#00f0ff';
+      const secondaryColor =
+        getComputedStyle(document.documentElement).getPropertyValue('--accent-secondary').trim() || '#8b5cf6';
       const sparkPalette = [accentColor, '#ffffff', secondaryColor, '#38bdf8', '#ffffff'];
 
       const sparkCount = strong ? 8 : 5;
@@ -166,8 +147,8 @@ export function CyberCursor() {
 
     let lastHoverTarget: Element | null = null;
 
-    const onPointerMove = (e: PointerEvent) => {
-      if (isPlaying || e.pointerType === 'touch') return;
+    const onPointerMove = (e: MouseEvent | PointerEvent) => {
+      if ('pointerType' in e && e.pointerType === 'touch') return;
 
       mouseX = e.clientX;
       mouseY = e.clientY;
@@ -201,9 +182,7 @@ export function CyberCursor() {
       wakeLoop();
     };
 
-    const onPointerDown = (e: PointerEvent) => {
-      if (isPlaying) return;
-
+    const onPointerDown = (e: PointerEvent | MouseEvent) => {
       unlockSfx();
       const target = e.target instanceof Element ? e.target : null;
       const sound = soundForElement(target);
@@ -211,7 +190,7 @@ export function CyberCursor() {
 
       const isStrong = sound === 'open' || sound === 'launch';
 
-      if (e.pointerType === 'touch') {
+      if ('pointerType' in e && e.pointerType === 'touch') {
         spawnTouchEffect(e.clientX, e.clientY, isStrong);
       } else {
         isMouseDown = true;
@@ -222,8 +201,8 @@ export function CyberCursor() {
       }
     };
 
-    const onPointerUp = (e: PointerEvent) => {
-      if (e.pointerType === 'touch') return;
+    const onPointerUp = (e: PointerEvent | MouseEvent) => {
+      if ('pointerType' in e && e.pointerType === 'touch') return;
       isMouseDown = false;
       if (ring) ring.dataset.down = 'false';
       if (dot) dot.dataset.down = 'false';
@@ -237,7 +216,7 @@ export function CyberCursor() {
     };
 
     const onMouseEnter = () => {
-      if (!isTouchOnly && !isPlaying) {
+      if (!isTouchOnly) {
         isVisible = true;
         document.body.classList.add('cyber-cursor-enabled');
         dot?.classList.remove('cyber-cursor-hidden');
@@ -245,20 +224,21 @@ export function CyberCursor() {
       }
     };
 
-    window.addEventListener('pointermove', onPointerMove, { passive: true });
-    window.addEventListener('pointerdown', onPointerDown, { passive: true });
-    window.addEventListener('pointerup', onPointerUp, { passive: true });
+    window.addEventListener('pointermove', onPointerMove as EventListener, { passive: true });
+    window.addEventListener('pointerdown', onPointerDown as EventListener, { passive: true });
+    window.addEventListener('pointerup', onPointerUp as EventListener, { passive: true });
+    window.addEventListener('mousemove', onPointerMove as EventListener, { passive: true });
     document.documentElement.addEventListener('mouseleave', onMouseLeave, { passive: true });
     document.documentElement.addEventListener('mouseenter', onMouseEnter, { passive: true });
 
     return () => {
-      playingObserver.disconnect();
       if (rafId) cancelAnimationFrame(rafId);
       if (idleTimer) clearTimeout(idleTimer);
       document.body.classList.remove('cyber-cursor-enabled');
-      window.removeEventListener('pointermove', onPointerMove);
-      window.removeEventListener('pointerdown', onPointerDown);
-      window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('pointermove', onPointerMove as EventListener);
+      window.removeEventListener('pointerdown', onPointerDown as EventListener);
+      window.removeEventListener('pointerup', onPointerUp as EventListener);
+      window.removeEventListener('mousemove', onPointerMove as EventListener);
       document.documentElement.removeEventListener('mouseleave', onMouseLeave);
       document.documentElement.removeEventListener('mouseenter', onMouseEnter);
     };

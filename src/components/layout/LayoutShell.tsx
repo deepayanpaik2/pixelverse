@@ -11,6 +11,7 @@ import { Footer } from './Footer';
 import { ProfileGate } from './ProfileGate';
 import { GamingBackground } from './GamingBackground';
 import { CyberCursor } from './CyberCursor';
+import { getGameBySlug } from '@/lib/games';
 
 const ACCENT_MAP: Record<string, { color: string; rgb: string; secondary?: string; secondaryRgb?: string }> = {
   cyan: { color: '#00f0ff', rgb: '0, 240, 255', secondary: '#8b5cf6', secondaryRgb: '139, 92, 246' },
@@ -41,8 +42,85 @@ function getRouteAmbiance(pathname: string): RouteAmbiance {
       primaryRgb: '0, 240, 255',
       secondary: '#8b5cf6',
       secondaryRgb: '139, 92, 246',
-      glow: 'rgba(0, 240, 255, 0.42)',
-      grid: 'rgba(0, 240, 255, 0.08)',
+      glow: 'rgba(0, 240, 255, 0.45)',
+      grid: 'rgba(0, 240, 255, 0.22)',
+    };
+  }
+
+  // Active Game Pages: Dynamically theme based on the game's actual category
+  if (pathname.startsWith('/game/')) {
+    const slug = pathname.replace('/game/', '').split('/')[0];
+    const game = getGameBySlug(slug);
+    const cat = (game?.category || slug).toLowerCase();
+
+    if (cat.includes('match') || cat.includes('prism') || cat.includes('candy') || cat.includes('gem')) {
+      return {
+        primary: '#00f5d4',
+        primaryRgb: '0, 245, 212',
+        secondary: '#f43f5e',
+        secondaryRgb: '244, 63, 94',
+        glow: 'rgba(0, 245, 212, 0.45)',
+        grid: 'rgba(0, 245, 212, 0.22)',
+      };
+    }
+    if (cat.includes('puzzle') || cat.includes('brain') || cat.includes('logic')) {
+      return {
+        primary: '#a855f7',
+        primaryRgb: '168, 85, 247',
+        secondary: '#ec4899',
+        secondaryRgb: '236, 72, 153',
+        glow: 'rgba(168, 85, 247, 0.45)',
+        grid: 'rgba(168, 85, 247, 0.22)',
+      };
+    }
+    if (cat.includes('driving') || cat.includes('car') || cat.includes('racing') || cat.includes('speed')) {
+      return {
+        primary: '#ff8800',
+        primaryRgb: '255, 136, 0',
+        secondary: '#facc15',
+        secondaryRgb: '250, 204, 21',
+        glow: 'rgba(255, 136, 0, 0.45)',
+        grid: 'rgba(255, 136, 0, 0.22)',
+      };
+    }
+    if (cat.includes('action') || cat.includes('fighting') || cat.includes('war') || cat.includes('temple')) {
+      return {
+        primary: '#ff1e42',
+        primaryRgb: '255, 30, 66',
+        secondary: '#ff7b00',
+        secondaryRgb: '255, 123, 0',
+        glow: 'rgba(255, 30, 66, 0.45)',
+        grid: 'rgba(255, 30, 66, 0.22)',
+      };
+    }
+    if (cat.includes('shooter') || cat.includes('gun') || cat.includes('fps')) {
+      return {
+        primary: '#ef4444',
+        primaryRgb: '239, 68, 68',
+        secondary: '#f97316',
+        secondaryRgb: '249, 115, 22',
+        glow: 'rgba(239, 68, 68, 0.45)',
+        grid: 'rgba(239, 68, 68, 0.22)',
+      };
+    }
+    if (cat.includes('sports') || cat.includes('football') || cat.includes('soccer') || cat.includes('basketball')) {
+      return {
+        primary: '#10b981',
+        primaryRgb: '16, 185, 129',
+        secondary: '#facc15',
+        secondaryRgb: '250, 204, 21',
+        glow: 'rgba(16, 185, 129, 0.45)',
+        grid: 'rgba(16, 185, 129, 0.22)',
+      };
+    }
+    // Default game arena: Electric Cyan & Crimson
+    return {
+      primary: '#00f0ff',
+      primaryRgb: '0, 240, 255',
+      secondary: '#f43f5e',
+      secondaryRgb: '244, 63, 94',
+      glow: 'rgba(0, 240, 255, 0.45)',
+      grid: 'rgba(0, 240, 255, 0.22)',
     };
   }
 
@@ -54,7 +132,7 @@ function getRouteAmbiance(pathname: string): RouteAmbiance {
       secondary: '#f43f5e',
       secondaryRgb: '244, 63, 94',
       glow: 'rgba(192, 132, 252, 0.45)',
-      grid: 'rgba(192, 132, 252, 0.09)',
+      grid: 'rgba(192, 132, 252, 0.22)',
     };
   }
 
@@ -66,7 +144,7 @@ function getRouteAmbiance(pathname: string): RouteAmbiance {
       secondary: '#facc15',
       secondaryRgb: '250, 204, 21',
       glow: 'rgba(255, 123, 0, 0.45)',
-      grid: 'rgba(255, 123, 0, 0.09)',
+      grid: 'rgba(255, 123, 0, 0.22)',
     };
   }
 
@@ -78,7 +156,7 @@ function getRouteAmbiance(pathname: string): RouteAmbiance {
       secondary: '#00f0ff',
       secondaryRgb: '0, 240, 255',
       glow: 'rgba(16, 185, 129, 0.45)',
-      grid: 'rgba(16, 185, 129, 0.09)',
+      grid: 'rgba(16, 185, 129, 0.22)',
     };
   }
 
@@ -90,7 +168,7 @@ function getRouteAmbiance(pathname: string): RouteAmbiance {
       secondary: '#fbbf24',
       secondaryRgb: '251, 191, 36',
       glow: 'rgba(245, 158, 11, 0.45)',
-      grid: 'rgba(245, 158, 11, 0.09)',
+      grid: 'rgba(245, 158, 11, 0.22)',
     };
   }
 
@@ -102,7 +180,7 @@ function getRouteAmbiance(pathname: string): RouteAmbiance {
       secondary: '#f43f5e',
       secondaryRgb: '244, 63, 94',
       glow: 'rgba(255, 42, 133, 0.45)',
-      grid: 'rgba(255, 42, 133, 0.09)',
+      grid: 'rgba(255, 42, 133, 0.22)',
     };
   }
 
@@ -114,7 +192,18 @@ function getRouteAmbiance(pathname: string): RouteAmbiance {
       secondary: '#818cf8',
       secondaryRgb: '129, 140, 248',
       glow: 'rgba(56, 189, 248, 0.45)',
-      grid: 'rgba(56, 189, 248, 0.09)',
+      grid: 'rgba(56, 189, 248, 0.22)',
+    };
+  }
+
+  if (pathname.includes('multiplayer')) {
+    return {
+      primary: '#c084fc',
+      primaryRgb: '192, 132, 252',
+      secondary: '#f43f5e',
+      secondaryRgb: '244, 63, 94',
+      glow: 'rgba(192, 132, 252, 0.45)',
+      grid: 'rgba(192, 132, 252, 0.22)',
     };
   }
 
@@ -126,7 +215,7 @@ function getRouteAmbiance(pathname: string): RouteAmbiance {
       secondary: '#ff7b00',
       secondaryRgb: '255, 123, 0',
       glow: 'rgba(255, 30, 66, 0.45)',
-      grid: 'rgba(255, 30, 66, 0.09)',
+      grid: 'rgba(255, 30, 66, 0.22)',
     };
   }
 
@@ -138,7 +227,7 @@ function getRouteAmbiance(pathname: string): RouteAmbiance {
       secondary: '#facc15',
       secondaryRgb: '250, 204, 21',
       glow: 'rgba(255, 136, 0, 0.45)',
-      grid: 'rgba(255, 136, 0, 0.09)',
+      grid: 'rgba(255, 136, 0, 0.22)',
     };
   }
 
@@ -150,7 +239,7 @@ function getRouteAmbiance(pathname: string): RouteAmbiance {
       secondary: '#ec4899',
       secondaryRgb: '236, 72, 153',
       glow: 'rgba(168, 85, 247, 0.45)',
-      grid: 'rgba(168, 85, 247, 0.09)',
+      grid: 'rgba(168, 85, 247, 0.22)',
     };
   }
 
@@ -162,7 +251,7 @@ function getRouteAmbiance(pathname: string): RouteAmbiance {
       secondary: '#f97316',
       secondaryRgb: '249, 115, 22',
       glow: 'rgba(239, 68, 68, 0.45)',
-      grid: 'rgba(239, 68, 68, 0.09)',
+      grid: 'rgba(239, 68, 68, 0.22)',
     };
   }
 
@@ -174,7 +263,18 @@ function getRouteAmbiance(pathname: string): RouteAmbiance {
       secondary: '#06b6d4',
       secondaryRgb: '6, 182, 212',
       glow: 'rgba(20, 184, 166, 0.45)',
-      grid: 'rgba(20, 184, 166, 0.09)',
+      grid: 'rgba(20, 184, 166, 0.22)',
+    };
+  }
+
+  if (pathname.startsWith('/settings')) {
+    return {
+      primary: '#38bdf8',
+      primaryRgb: '56, 189, 248',
+      secondary: '#c084fc',
+      secondaryRgb: '192, 132, 252',
+      glow: 'rgba(56, 189, 248, 0.45)',
+      grid: 'rgba(56, 189, 248, 0.22)',
     };
   }
 
@@ -184,8 +284,8 @@ function getRouteAmbiance(pathname: string): RouteAmbiance {
     primaryRgb: '0, 240, 255',
     secondary: '#8b5cf6',
     secondaryRgb: '139, 92, 246',
-    glow: 'rgba(0, 240, 255, 0.42)',
-    grid: 'rgba(0, 240, 255, 0.08)',
+    glow: 'rgba(0, 240, 255, 0.45)',
+    grid: 'rgba(0, 240, 255, 0.22)',
   };
 }
 
@@ -208,14 +308,14 @@ function ThemeApplicator() {
       if (accent) {
         root.style.setProperty('--accent', accent.color);
         root.style.setProperty('--accent-rgb', accent.rgb);
-        root.style.setProperty('--accent-glow', `rgba(${accent.rgb}, 0.45)`);
+        root.style.setProperty('--accent-glow', `rgba(${accent.rgb}, 0.5)`);
         if (accent.secondary) {
           root.style.setProperty('--accent-secondary', accent.secondary);
         }
         if (accent.secondaryRgb) {
           root.style.setProperty('--accent-secondary-rgb', accent.secondaryRgb);
         }
-        root.style.setProperty('--grid-color', `rgba(${accent.rgb}, 0.08)`);
+        root.style.setProperty('--grid-color', `rgba(${accent.rgb}, 0.22)`);
       }
       return;
     }
