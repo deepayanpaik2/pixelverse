@@ -9,6 +9,7 @@ import { Sidebar } from './Sidebar';
 import { Footer } from './Footer';
 import { ProfileGate } from './ProfileGate';
 import { GamingBackground } from './GamingBackground';
+import { CyberCursor } from './CyberCursor';
 
 const ACCENT_MAP: Record<string, { color: string; rgb: string }> = {
   cyan: { color: '#00f0ff', rgb: '0, 240, 255' },
@@ -63,6 +64,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
               Skip to main content
             </a>
             <GamingBackground />
+            <CyberCursor />
             <ProfileGate />
             <Navbar />
             <div className="flex-1 flex w-full">

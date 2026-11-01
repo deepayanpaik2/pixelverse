@@ -8,8 +8,9 @@ import { useAuth } from '@/features/auth/AuthContext';
  *
  * Implements a world-class, cinematic atmospheric horizon in pure, lightweight CSS:
  * - Near-black midnight background with deep indigo/blue-violet gradients
- * - Restrained electric cyan & ultraviolet ambient horizon beam
- * - Geometric perspective grid floor that gently fades into the distance
+ * - Restrained electric cyan & ultraviolet ambient horizon beam with breathing pulse
+ * - Infinite perspective grid floor with silky-smooth GPU-composited forward roll
+ * - Floating cyber stardust depth layer
  * - Zero expensive continuous canvas loops or heavy WebGL overhead
  * - Auto-dims to pure stealth black when a game is actively playing
  */
@@ -45,10 +46,17 @@ export function GamingBackground() {
       {/* Soft atmospheric radial depth */}
       <div className="arcade-horizon-ambient" />
 
+      {/* Dynamic Cosmic Nebulae Orbs */}
+      <div className="arcade-horizon-nebula arcade-horizon-nebula-left" />
+      <div className="arcade-horizon-nebula arcade-horizon-nebula-right" />
+
+      {/* Floating Cyber Dust / Stars */}
+      <div className="arcade-horizon-dust" />
+
       {/* Horizon Luminescence Light Beam */}
       <div className="arcade-horizon-beam" />
 
-      {/* Cyber Perspective Grid Floor */}
+      {/* Cyber Perspective Grid Floor with Smooth Forward Glide */}
       <div className="arcade-horizon-grid" />
 
       {/* Cinematic Vignette Frame */}
