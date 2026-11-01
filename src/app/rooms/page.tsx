@@ -358,15 +358,15 @@ function RoomsContent() {
 
       {/* Create Room Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-2.5 sm:p-4 overflow-y-auto overscroll-contain animate-in fade-in duration-200">
+        <div className="fixed inset-0 bg-slate-950/45 backdrop-blur-xl z-50 flex items-center justify-center p-2.5 sm:p-4 overflow-y-auto overscroll-contain animate-in fade-in duration-200">
           <form
             onSubmit={handleCreateRoom}
-            className="glass-panel max-w-lg w-full max-h-[calc(100dvh-1.5rem)] sm:max-h-[90vh] rounded-2xl border border-arcade-border shadow-2xl flex flex-col my-auto overflow-hidden animate-in zoom-in-95 duration-200"
+            className="glass-panel bg-[#080d1f]/75 backdrop-blur-2xl max-w-lg w-full max-h-[calc(100dvh-1.5rem)] sm:max-h-[90vh] rounded-3xl border border-white/20 shadow-[0_25px_70px_-15px_rgba(0,0,0,0.85),0_0_35px_-5px_var(--accent-glow)] flex flex-col my-auto overflow-hidden animate-in zoom-in-95 duration-200"
           >
             {/* Sticky Modal Header */}
-            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-arcade-border shrink-0 bg-[#070913]/95">
+            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-white/10 shrink-0 bg-white/[0.04] backdrop-blur-xl">
               <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
-                <Tv className="w-4 h-4 text-arcade-sage" /> Create New Gaming Room
+                <Tv className="w-4 h-4 text-[var(--accent)]" /> Create New Gaming Room
               </h2>
               <button
                 type="button"
@@ -374,7 +374,7 @@ function RoomsContent() {
                   stopPreviewStream();
                   setShowCreateModal(false);
                 }}
-                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
                 aria-label="Close"
               >
                 <X className="w-4 h-4" />
@@ -382,65 +382,65 @@ function RoomsContent() {
             </div>
 
             {/* Scrollable Form Body */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 text-xs overscroll-contain custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 text-xs overscroll-contain custom-scrollbar bg-transparent">
               <div>
-                <label className="block text-slate-300 font-bold mb-1">Room Name</label>
+                <label className="block text-slate-200 font-bold mb-1">Room Name</label>
                 <input
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Neon Speedrun Squad"
-                  className="w-full bg-arcade-midnight border border-arcade-border rounded-lg p-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-arcade-sage"
+                  className="w-full bg-white/[0.05] hover:bg-white/[0.08] focus:bg-white/[0.1] border border-white/15 focus:border-[var(--accent)] rounded-xl p-2.5 text-white placeholder-slate-400 focus:outline-none focus:shadow-[0_0_15px_var(--accent-glow)] transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-300 font-bold mb-1">Description</label>
+                <label className="block text-slate-200 font-bold mb-1">Description</label>
                 <input
                   type="text"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="What is this party doing? (Voice required, casual, etc.)"
-                  className="w-full bg-arcade-midnight border border-arcade-border rounded-lg p-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-arcade-sage"
+                  className="w-full bg-white/[0.05] hover:bg-white/[0.08] focus:bg-white/[0.1] border border-white/15 focus:border-[var(--accent)] rounded-xl p-2.5 text-white placeholder-slate-400 focus:outline-none focus:shadow-[0_0_15px_var(--accent-glow)] transition-all"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">Selected Game</label>
+                  <label className="block text-slate-200 font-bold mb-1">Selected Game</label>
                   <GameSelect
                     value={selectedGameId}
                     onChange={(id) => setSelectedGameId(id)}
-                    className="w-full bg-arcade-midnight border border-arcade-border rounded-lg p-2.5 text-white focus:outline-none focus:border-arcade-sage"
+                    className="w-full bg-white/[0.05] hover:bg-white/[0.08] focus:bg-white/[0.1] border border-white/15 focus:border-[var(--accent)] rounded-xl p-2.5 text-white focus:outline-none focus:shadow-[0_0_15px_var(--accent-glow)] transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">Max Capacity</label>
+                  <label className="block text-slate-200 font-bold mb-1">Max Capacity</label>
                   <input
                     type="number"
                     min="2"
                     max="12"
                     value={maxParticipants}
                     onChange={(e) => setMaxParticipants(Math.min(12, Math.max(2, parseInt(e.target.value, 10) || 2)))}
-                    className="w-full bg-arcade-midnight border border-arcade-border rounded-lg p-2.5 text-white focus:outline-none focus:border-arcade-sage"
+                    className="w-full bg-white/[0.05] hover:bg-white/[0.08] focus:bg-white/[0.1] border border-white/15 focus:border-[var(--accent)] rounded-xl p-2.5 text-white focus:outline-none focus:shadow-[0_0_15px_var(--accent-glow)] transition-all"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-slate-300 font-bold mb-1">Visibility</label>
+                <label className="block text-slate-200 font-bold mb-1">Visibility</label>
                 <div className="grid grid-cols-3 gap-2">
                   {(['public', 'unlisted', 'private'] as const).map((v) => (
                     <button
                       type="button"
                       key={v}
                       onClick={() => setVisibility(v)}
-                      className={`p-2 rounded-lg capitalize font-bold transition-colors ${
+                      className={`p-2 rounded-xl capitalize font-extrabold transition-all ${
                         visibility === v
-                          ? 'bg-arcade-sage text-arcade-dark'
-                          : 'bg-arcade-midnight border border-arcade-border text-slate-300'
+                          ? 'bg-[var(--accent)] text-black shadow-[0_0_15px_var(--accent-glow)]'
+                          : 'bg-white/[0.05] hover:bg-white/[0.1] border border-white/15 text-slate-300'
                       }`}
                     >
                       {v}
@@ -449,58 +449,44 @@ function RoomsContent() {
                 </div>
               </div>
 
-              {/* Camera & Microphone Setup with Flip Camera Option for Mobiles */}
-              <div className="p-3 rounded-xl bg-black/40 border border-arcade-border/70 space-y-2.5">
+              {/* Camera & Mic Live Preview Card */}
+              <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/10 space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-slate-300 font-bold flex items-center gap-1.5">
-                    <Video className="w-3.5 h-3.5 text-arcade-champagne" /> Camera & Mic (Mobile Ready)
-                  </label>
-                  {wantCam && (
+                  <div className="flex items-center gap-2 text-slate-200 font-extrabold">
+                    <Video className="w-4 h-4 text-[var(--accent)]" />
+                    <span>Camera & Mic (Mobile Ready)</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
                     <button
                       type="button"
-                      onClick={handleFlipCamera}
-                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-arcade-surface hover:bg-arcade-border text-white text-[11px] font-bold border border-arcade-champagne/40 transition-colors shadow-sm active:scale-95"
-                      title="Flip camera between front selfie and rear environment"
+                      onClick={() => setWantMic(!wantMic)}
+                      className={`px-2.5 py-1 rounded-lg flex items-center gap-1 transition-all text-[11px] font-bold ${
+                        wantMic
+                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                          : 'bg-white/5 text-slate-400 border border-white/10'
+                      }`}
                     >
-                      <SwitchCamera className="w-3.5 h-3.5 text-arcade-champagne animate-pulse" />
-                      <span>Flip Camera</span>
-                      <span className="text-[9px] uppercase font-mono px-1 rounded bg-arcade-champagne/20 text-arcade-champagne">
-                        {cameraFacing === 'environment' ? 'Back' : 'Front'}
-                      </span>
+                      {wantMic ? <Mic className="w-3 h-3 text-emerald-400" /> : <MicOff className="w-3 h-3 text-slate-500" />}
+                      <span>{wantMic ? 'Mic On' : 'Mic Off'}</span>
                     </button>
-                  )}
-                </div>
 
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setWantMic(!wantMic)}
-                    className={`flex items-center justify-center gap-2 p-2 rounded-lg border font-bold text-xs transition-colors ${
-                      wantMic
-                        ? 'bg-arcade-sage/15 border-arcade-sage text-arcade-sage'
-                        : 'bg-arcade-midnight border-arcade-border text-slate-400'
-                    }`}
-                  >
-                    {wantMic ? <Mic className="w-3.5 h-3.5" /> : <MicOff className="w-3.5 h-3.5" />}
-                    <span>{wantMic ? 'Mic On' : 'Mic Off'}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setWantCam(!wantCam)}
-                    className={`flex items-center justify-center gap-2 p-2 rounded-lg border font-bold text-xs transition-colors ${
-                      wantCam
-                        ? 'bg-arcade-champagne/15 border-arcade-champagne text-arcade-champagne'
-                        : 'bg-arcade-midnight border-arcade-border text-slate-400'
-                    }`}
-                  >
-                    {wantCam ? <Video className="w-3.5 h-3.5" /> : <VideoOff className="w-3.5 h-3.5" />}
-                    <span>{wantCam ? 'Camera On' : 'Camera Off'}</span>
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => setWantCam(!wantCam)}
+                      className={`px-2.5 py-1 rounded-lg flex items-center gap-1 transition-all text-[11px] font-bold ${
+                        wantCam
+                          ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
+                          : 'bg-white/5 text-slate-400 border border-white/10'
+                      }`}
+                    >
+                      {wantCam ? <Video className="w-3 h-3 text-cyan-400" /> : <VideoOff className="w-3 h-3 text-slate-500" />}
+                      <span>{wantCam ? 'Camera On' : 'Camera Off'}</span>
+                    </button>
+                  </div>
                 </div>
 
                 {wantCam && (
-                  <div className="relative aspect-video rounded-lg overflow-hidden bg-black border border-arcade-border/80 flex items-center justify-center">
+                  <div className="relative aspect-video rounded-xl overflow-hidden bg-black/60 border border-white/15 flex items-center justify-center">
                     <video
                       ref={previewVideoRef}
                       autoPlay
@@ -509,7 +495,7 @@ function RoomsContent() {
                       className={`w-full h-full object-cover ${cameraFacing !== 'environment' ? '-scale-x-100' : ''}`}
                     />
                     {camError ? (
-                      <span className="absolute inset-0 flex items-center justify-center p-2 text-center text-[11px] text-arcade-rose bg-black/80">
+                      <span className="absolute inset-0 flex items-center justify-center p-2 text-center text-[11px] text-rose-300 bg-black/70">
                         {camError}
                       </span>
                     ) : (
@@ -517,9 +503,9 @@ function RoomsContent() {
                         <button
                           type="button"
                           onClick={handleFlipCamera}
-                          className="flex items-center gap-1 px-2 py-1 rounded-md bg-black/80 hover:bg-black text-white hover:text-arcade-champagne border border-white/20 text-[10px] font-bold shadow-md active:scale-95 transition-all"
+                          className="flex items-center gap-1 px-2 py-1 rounded-md bg-black/70 hover:bg-black/90 text-white border border-white/20 text-[10px] font-bold shadow-md active:scale-95 transition-all"
                         >
-                          <SwitchCamera className="w-3 h-3 text-arcade-champagne" />
+                          <SwitchCamera className="w-3 h-3 text-[var(--accent)]" />
                           <span>Flip ({cameraFacing === 'environment' ? 'Rear' : 'Selfie'})</span>
                         </button>
                       </div>
@@ -533,28 +519,28 @@ function RoomsContent() {
               </div>
 
               {createError && (
-                <div className="p-2.5 rounded-lg border border-arcade-rose/40 bg-arcade-rose/10 text-xs text-arcade-rose">
+                <div className="p-2.5 rounded-xl border border-rose-500/40 bg-rose-500/10 text-xs text-rose-300">
                   {createError}
                 </div>
               )}
             </div>
 
-            {/* Sticky Modal Footer (Always visible on all screen heights & mobile devices) */}
-            <div className="flex items-center justify-end gap-2.5 p-3.5 sm:p-4 border-t border-arcade-border bg-[#070913]/95 shrink-0 z-10">
+            {/* Sticky Modal Footer */}
+            <div className="flex items-center justify-end gap-2.5 p-3.5 sm:p-4 border-t border-white/10 bg-white/[0.03] backdrop-blur-xl shrink-0 z-10">
               <button
                 type="button"
                 onClick={() => {
                   stopPreviewStream();
                   setShowCreateModal(false);
                 }}
-                className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:bg-white/5 border border-white/10 transition-colors"
+                className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:bg-white/10 border border-white/15 transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={creating}
-                className="px-6 py-2.5 rounded-xl text-xs font-bold bg-arcade-sage text-arcade-dark shadow-sage-glow hover:bg-white transition-colors disabled:opacity-60 flex items-center gap-1.5"
+                className="px-6 py-2.5 rounded-xl text-xs font-black bg-gradient-to-r from-[var(--accent)] to-[var(--accent-secondary)] text-black shadow-[0_0_20px_var(--accent-glow)] hover:brightness-110 active:scale-95 transition-all disabled:opacity-60 flex items-center gap-1.5"
               >
                 {creating ? (
                   <>

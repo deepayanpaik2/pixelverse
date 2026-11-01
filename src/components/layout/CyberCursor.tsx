@@ -164,8 +164,13 @@ export function CyberCursor() {
 
       // Check hovering interactive target
       const target = e.target instanceof Element ? e.target : null;
+      const isInput = !!target?.closest('input, textarea, select, [contenteditable="true"]');
       const interactive = target ? target.closest(INTERACTIVE_SELECTOR) : null;
-      const shouldHover = !!interactive;
+      const shouldHover = !!interactive || isInput;
+
+      if (ring) {
+        ring.dataset.input = isInput ? 'true' : 'false';
+      }
 
       if (shouldHover !== isHovering) {
         isHovering = shouldHover;

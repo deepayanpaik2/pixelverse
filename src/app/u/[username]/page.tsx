@@ -351,7 +351,7 @@ export default function PublicProfilePage() {
 
       {/* Block Modal */}
       {showBlockModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-950/45 backdrop-blur-xl z-50 flex items-center justify-center p-4">
           <div className="glass-panel max-w-sm w-full p-6 rounded-2xl border border-arcade-border space-y-4">
             <h3 className="text-base font-bold text-white flex items-center gap-2">
               <Ban className="w-4 h-4 text-arcade-rose" /> Block @{profile.username}?

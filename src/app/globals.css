@@ -7,8 +7,8 @@
 :root {
   --background: #05070f;
   --foreground: #f1f5f9;
-  --card-bg: rgba(10, 14, 28, 0.85);
-  --card-bg-hover: rgba(18, 24, 46, 0.95);
+  --card-bg: rgba(9, 13, 28, 0.62);
+  --card-bg-hover: rgba(16, 24, 48, 0.82);
   --border-color: rgba(255, 255, 255, 0.09);
   --border-highlight: rgba(0, 240, 255, 0.45);
   --accent: #00f0ff;
@@ -1281,9 +1281,7 @@ body.gaming-bg { background: transparent !important; }
 /* Only hide default cursor on fine pointer devices when cyber cursor is active */
 @media (pointer: fine) {
   body.cyber-cursor-enabled,
-  body.cyber-cursor-enabled a,
-  body.cyber-cursor-enabled button,
-  body.cyber-cursor-enabled [role="button"] {
+  body.cyber-cursor-enabled * {
     cursor: none !important;
   }
 }
@@ -1291,7 +1289,7 @@ body.gaming-bg { background: transparent !important; }
 .cyber-cursor-container {
   position: fixed;
   inset: 0;
-  z-index: 100000;
+  z-index: 2147483647;
   pointer-events: none;
   overflow: hidden;
   contain: strict;
@@ -1360,6 +1358,27 @@ body.gaming-bg { background: transparent !important; }
 }
 
 /* Hovering interactive target state */
+/* Text / Input Precision Bracket Cursor */
+.cyber-cursor-ring[data-input="true"] {
+  width: 14px !important;
+  height: 28px !important;
+  margin-top: -14px !important;
+  margin-left: -7px !important;
+  border-radius: 4px !important;
+  border: 1.5px solid var(--accent, #00f0ff) !important;
+  box-shadow: 0 0 16px var(--accent-glow) !important;
+  background: rgba(var(--accent-rgb), 0.1) !important;
+}
+
+.cyber-cursor-dot[data-input="true"] {
+  opacity: 0.6;
+  width: 2px !important;
+  height: 18px !important;
+  margin-top: -9px !important;
+  margin-left: -1px !important;
+  border-radius: 1px !important;
+}
+
 .cyber-cursor-ring[data-hover="true"] {
   width: 48px;
   height: 48px;
