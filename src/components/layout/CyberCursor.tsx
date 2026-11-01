@@ -213,11 +213,13 @@ export function CyberCursor() {
       if (dot) dot.dataset.down = 'false';
     };
 
-    const onMouseLeave = () => {
-      isVisible = false;
-      document.body.classList.remove('cyber-cursor-enabled');
-      dot?.classList.add('cyber-cursor-hidden');
-      ring?.classList.add('cyber-cursor-hidden');
+    const onMouseLeave = (e: MouseEvent) => {
+      // Only truly hide when leaving the actual top-level browser window, not when entering game iframes
+      if (e.clientY <= 0 || e.clientX <= 0 || e.clientX >= window.innerWidth || e.clientY >= window.innerHeight) {
+        isVisible = false;
+        dot?.classList.add('cyber-cursor-hidden');
+        ring?.classList.add('cyber-cursor-hidden');
+      }
     };
 
     const onMouseEnter = () => {
