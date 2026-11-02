@@ -1,53 +1,102 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/features/auth/AuthContext';
 
 /**
- * THE ARCADE HORIZON (Pixelverse Signature Atmospheric Background)
- *
- * Implements a world-class, cinematic atmospheric horizon in pure, lightweight CSS:
- * - Near-black midnight background with deep indigo/blue-violet gradients
- * - Restrained electric cyan & ultraviolet ambient horizon beam with breathing pulse
- * - Infinite perspective grid floor with silky-smooth GPU-composited forward glide
- * - Floating cyber stardust depth layer
- * - Dynamic reactive route and theme color adaptation
- * - Zero expensive continuous canvas loops or heavy WebGL overhead
- * - Stays active and alive on ALL pages (including game pages, rooms, catalog, and home)
+ * Ambient background visual layer.
+ * Respects animation intensity and reduced motion preferences.
  */
 export function GamingBackground() {
   const { preferences } = useAuth();
   const intensity = preferences?.animation_intensity ?? 'full';
+  const [isPlaying, setIsPlaying] = useState(false);
 
-  if (intensity === 'minimal') {
-    return (
-      <div
-        className="fixed inset-0 pointer-events-none z-0 bg-[#05070f]"
-        aria-hidden="true"
-      />
-    );
-  }
+  useEffect(() => {
+    const update = () => {
+      setIsPlaying(document.documentElement.dataset.playing === 'true');
+    };
+    update();
+    const observer = new MutationObserver(update);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-playing'] });
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (intensity === 'minimal' || isPlaying) return;
+    const root = document.documentElement;
+    root.classList.add('gaming-bg');
+    return () => root.classList.remove('gaming-bg');
+  }, [intensity, isPlaying]);
+
+  // Generate lightweight deterministic floating cyber particles (lean count for zero thermal overhead)
+  const particles = useMemo(() => {
+    return Array.from({ length: 8 }, (_, i) => ({
+      id: i,
+      x: (i * 24.3) % 100,
+      y: (i * 29.7) % 100,
+      size: 2 + (i % 2) * 2,
+      duration: 22 + (i % 3) * 8,
+      delay: -(i * 3.1),
+      type: i % 2 === 0 ? 'diamond' : 'dot',
+      opacity: 0.12 + (i % 2) * 0.1,
+    }));
+  }, []);
+
+  if (intensity === 'minimal' || isPlaying) return null;
 
   return (
-    <div
-      className="arcade-horizon fixed inset-0 pointer-events-none overflow-hidden z-0 select-none"
-      aria-hidden="true"
-    >
-      {/* Dynamic Cosmic Nebulae Orbs */}
-      <div className="arcade-horizon-nebula arcade-horizon-nebula-left" />
-      <div className="arcade-horizon-nebula arcade-horizon-nebula-right" />
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-[-12]" aria-hidden="true">
+      {/* Dynamic Cosmic Nebula */}
+      <div className="nebula">
+        <span />
+        <span />
+        <span />
+      </div>
 
-      {/* Floating Cyber Dust / Stars */}
-      <div className="arcade-horizon-dust" />
+      {/* Cyber 3D Grid Floor */}
+      <div className="grid-floor" />
 
-      {/* Horizon Luminescence Light Beam */}
-      <div className="arcade-horizon-beam" />
+      {/* Laser Horizon Beam */}
+      <div className="cyber-horizon" />
 
-      {/* Cyber Perspective Grid Floor with Smooth Forward Glide */}
-      <div className="arcade-horizon-grid" />
+      {/* Floating 3D Gaming HUD Particles (desktop only) */}
+      {intensity !== 'reduced' && (
+        <div className="absolute inset-0 hidden sm:block">
+          {particles.map((p) => (
+            <div
+              key={p.id}
+              className="absolute pointer-events-none"
+              style={{
+                left: `${p.x}%`,
+                top: `${p.y}%`,
+                opacity: p.opacity,
+                animation: `float-particle ${p.duration}s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate`,
+                animationDelay: `${p.delay}s`,
+              }}
+            >
+              {p.type === 'diamond' ? (
+                <div
+                  className="w-2 h-2 rotate-45 border border-[var(--accent)] bg-[var(--accent-glow)]"
+                />
+              ) : (
+                <div
+                  className="rounded-full bg-[var(--accent)]"
+                  style={{ width: `${p.size}px`, height: `${p.size}px` }}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
-      {/* Cinematic Vignette Frame */}
-      <div className="arcade-horizon-vignette" />
+      {/* Ambient Radial Vignette for cinema depth */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'radial-gradient(circle at 50% 35%, transparent 20%, rgba(0, 0, 0, 0.45) 80%, rgba(0, 0, 0, 0.75) 100%)',
+        }}
+      />
     </div>
   );
 }

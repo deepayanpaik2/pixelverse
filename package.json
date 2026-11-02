@@ -1,6 +1,6 @@
 {
   "name": "pixelverse",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "private": true,
   "description": "Web portal for browser games with HTML5 catalog, WebRTC rooms, and messaging",
   "scripts": {
@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node --test tests/gamepix.test.js tests/playverse.test.js tests/pixelverse.test.js tests/livekit.test.js",
+    "test": "node --test tests/gamepix.test.js tests/playverse.test.js tests/pixelverse.test.js",
     "test:playverse": "node --test tests/playverse.test.js",
     "test:pixelverse": "node --test tests/pixelverse.test.js",
     "test:watch": "vitest",
@@ -25,7 +25,6 @@
     "date-fns": "^4.1.0",
     "framer-motion": "^11.11.9",
     "livekit-client": "^2.5.9",
-    "livekit-server-sdk": "^2.19.2",
     "lucide-react": "^0.453.0",
     "next": "^14.2.15",
     "react": "^18.3.1",

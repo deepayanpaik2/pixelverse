@@ -7,54 +7,37 @@ import { Gamepad2, ArrowLeft, Grid } from 'lucide-react';
 import { CATEGORIES, getGamesByCategory } from '@/lib/games';
 import { CategoryChips } from '@/components/portal/CategoryChips';
 import { GameGrid } from '@/components/portal/GameGrid';
-import { EmptyState } from '@/components/ui/EmptyState';
-import { playSfx } from '@/lib/sfx';
 
 export default function CategoryDetailPage() {
   const params = useParams();
   const slug = params?.slug as string;
-  const category = CATEGORIES.find(
-    (c) =>
-      c.slug.toLowerCase() === decodeURIComponent(slug || '').toLowerCase() ||
-      c.name.toLowerCase() === decodeURIComponent(slug || '').toLowerCase()
-  );
+  const category = CATEGORIES.find(c => c.slug.toLowerCase() === decodeURIComponent(slug || '').toLowerCase() || c.name.toLowerCase() === decodeURIComponent(slug || '').toLowerCase());
   const games = useMemo(() => getGamesByCategory(slug || ''), [slug]);
 
-  const title = category ? `${category.name} Games` : `${decodeURIComponent(slug || '')} Games`;
-  const description =
-    category?.description ||
-    'Browse high-quality free games in this genre. Instant play on PC and mobile with zero downloads.';
-
   return (
-    <div className="space-y-6 pb-20">
+    <div className="space-y-6 pb-16">
       {/* Category Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/[0.08]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-arcade-border">
         <div>
-          <div className="flex items-center gap-2.5">
-            <Link
-              href="/categories"
-              onClick={() => playSfx('tap')}
-              className="p-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-slate-400 hover:text-white transition-colors"
-              aria-label="Back to all categories"
-            >
+          <div className="flex items-center gap-2">
+            <Link href="/categories" className="text-slate-400 hover:text-white">
               <ArrowLeft className="w-4 h-4" />
             </Link>
-            <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-white tracking-tight">
-              {title}
+            <h1 className="text-2xl sm:text-3xl font-black text-white">
+              {category ? `${category.name} Games` : `${slug} Games`}
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-[var(--accent)]/15 text-[var(--accent)] border border-[var(--accent)]/30 tabular-nums">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-arcade-champagne/10 text-arcade-champagne border border-arcade-champagne/30">
               {games.length.toLocaleString()} titles
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl font-normal">
-            {description}
+          <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl">
+            {category?.description || 'Browse high-quality free games in this category. Instant play on any device.'}
           </p>
         </div>
 
         <Link
           href="/categories"
-          onClick={() => playSfx('tap')}
-          className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1.5 self-start sm:self-auto"
+          className="text-xs font-bold text-arcade-champagne hover:underline flex items-center gap-1"
         >
           <Grid className="w-3.5 h-3.5" /> All Categories
         </Link>
@@ -63,14 +46,16 @@ export default function CategoryDetailPage() {
       {/* Category Chips Bar */}
       <CategoryChips activeCategory={slug} />
 
-      {/* Games Grid or Empty State */}
+      {/* Games Mosaic Grid */}
       {games.length === 0 ? (
-        <EmptyState
-          title="No games in this category yet"
-          description="Check back soon. New games arrive with every weekly feed update."
-          actionText="Browse All Games"
-          actionHref="/"
-        />
+        <div className="py-20 text-center glass-panel rounded-2xl border border-arcade-border">
+          <Gamepad2 className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+          <h3 className="text-base font-bold text-white">No games in this category yet</h3>
+          <p className="text-xs text-slate-400 mt-1">Check back soon. New games arrive with every catalog update.</p>
+          <Link href="/" className="mt-4 inline-block px-4 py-2 bg-arcade-champagne text-arcade-dark rounded-xl text-xs font-bold">
+            Browse All Games
+          </Link>
+        </div>
       ) : (
         <GameGrid games={games} mosaic={false} />
       )}

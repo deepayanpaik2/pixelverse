@@ -9,14 +9,16 @@ import { Sidebar } from './Sidebar';
 import { Footer } from './Footer';
 import { ProfileGate } from './ProfileGate';
 import { GamingBackground } from './GamingBackground';
+import { FallingGlitter } from './FallingGlitter';
+import { PointerFX } from './PointerFX';
 
 const ACCENT_MAP: Record<string, { color: string; rgb: string }> = {
-  cyan: { color: '#00f0ff', rgb: '0, 240, 255' },
+  cyan: { color: '#00f3ff', rgb: '0, 243, 255' },
   purple: { color: '#c084fc', rgb: '192, 132, 252' },
   lime: { color: '#10b981', rgb: '16, 185, 129' },
   coral: { color: '#ff2a85', rgb: '255, 42, 133' },
   gold: { color: '#f59e0b', rgb: '245, 158, 11' },
-  neon: { color: '#00f0ff', rgb: '0, 240, 255' },
+  neon: { color: '#00f3ff', rgb: '0, 243, 255' },
   sunset: { color: '#ff7b00', rgb: '255, 123, 0' },
   forest: { color: '#4ade80', rgb: '74, 222, 128' },
   crimson: { color: '#ff1e42', rgb: '255, 30, 66' },
@@ -34,6 +36,7 @@ function ThemeApplicator() {
       root.setAttribute('data-theme', theme);
     }
 
+    // Only set inline custom accent override if user explicitly selected a non-default accent
     if (preferences?.accent_color && preferences.accent_color !== 'cyan') {
       const accent = ACCENT_MAP[preferences.accent_color];
       if (accent) {
@@ -45,8 +48,6 @@ function ThemeApplicator() {
       root.style.removeProperty('--accent');
       root.style.removeProperty('--accent-rgb');
       root.style.removeProperty('--accent-glow');
-      root.style.removeProperty('--accent-secondary');
-      root.style.removeProperty('--accent-secondary-rgb');
     }
   }, [preferences?.theme, preferences?.accent_color]);
 
@@ -59,12 +60,14 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
       <ThemeApplicator />
       <VoiceProvider>
         <ChatProvider>
-          <div className="relative min-h-screen flex flex-col bg-[var(--background)] text-[var(--foreground)] transition-colors duration-300">
+          <div className="grain relative isolate min-h-screen flex flex-col bg-[var(--background)] text-[var(--foreground)] transition-colors duration-300">
             {/* Skip link for keyboard / screen reader users */}
             <a href="#main-content" className="skip-link">
               Skip to main content
             </a>
             <GamingBackground />
+            <FallingGlitter />
+            <PointerFX />
             <ProfileGate />
             <Navbar />
             <div className="flex-1 flex w-full">

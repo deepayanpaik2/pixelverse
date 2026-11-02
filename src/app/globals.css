@@ -5,21 +5,21 @@
 /* Pixelverse design tokens and base styles */
 
 :root {
-  --background: #05070f;
-  --foreground: #f1f5f9;
-  --card-bg: rgba(9, 13, 28, 0.62);
-  --card-bg-hover: rgba(16, 24, 48, 0.82);
-  --border-color: rgba(255, 255, 255, 0.09);
-  --border-highlight: rgba(0, 240, 255, 0.45);
-  --accent: #00f0ff;
-  --accent-glow: rgba(0, 240, 255, 0.38);
-  --accent-rgb: 0, 240, 255;
-  --accent-secondary: #8b5cf6;
-  --accent-secondary-rgb: 139, 92, 246;
-  --grid-color: rgba(0, 240, 255, 0.06);
-  --nebula-1: rgba(0, 240, 255, 0.18);
-  --nebula-2: rgba(139, 92, 246, 0.22);
-  --nebula-3: rgba(6, 182, 212, 0.14);
+  --background: #06070b;
+  --foreground: #f3f0ea;
+  --card-bg: rgba(16, 19, 28, 0.76);
+  --card-bg-hover: rgba(22, 27, 40, 0.88);
+  --border-color: #222736;
+  --border-highlight: rgba(169, 233, 223, 0.5);
+  --accent: #a9e9df;
+  --accent-glow: rgba(169, 233, 223, 0.4);
+  --accent-rgb: 169, 233, 223;
+  --accent-secondary: #b9a8ff;
+  --accent-secondary-rgb: 185, 168, 255;
+  --grid-color: rgba(169, 233, 223, 0.09);
+  --nebula-1: rgba(169, 233, 223, 0.22);
+  --nebula-2: rgba(124, 108, 235, 0.28);
+  --nebula-3: rgba(244, 163, 192, 0.18);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
@@ -276,7 +276,7 @@ h1[class*="font-"] { font-weight: 750; letter-spacing: -0.025em; }
 }
 
 /* Ambient lights */
-.aurora { display: none !important; }
+.aurora { position: fixed; inset: 0; z-index: -10; overflow: hidden; pointer-events: none; }
 .aurora::after {
   content: ""; position: absolute; inset: 0;
   background: radial-gradient(ellipse at 50% 0%, transparent 0%, rgba(6, 7, 11, 0.6) 78%);
@@ -293,26 +293,6 @@ h1[class*="font-"] { font-weight: 750; letter-spacing: -0.025em; }
 @keyframes aurora-c { to { transform: translate3d(-10vmax, -14vmax, 0) scale(1.2); } }
 
 @media (max-width: 768px), (hover: none) {
-  html {
-    scroll-behavior: auto !important;
-  }
-  .glass-panel,
-  .glass-clear,
-  .glass-chip,
-  .game-tile,
-  .game-tile button {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
-  .glass-panel {
-    background: var(--card-bg) !important;
-  }
-  .glass-clear {
-    background: rgba(12, 10, 22, 0.94) !important;
-  }
-  .glass-chip {
-    background: rgba(255, 255, 255, 0.08) !important;
-  }
   /* Phone battery & thermal optimization: hide overlapping 3D perspective layers and infinite loops */
   .grid-floor,
   .cyber-horizon,
@@ -354,7 +334,17 @@ h1[class*="font-"] { font-weight: 750; letter-spacing: -0.025em; }
   pointer-events: none;
   transition: opacity .6s ease;
 }
-/* data-playing preserves ambient arcade horizon */
+html[data-playing="true"] .glitter,
+html[data-playing="true"] .nebula,
+html[data-playing="true"] .grid-floor,
+html[data-playing="true"] .cyber-horizon,
+html[data-playing="true"] .gaming-particle,
+html[data-playing="true"] .grain::before,
+html[data-playing="true"] .aurora,
+html[data-playing="true"] .launch-orb,
+html[data-playing="true"] .launch-bar {
+  display: none !important;
+}
 
 html[data-playing="true"] .opal-edge::before,
 html[data-playing="true"] .wordmark,
@@ -811,31 +801,10 @@ button, a[role="button"], [data-sfx] {
 .game-tile .tile-play-orb { transform: translateZ(42px); transition: transform 0.3s ease, opacity 0.3s ease, scale 0.3s ease; }
 .game-tile .tile-title-plate { transform: translateZ(20px); transition: transform 0.3s ease; }
 
-@media (hover: none), (max-width: 768px) {
-  .game-tile {
-    transform: none !important;
-    transform-style: flat !important;
-    box-shadow: 0 4px 16px -6px rgba(0, 0, 0, 0.8) !important;
-    will-change: auto !important;
-  }
-  .game-tile:hover {
-    transform: none !important;
-    box-shadow: 0 4px 16px -6px rgba(0, 0, 0, 0.8) !important;
-    border-color: rgba(255, 255, 255, 0.12) !important;
-  }
-  .game-tile:hover::after {
-    display: none !important;
-    opacity: 0 !important;
-  }
-  .game-tile:active {
-    transform: scale(0.98) !important;
-  }
-  .game-tile .tile-badge,
-  .game-tile .tile-play-orb,
-  .game-tile .tile-title-plate {
-    transform: none !important;
-    transition: none !important;
-  }
+@media (hover: none) {
+  .game-tile:hover { transform: none; box-shadow: 0 10px 28px -16px rgba(0, 0, 0, 0.9); }
+  .game-tile:hover::after { opacity: 0; }
+  .game-tile:active { transform: scale(0.975); }
 }
 
 /* Button styles */
@@ -1026,248 +995,9 @@ body.gaming-bg { background: transparent !important; }
 
 /* Potato PC & Potato Mobile GPU Optimizations: disable heavy backdrop filters on weak GPUs */
 @media (max-width: 640px) {
-  .drawer-neon,
-  .panel-neon {
+  .drawer-neon {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     background-color: rgba(9, 11, 20, 0.98) !important;
   }
-}
-
-/* ==========================================================================
-   THE ARCADE HORIZON (Pixelverse Visual Signature)
-   Vibrant, cinematic pure CSS atmosphere with zero GPU/CPU overhead.
-   Smooth infinite 3D perspective glide, breathing horizon, and cosmic dust.
-   ========================================================================== */
-.arcade-horizon {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  overflow: hidden;
-  background: radial-gradient(circle at 50% 25%, #0d1226 0%, #060914 45%, #03050a 100%);
-}
-
-/* Atmospheric Cosmic Nebula Clouds */
-.arcade-horizon-nebula {
-  position: absolute;
-  width: 65vw;
-  height: 65vh;
-  border-radius: 50%;
-  filter: blur(65px);
-  pointer-events: none;
-  will-change: transform, opacity;
-  animation: arcade-nebula-pulse 10s ease-in-out infinite alternate;
-}
-
-.arcade-horizon-nebula-left {
-  top: -15vh;
-  left: -12vw;
-  background: radial-gradient(circle, rgba(var(--accent-rgb), 0.38) 0%, rgba(var(--accent-secondary-rgb), 0.18) 55%, transparent 75%);
-}
-
-.arcade-horizon-nebula-right {
-  top: 5vh;
-  right: -12vw;
-  background: radial-gradient(circle, rgba(var(--accent-secondary-rgb), 0.38) 0%, rgba(var(--accent-rgb), 0.16) 55%, transparent 75%);
-  animation-delay: -5s;
-}
-
-@keyframes arcade-nebula-pulse {
-  0% {
-    transform: translate3d(0, 0, 0) scale(1);
-    opacity: 0.7;
-  }
-  50% {
-    transform: translate3d(2.5vw, 2.5vh, 0) scale(1.18);
-    opacity: 0.95;
-  }
-  100% {
-    transform: translate3d(-2vw, -2vh, 0) scale(0.96);
-    opacity: 0.75;
-  }
-}
-
-/* Floating Cyber Dust / Starlight Depth */
-.arcade-horizon-dust {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    radial-gradient(1.5px 1.5px at 12% 18%, #ffffff 100%, transparent),
-    radial-gradient(2px 2px at 28% 30%, rgba(var(--accent-rgb), 0.9) 100%, transparent),
-    radial-gradient(1.5px 1.5px at 48% 15%, #ffffff 100%, transparent),
-    radial-gradient(2.5px 2.5px at 62% 26%, rgba(var(--accent-secondary-rgb), 0.95) 100%, transparent),
-    radial-gradient(2px 2px at 80% 16%, rgba(var(--accent-rgb), 0.9) 100%, transparent),
-    radial-gradient(1.5px 1.5px at 90% 36%, #ffffff 100%, transparent),
-    radial-gradient(2px 2px at 20% 60%, rgba(var(--accent-secondary-rgb), 0.8) 100%, transparent),
-    radial-gradient(2px 2px at 75% 68%, rgba(var(--accent-rgb), 0.85) 100%, transparent),
-    radial-gradient(1.5px 1.5px at 88% 75%, #ffffff 100%, transparent);
-  background-size: 100% 100%;
-  opacity: 0.85;
-  animation: arcade-dust-twinkle 4s ease-in-out infinite alternate;
-  will-change: opacity;
-}
-
-@keyframes arcade-dust-twinkle {
-  0% { opacity: 0.55; }
-  50% { opacity: 1; }
-  100% { opacity: 0.65; }
-}
-
-/* Horizon Luminescence Light Beam with Breathing Pulse */
-.arcade-horizon-beam {
-  position: absolute;
-  top: 42%;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent 0%, rgba(var(--accent-rgb), 0.25) 15%, rgba(var(--accent-rgb), 0.95) 50%, rgba(var(--accent-secondary-rgb), 0.6) 80%, transparent 100%);
-  box-shadow: 0 0 35px 6px rgba(var(--accent-rgb), 0.65), 0 0 80px 16px rgba(var(--accent-secondary-rgb), 0.35);
-  opacity: 0.85;
-  pointer-events: none;
-  will-change: opacity, box-shadow;
-  animation: arcade-beam-pulse 4s ease-in-out infinite alternate;
-}
-
-@keyframes arcade-beam-pulse {
-  0% {
-    opacity: 0.65;
-    box-shadow: 0 0 25px 4px rgba(var(--accent-rgb), 0.45);
-  }
-  100% {
-    opacity: 1;
-    box-shadow: 0 0 50px 8px rgba(var(--accent-rgb), 0.8), 0 0 100px 20px rgba(var(--accent-secondary-rgb), 0.45);
-  }
-}
-
-/* Cyber Perspective Grid Floor with Smooth Infinite Forward Roll */
-.arcade-horizon-grid {
-  position: absolute;
-  left: -25%;
-  right: -25%;
-  bottom: 0;
-  height: 62%;
-  perspective: 450px;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-.arcade-horizon-grid::before {
-  content: '';
-  position: absolute;
-  inset: -60% 0 -20% 0;
-  background-image:
-    linear-gradient(rgba(var(--accent-rgb), 0.35) 1.5px, transparent 1.5px),
-    linear-gradient(90deg, rgba(var(--accent-rgb), 0.35) 1.5px, transparent 1.5px);
-  background-size: 56px 56px;
-  transform: rotateX(66deg);
-  transform-origin: 50% 100%;
-  mask-image: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.75) 50%, transparent 95%);
-  -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.75) 50%, transparent 95%);
-  will-change: background-position;
-  animation: arcade-grid-glide 4.5s linear infinite;
-}
-
-@keyframes arcade-grid-glide {
-  0% {
-    background-position: 0 0;
-  }
-  100% {
-    background-position: 0 56px;
-  }
-}
-
-.arcade-horizon-vignette {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 50% 50%, transparent 50%, rgba(3, 5, 10, 0.4) 85%, rgba(3, 5, 10, 0.75) 100%);
-  pointer-events: none;
-}
-
-/* Reduced motion and low-spec overrides */
-@media (prefers-reduced-motion: reduce) {
-  .arcade-horizon-grid::before,
-  .arcade-horizon-beam,
-  .arcade-horizon-nebula,
-  .arcade-horizon-dust {
-    animation: none !important;
-  }
-}
-
-[data-fx="low"] .arcade-horizon-nebula {
-  display: none !important;
-}
-[data-fx="low"] .arcade-horizon-grid::before {
-  animation-duration: 20s !important;
-}
-
-/* ==========================================================================
-   PIXELVERSE DESIGN SYSTEM UTILITIES
-   ========================================================================== */
-.arcade-card {
-  background: var(--card-bg, rgba(10, 14, 28, 0.85));
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.09));
-  border-radius: 1rem;
-  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.22s ease, box-shadow 0.22s ease;
-  will-change: transform;
-}
-
-.arcade-card:hover {
-  transform: translateY(-3px);
-  border-color: rgba(var(--accent-rgb), 0.45);
-  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.7), 0 0 20px -6px var(--accent-glow);
-}
-
-.arcade-btn-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.75rem;
-  border-radius: 9999px;
-  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%);
-  color: #05070f;
-  font-weight: 800;
-  font-size: 0.875rem;
-  letter-spacing: 0.025em;
-  box-shadow: 0 4px 18px -2px var(--accent-glow);
-  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease, filter 0.18s ease;
-  cursor: pointer;
-}
-
-.arcade-btn-primary:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.08);
-  box-shadow: 0 8px 26px -2px var(--accent-glow);
-}
-
-.arcade-btn-primary:active {
-  transform: translateY(1px);
-}
-
-.arcade-btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  color: #f1f5f9;
-  font-weight: 700;
-  font-size: 0.875rem;
-  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.18s ease, border-color 0.18s ease;
-  cursor: pointer;
-}
-
-.arcade-btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(var(--accent-rgb), 0.45);
-  transform: translateY(-2px);
-}
-
-.arcade-btn-secondary:active {
-  transform: translateY(1px);
 }

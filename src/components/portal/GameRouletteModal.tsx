@@ -100,14 +100,14 @@ export function GameRouletteModal({ isOpen, onClose }: GameRouletteModalProps) {
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 bg-slate-950/45 backdrop-blur-xl overflow-y-auto overscroll-contain animate-in fade-in duration-200"
+      className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md overflow-y-auto overscroll-contain animate-in fade-in duration-200"
       style={{ opacity: 1, pointerEvents: 'auto' }}
       onClick={(e) => {
         if (e.target === e.currentTarget && !isSpinning) onClose();
       }}
     >
       <div
-        className="relative w-full max-w-sm sm:max-w-md my-auto glass-panel bg-[#090d20]/80 backdrop-blur-2xl rounded-2xl sm:rounded-3xl border-2 border-[var(--accent)]/50 p-4 sm:p-5 shadow-[0_25px_70px_-15px_var(--accent-glow),0_0_35px_-5px_var(--accent-glow)] overflow-hidden text-center flex flex-col items-center gap-3 sm:gap-3.5 max-h-[min(90dvh,540px)]"
+        className="relative w-full max-w-sm sm:max-w-md my-auto drawer-neon rounded-2xl sm:rounded-3xl border-2 border-[var(--accent)]/50 p-4 sm:p-5 shadow-[0_25px_60px_-15px_var(--accent-glow)] overflow-hidden text-center flex flex-col items-center gap-3 sm:gap-3.5 max-h-[min(90dvh,540px)]"
         style={{ opacity: 1, pointerEvents: 'auto' }}
       >
         {/* Top Radial Glow */}
