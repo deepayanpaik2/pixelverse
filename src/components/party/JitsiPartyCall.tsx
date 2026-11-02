@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Loader2, AlertTriangle, RefreshCw, Video } from 'lucide-react';
+import { Loader2, AlertTriangle, RefreshCw, Video, ExternalLink, ShieldCheck } from 'lucide-react';
 
 interface JitsiPartyCallProps {
   roomCode: string;
@@ -39,24 +39,35 @@ export function JitsiPartyCall({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Clean room identifier for Jitsi (alphanumeric only)
+  // Clean, unique room identifier for Jitsi (alphanumeric only)
   const cleanRoomId = `pixelverse-party-${roomCode.trim().toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+  const directMeetUrl = `https://meet.jit.si/${cleanRoomId}`;
 
   useEffect(() => {
     let mounted = true;
+    let loadingTimer: NodeJS.Timeout | null = null;
 
     const loadScriptAndInit = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        // Load external_api.js if not yet available
+        // 1. Load external_api.js safely without hanging
         if (!window.JitsiMeetExternalAPI) {
           await new Promise<void>((resolve, reject) => {
-            const existingScript = document.getElementById('jitsi-external-api');
+            const existingScript = document.getElementById('jitsi-external-api') as HTMLScriptElement | null;
             if (existingScript) {
+              if (window.JitsiMeetExternalAPI) {
+                resolve();
+                return;
+              }
               existingScript.addEventListener('load', () => resolve(), { once: true });
               existingScript.addEventListener('error', () => reject(new Error('Failed to load Jitsi API')), { once: true });
+              // Safety timeout in case script already finished loading
+              setTimeout(() => {
+                if (window.JitsiMeetExternalAPI) resolve();
+                else resolve(); // Proceed and let catch block or iframe handle it
+              }, 3000);
               return;
             }
 
@@ -65,20 +76,32 @@ export function JitsiPartyCall({
             script.src = 'https://meet.jit.si/external_api.js';
             script.async = true;
             script.onload = () => resolve();
-            script.onerror = () => reject(new Error('Failed to load Jitsi Meet script. Please check your internet connection.'));
+            script.onerror = () => reject(new Error('Failed to load Jitsi Meet script. Please check your network connection.'));
             document.head.appendChild(script);
           });
         }
 
         if (!mounted || !containerRef.current) return;
 
-        // Dispose existing session if any
+        // Verify API is available
+        if (!window.JitsiMeetExternalAPI) {
+          throw new Error('Jitsi External API is not supported in this browser environment.');
+        }
+
+        // Clean up previous instance
         if (apiRef.current) {
-          apiRef.current.dispose();
+          try {
+            apiRef.current.dispose();
+          } catch {}
           apiRef.current = null;
         }
 
-        // Initialize Jitsi Meet Iframe
+        // Clear container HTML
+        if (containerRef.current) {
+          containerRef.current.innerHTML = '';
+        }
+
+        // 2. Initialize Jitsi Meet Iframe
         const domain = 'meet.jit.si';
         const options = {
           roomName: cleanRoomId,
@@ -92,13 +115,17 @@ export function JitsiPartyCall({
           },
           configOverwrite: {
             prejoinPageEnabled: false,
+            prejoinConfig: {
+              enabled: false,
+            },
             startWithAudioMuted: false,
             startWithVideoMuted: false,
-            disableDeepLinking: true, // Keep mobile users in browser without app store redirect
+            disableDeepLinking: true, // Keep mobile gamers in browser
             enableWelcomePage: false,
             enableClosePage: false,
             hideConferenceSubject: true,
             hideConferenceTimer: false,
+            enableInsecureRoomNameAllowed: true,
             subject: `${roomName} // Pixelverse`,
             toolbarButtons: compact
               ? ['microphone', 'camera', 'desktop', 'hangup', 'tileview']
@@ -129,10 +156,29 @@ export function JitsiPartyCall({
         const api = new window.JitsiMeetExternalAPI(domain, options);
         apiRef.current = api;
 
-        // Listen for call events
+        // Ensure proper permissions on the iframe
+        try {
+          const iframe = api.getIFrame();
+          if (iframe) {
+            iframe.allow = 'camera *; microphone *; display-capture *; autoplay *; clipboard-write *';
+            iframe.addEventListener('load', () => {
+              if (mounted) setLoading(false);
+            });
+          }
+        } catch {}
+
+        // Dismiss loading overlay within 2 seconds so user is NEVER blocked from interacting
+        loadingTimer = setTimeout(() => {
+          if (mounted) setLoading(false);
+        }, 2200);
+
+        // Listen for all call events
+        const dismissLoading = () => {
+          if (mounted) setLoading(false);
+        };
+
         api.addEventListener('videoConferenceJoined', () => {
-          if (!mounted) return;
-          setLoading(false);
+          dismissLoading();
           const count = (api.getParticipantsInfo ? api.getParticipantsInfo().length : 0) + 1;
           onParticipantCountChange?.(count);
         });
@@ -146,16 +192,20 @@ export function JitsiPartyCall({
         });
 
         api.addEventListener('participantJoined', () => {
-          if (!mounted) return;
+          dismissLoading();
           const count = (api.getParticipantsInfo ? api.getParticipantsInfo().length : 0) + 1;
           onParticipantCountChange?.(count);
         });
 
         api.addEventListener('participantLeft', () => {
-          if (!mounted) return;
           const count = (api.getParticipantsInfo ? api.getParticipantsInfo().length : 0) + 1;
           onParticipantCountChange?.(count);
         });
+
+        api.addEventListener('cameraError', dismissLoading);
+        api.addEventListener('micError', dismissLoading);
+        api.addEventListener('audioMuteStatusChanged', dismissLoading);
+        api.addEventListener('videoMuteStatusChanged', dismissLoading);
       } catch (err: any) {
         if (mounted) {
           setLoading(false);
@@ -168,6 +218,7 @@ export function JitsiPartyCall({
 
     return () => {
       mounted = false;
+      if (loadingTimer) clearTimeout(loadingTimer);
       if (apiRef.current) {
         try {
           apiRef.current.dispose();
@@ -179,18 +230,39 @@ export function JitsiPartyCall({
 
   return (
     <div className={`relative w-full h-full bg-[#06070b] rounded-2xl overflow-hidden border border-white/15 shadow-2xl flex flex-col ${className}`}>
-      {/* Loading HUD */}
-      {loading && (
-        <div className="absolute inset-0 z-20 bg-[#06070b]/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-4 animate-in fade-in duration-200">
-          <div className="relative">
-            <div className="w-14 h-14 rounded-2xl bg-[var(--accent)]/10 border border-[var(--accent)]/40 flex items-center justify-center text-[var(--accent)] shadow-[0_0_24px_var(--accent-glow)]">
-              <Video className="w-7 h-7 animate-pulse" />
-            </div>
-            <Loader2 className="w-6 h-6 text-[var(--accent)] animate-spin absolute -bottom-1 -right-1" />
+      {/* Top Helper Bar with direct pop-out link in case browser privacy shields restrict iframes */}
+      {!compact && (
+        <div className="px-3 py-1.5 bg-black/80 border-b border-white/10 flex items-center justify-between text-[11px] text-slate-400 shrink-0">
+          <div className="flex items-center gap-1.5">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="font-bold text-white">Pixelverse Live Meet</span>
+            <span className="text-[10px] text-slate-500 font-mono hidden sm:inline">• Free HD Voice, Video &amp; Screen Share</span>
           </div>
-          <div className="space-y-1">
-            <h3 className="text-sm font-extrabold text-white">Connecting to Gaming Live Meet...</h3>
-            <p className="text-xs text-slate-400">Zero keys required • HD Video, Voice &amp; Screen Sharing</p>
+          <a
+            href={directMeetUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 text-[10px] font-bold text-[var(--accent)] hover:text-white transition-colors bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded-lg border border-white/10 active:scale-95"
+            title="Open in new window or external tab"
+          >
+            <span>Pop-out Window</span>
+            <ExternalLink className="w-3 h-3" />
+          </a>
+        </div>
+      )}
+
+      {/* Loading HUD: pointer-events-none ensures user clicks pass straight through to Jitsi iframe! */}
+      {loading && (
+        <div className="absolute inset-0 z-10 pointer-events-none bg-[#06070b]/80 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center space-y-3 animate-in fade-in duration-200">
+          <div className="relative">
+            <div className="w-12 h-12 rounded-2xl bg-[var(--accent)]/10 border border-[var(--accent)]/40 flex items-center justify-center text-[var(--accent)] shadow-[0_0_24px_var(--accent-glow)]">
+              <Video className="w-6 h-6 animate-pulse" />
+            </div>
+            <Loader2 className="w-5 h-5 text-[var(--accent)] animate-spin absolute -bottom-1 -right-1" />
+          </div>
+          <div className="space-y-0.5">
+            <h3 className="text-sm font-extrabold text-white">Launching Gaming Meet...</h3>
+            <p className="text-[11px] text-slate-400">Zero keys required • HD Video, Voice &amp; Screen Sharing</p>
           </div>
         </div>
       )}
@@ -205,14 +277,25 @@ export function JitsiPartyCall({
             <h3 className="text-sm font-extrabold text-white">Live Call Connection Failed</h3>
             <p className="text-xs text-slate-400">{error}</p>
           </div>
-          <button
-            type="button"
-            onClick={() => window.location.reload()}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-xs font-bold text-white transition-all active:scale-95 shadow-md"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-            <span>Retry Connection</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-xs font-bold text-white transition-all active:scale-95 shadow-md"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Retry</span>
+            </button>
+            <a
+              href={directMeetUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--accent)] hover:bg-white text-black text-xs font-extrabold transition-all active:scale-95 shadow-md"
+            >
+              <span>Open Direct Meet</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          </div>
         </div>
       )}
 
