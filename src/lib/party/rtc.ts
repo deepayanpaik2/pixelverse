@@ -1,18 +1,24 @@
 /**
- * Party room realtime engine  (100% free stack)
+ * Party Room Realtime Engine powered by LiveKit Cloud
  *
- *  - Signaling, presence and text chat : Supabase Realtime (Broadcast + Presence)
- *  - Voice / video / screen share      : WebRTC, peer-to-peer mesh (best for up to ~6-8 people)
- *  - NAT traversal                     : free public STUN servers (+ optional free TURN, see .env)
- *
- * Roles: for every pair of people, the one with the smaller peer id is the
- * "initiator" and creates the offer. The other one only answers. That avoids
- * offer collisions without needing the full "perfect negotiation" dance.
- * Each connection always carries one audio and one video transceiver, so
- * switching mic / camera / screen is just `replaceTrack` (no renegotiation).
+ * Architecture:
+ * - Media & Realtime Transport : LiveKit Cloud SFU (wss://deep-pixelverse-3ap1vw7o.livekit.cloud)
+ * - Server Authentication     : Next.js API (/api/party/livekit-token) with JWT AccessToken
+ * - Chat & Game Signaling     : LiveKit High-Speed Reliable Data Channel + Supabase / localStorage
+ * - Cross-Network Connectivity: Enterprise distributed SFU + Global TURN relays (bypasses all CGNATs/Symmetric NATs)
  */
-import { supabase } from '@/lib/supabase/client';
-import type { RealtimeChannel } from '@supabase/supabase-js';
+
+import {
+  Room,
+  RoomEvent,
+  Track,
+  createLocalVideoTrack,
+  type RemoteParticipant,
+  type RemoteTrackPublication,
+  type RemoteTrack,
+  type Participant,
+  type LocalTrackPublication,
+} from 'livekit-client';
 import { closeRoom, loadMessages, saveMessage, type Identity } from './rooms';
 
 export interface PeerState {
@@ -22,7 +28,7 @@ export interface PeerState {
   audioOn: boolean;
   videoOn: boolean; // camera on
   screenOn: boolean; // sharing screen
-  cameraFacing?: 'user' | 'environment'; // camera facing direction (mobile flip)
+  cameraFacing?: 'user' | 'environment';
   deafened: boolean;
   speaking: boolean;
   isLocal: boolean;
@@ -51,838 +57,563 @@ export interface RoomSnapshot {
   me: PeerState | null;
   peers: PeerState[]; // everyone, local user first
   messages: ChatMessage[];
-  gameSignal: number; // increases whenever the host launches the game for everyone
+  gameSignal: number;
 }
 
-type Meta = {
-  id: string;
-  name: string;
-  color: string;
-  audioOn: boolean;
-  videoOn: boolean;
-  screenOn: boolean;
-  cameraFacing?: 'user' | 'environment';
-  deafened: boolean;
-  isHost: boolean;
-  joinedAt: number;
-};
+const COLORS = ['#00f0ff', '#39ff14', '#ff0055', '#9d4edd', '#ffbe0b', '#ff7a00', '#4cc9f0', '#f72585'];
 
-interface Conn {
-  id: string;
-  pc: RTCPeerConnection;
-  stream: MediaStream;
-  initiator: boolean;
-  pendingIce: RTCIceCandidateInit[];
-  audioSender: RTCRtpSender | null;
-  videoSender: RTCRtpSender | null;
-  state: PeerState['connection'];
-  meta: Meta | null;
-  seen: boolean; // has appeared in presence at least once
-  recoveryTimer: ReturnType<typeof setTimeout> | null;
-  handshakeTimer: ReturnType<typeof setTimeout> | null;
-  failCount: number;
-}
-
-interface Meter {
-  analyser: AnalyserNode;
-  data: Uint8Array;
-  speaking: boolean;
-  hold: number;
-}
-
-const DEFAULT_STUN_SERVERS: string[] = [
-  'stun:stun.l.google.com:19302',
-  'stun:stun1.l.google.com:19302',
-  'stun:stun2.l.google.com:19302',
-  'stun:stun3.l.google.com:19302',
-  'stun:stun4.l.google.com:19302',
-  'stun:stun.cloudflare.com:3478',
-  'stun:global.stun.twilio.com:3478',
-  'stun:stun.relay.metered.ca:80',
-  'stun:stun.schlund.de:3478',
-  'stun:stun.voipbuster.com:3478',
-  'stun:stun.1und1.de:3478',
-  'stun:stun.gmx.net:3478',
-];
-
-function getInitialIceServers(): RTCIceServer[] {
-  const servers: RTCIceServer[] = [{ urls: DEFAULT_STUN_SERVERS }];
-
-  // Configured TURN relay (Metered / Cloudflare Calls / Coturn / Twilio etc)
-  if (process.env.NEXT_PUBLIC_TURN_URL) {
-    servers.push({
-      urls: process.env.NEXT_PUBLIC_TURN_URL.split(',').map((u) => u.trim()),
-      username: process.env.NEXT_PUBLIC_TURN_USERNAME || '',
-      credential: process.env.NEXT_PUBLIC_TURN_CREDENTIAL || '',
-    });
-  }
-
-  // Fallback public / free open relay TURN servers for NAT & symmetric firewall traversal
-  servers.push({
-    urls: [
-      'turn:openrelay.metered.ca:80',
-      'turn:openrelay.metered.ca:443',
-      'turn:openrelay.metered.ca:443?transport=tcp',
-      'turns:openrelay.metered.ca:443?transport=tcp',
-    ],
-    username: 'openrelayproject',
-    credential: 'openrelayproject',
-  });
-
-  return servers;
+function colorFor(id: string): string {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return COLORS[h % COLORS.length];
 }
 
 export class PartyRoomClient {
-  private code: string;
-  private identity: Identity;
-  private maxParticipants: number;
-  private hostClientId: string;
+  readonly code: string;
+  readonly identity: Identity;
+  readonly maxParticipants: number;
+  readonly hostClientId: string;
+  readonly isHost: boolean;
 
-  private me: Meta;
-  private channel: RealtimeChannel | null = null;
-  private conns = new Map<string, Conn>();
-  private listeners = new Set<() => void>();
-
-  private audioTrack: MediaStreamTrack | null = null;
-  private cameraTrack: MediaStreamTrack | null = null;
-  private cameraFacing: 'user' | 'environment' = 'user';
-  private screenTrack: MediaStreamTrack | null = null;
-  private outVideo: MediaStreamTrack | null = null;
-  private localStream: MediaStream | null = null;
-
-  private ac: AudioContext | null = null;
-  private meters = new Map<string, Meter>();
-  private meterTimer: ReturnType<typeof setInterval> | null = null;
-
-  private messages: ChatMessage[] = [];
+  private room: Room | null = null;
   private status: RoomStatus = 'idle';
   private error: string | null = null;
   private micError: string | null = null;
+  private me: PeerState;
+  private peers: PeerState[] = [];
+  private messages: ChatMessage[] = [];
   private gameSignal = 0;
-  private destroyed = false;
-  private iceServers: RTCIceServer[] = getInitialIceServers();
-  private snap: RoomSnapshot;
+  private cameraFacing: 'user' | 'environment' = 'user';
 
-  constructor(opts: { code: string; identity: Identity; maxParticipants: number; hostClientId: string }) {
+  private listeners = new Set<() => void>();
+  private cachedSnapshot: RoomSnapshot;
+
+  constructor(opts: {
+    code: string;
+    identity: Identity;
+    maxParticipants: number;
+    hostClientId: string;
+  }) {
     this.code = opts.code;
     this.identity = opts.identity;
     this.maxParticipants = opts.maxParticipants;
     this.hostClientId = opts.hostClientId;
+    this.isHost = opts.identity.clientId === opts.hostClientId;
+
     this.me = {
-      id: crypto.randomUUID(),
+      id: opts.identity.clientId,
       name: opts.identity.name,
-      color: opts.identity.color,
-      audioOn: false,
+      color: opts.identity.color || colorFor(opts.identity.clientId),
+      audioOn: true,
       videoOn: false,
       screenOn: false,
       cameraFacing: 'user',
       deafened: false,
-      isHost: opts.identity.clientId === opts.hostClientId,
+      speaking: false,
+      isLocal: true,
+      isHost: this.isHost,
       joinedAt: Date.now(),
+      stream: null,
+      trackCount: 0,
+      connection: 'local',
     };
-    this.snap = this.buildSnapshot();
+
+    this.peers = [this.me];
+    this.cachedSnapshot = this.buildSnapshot();
   }
 
-  get isHost(): boolean {
-    return this.identity.clientId === this.hostClientId;
-  }
-
-  // React store API
-  subscribe = (fn: () => void) => {
-    this.listeners.add(fn);
+  // useSyncExternalStore subscribe and getSnapshot
+  subscribe = (cb: () => void) => {
+    this.listeners.add(cb);
     return () => {
-      this.listeners.delete(fn);
+      this.listeners.delete(cb);
     };
   };
-  getSnapshot = () => this.snap;
+
+  getSnapshot = (): RoomSnapshot => {
+    return this.cachedSnapshot;
+  };
 
   private emit() {
-    this.snap = this.buildSnapshot();
-    this.listeners.forEach((l) => l());
+    this.cachedSnapshot = this.buildSnapshot();
+    this.listeners.forEach((cb) => {
+      try {
+        cb();
+      } catch (err) {
+        console.error('[LiveKit] Subscriber error:', err);
+      }
+    });
   }
 
   private buildSnapshot(): RoomSnapshot {
-    const toState = (m: Meta, conn: Conn | null): PeerState => {
-      const isLocal = !conn;
-      const stream = isLocal ? this.localStream : conn!.stream;
-      return {
-        id: m.id,
-        name: m.name,
-        color: m.color,
-        audioOn: m.audioOn,
-        videoOn: m.videoOn,
-        screenOn: m.screenOn,
-        cameraFacing: m.cameraFacing || 'user',
-        deafened: m.deafened,
-        speaking: !!this.meters.get(m.id)?.speaking && m.audioOn,
-        isLocal,
-        isHost: !!m.isHost,
-        joinedAt: m.joinedAt,
-        stream,
-        trackCount: stream ? stream.getTracks().length : 0,
-        connection: isLocal ? 'local' : conn!.state,
-      };
-    };
-    const me = toState(this.me, null);
-    const others: PeerState[] = [];
-    this.conns.forEach((c) => {
-      if (c.meta) others.push(toState(c.meta, c));
-    });
-    others.sort((a, b) => a.joinedAt - b.joinedAt);
     return {
       status: this.status,
       error: this.error,
       micError: this.micError,
-      me,
-      peers: [me, ...others],
-      messages: this.messages,
+      me: { ...this.me },
+      peers: this.peers.map((p) => ({ ...p })),
+      messages: [...this.messages],
       gameSignal: this.gameSignal,
     };
   }
 
-  // Joining and leaving
-  async join(media: { audio: boolean; video: boolean; facingMode?: 'user' | 'environment' }) {
+  /**
+   * Connect to LiveKit Cloud SFU Room
+   */
+  async join(opts?: {
+    audio?: boolean;
+    video?: boolean;
+    facingMode?: 'user' | 'environment';
+  }): Promise<void> {
+    if (this.status === 'connecting' || this.status === 'connected') return;
+
     this.status = 'connecting';
-    if (media.facingMode) {
-      this.cameraFacing = media.facingMode;
-      this.me.cameraFacing = media.facingMode;
-    }
+    this.error = null;
+    this.micError = null;
+    this.cameraFacing = opts?.facingMode || 'user';
+    this.me.cameraFacing = this.cameraFacing;
     this.emit();
 
-    try {
-      this.ac = new (window.AudioContext || (window as any).webkitAudioContext)();
-      this.ac.resume().catch(() => {});
-    } catch {
-      this.ac = null;
-    }
-
-    // Refresh ICE servers in background from API
-    if (typeof window !== 'undefined') {
-      fetch('/api/party/ice')
-        .then((r) => r.json())
-        .then((servers) => {
-          if (Array.isArray(servers) && servers.length > 0) {
-            this.iceServers = servers;
-          }
-        })
-        .catch(() => {});
-    }
-
-    if (media.audio) await this.acquireAudio();
-    if (media.video) await this.acquireCamera();
-
+    // 1. Fetch historical room messages
     loadMessages(this.code)
-      .then((rows) => {
-        if (this.destroyed) return;
-        const known = new Set(this.messages.map((m) => m.id));
-        const old: ChatMessage[] = rows
-          .filter((r) => !known.has(r.id))
-          .map((r) => ({
-            id: r.id,
-            senderId: r.client_id,
-            name: r.sender_name,
-            color: '#94a3b8',
-            text: r.body,
-            ts: Date.parse(r.created_at),
+      .then((history) => {
+        if (history.length > 0) {
+          const formatted: ChatMessage[] = history.map((h) => ({
+            id: h.id,
+            senderId: h.client_id,
+            name: h.sender_name,
+            color: colorFor(h.client_id),
+            text: h.body,
+            ts: new Date(h.created_at).getTime(),
           }));
-        this.messages = [...old, ...this.messages];
-        this.emit();
+          this.messages = formatted;
+          this.emit();
+        }
       })
       .catch(() => {});
 
-    const channel = supabase.channel(`party:${this.code}`, {
-      config: { broadcast: { self: false }, presence: { key: this.me.id } },
-    });
-    this.channel = channel;
+    try {
+      // 2. Fetch authenticated LiveKit AccessToken from Next.js server endpoint
+      const tokenRes = await fetch('/api/party/livekit-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          room: this.code,
+          identity: this.identity.clientId,
+          name: this.identity.name,
+          color: this.identity.color,
+          isHost: this.isHost,
+        }),
+      });
 
-    channel
-      .on('presence', { event: 'sync' }, () => this.reconcile())
-      .on('broadcast', { event: 'signal' }, ({ payload }) => {
-        this.handleSignal(payload);
-      })
-      .on('broadcast', { event: 'chat' }, ({ payload }) => this.receiveChat(payload))
-      .on('broadcast', { event: 'game' }, () => {
-        this.gameSignal++;
-        this.emit();
-      })
-      .on('broadcast', { event: 'closed' }, () => {
-        this.status = 'closed';
-        this.error = 'The host ended this room.';
-        this.teardown();
-        this.emit();
-      })
-      .subscribe(async (s) => {
-        if (this.destroyed) return;
-        if (s === 'SUBSCRIBED') {
-          await channel.track({ ...this.me });
-          this.status = 'connected';
-          this.emit();
-        } else if (s === 'CHANNEL_ERROR' || s === 'TIMED_OUT') {
+      if (!tokenRes.ok) {
+        const data = await tokenRes.json().catch(() => ({}));
+        if (data.missingConfig) {
           this.status = 'error';
-          this.error = 'Could not connect to the realtime server. Check your internet and Supabase settings.';
+          this.error =
+            'LiveKit Cloud credentials required: Please set LIVEKIT_API_KEY and LIVEKIT_API_SECRET in your .env.local file.';
           this.emit();
+          return;
         }
-      });
-  }
-
-  async leave() {
-    this.teardown();
-    this.status = 'closed';
-    this.emit();
-  }
-
-  /** Host only: ends the room for everybody. */
-  async endRoom() {
-    if (!this.isHost) return;
-    try {
-      await this.channel?.send({ type: 'broadcast', event: 'closed', payload: {} });
-      await closeRoom(this.code, this.identity.clientId);
-    } catch {
-      /* ignore */
-    }
-    await this.leave();
-  }
-
-  private teardown() {
-    this.destroyed = true;
-    if (this.meterTimer) clearInterval(this.meterTimer);
-    this.meterTimer = null;
-    this.conns.forEach((_, id) => this.closeConn(id));
-    [this.audioTrack, this.cameraTrack, this.screenTrack].forEach((t) => t?.stop());
-    this.audioTrack = this.cameraTrack = this.screenTrack = this.outVideo = null;
-    this.localStream = null;
-    if (this.channel) {
-      try {
-        this.channel.untrack();
-      } catch {
-        /* ignore */
+        throw new Error(data.error || `Server responded with ${tokenRes.status}`);
       }
-      supabase.removeChannel(this.channel);
-      this.channel = null;
-    }
-    this.ac?.close().catch(() => {});
-    this.ac = null;
-    this.meters.clear();
-  }
 
-  // Presence and connections
-  private reconcile() {
-    if (this.destroyed || !this.channel) return;
-    const state = this.channel.presenceState() as Record<string, any[]>;
-    const metas: Meta[] = [];
-    Object.keys(state).forEach((key) => {
-      const arr = state[key];
-      const m = arr && arr[arr.length - 1];
-      if (m && m.id) metas.push(m as Meta);
-    });
+      const { token, url } = await tokenRes.json();
+      if (!token) throw new Error('No access token received from server');
 
-    // Capacity check: the newest people over the limit are the ones turned away.
-    const ordered = [...metas].sort((a, b) => a.joinedAt - b.joinedAt || a.id.localeCompare(b.id));
-    const myIndex = ordered.findIndex((m) => m.id === this.me.id);
-    if (myIndex >= this.maxParticipants) {
-      this.status = 'full';
-      this.error = 'This room is full.';
-      this.teardown();
-      this.emit();
-      return;
-    }
-
-    const present = new Set<string>();
-    metas.forEach((m) => {
-      if (m.id === this.me.id) return;
-      present.add(m.id);
-      let conn = this.conns.get(m.id);
-      if (!conn) {
-        const isInitiator = this.me.id < m.id;
-        conn = this.createConn(m.id, isInitiator);
-        conn.meta = m;
-        conn.seen = true;
-        if (conn.initiator) {
-          this.makeOffer(conn);
-        } else {
-          this.signal(m.id, { type: 'ready-for-offer' });
-        }
-      } else {
-        conn.meta = m;
-        conn.seen = true;
-        if (conn.state === 'failed') {
-          this.scheduleRecovery(conn);
-        }
-      }
-    });
-
-    this.conns.forEach((c, id) => {
-      if (c.seen && !present.has(id)) this.closeConn(id);
-    });
-    this.emit();
-  }
-
-  private createConn(id: string, initiator: boolean): Conn {
-    const pc = new RTCPeerConnection({
-      iceServers: this.iceServers,
-      iceCandidatePoolSize: 10,
-      bundlePolicy: 'max-bundle',
-      rtcpMuxPolicy: 'require',
-    });
-    const conn: Conn = {
-      id,
-      pc,
-      stream: new MediaStream(),
-      initiator,
-      pendingIce: [],
-      audioSender: null,
-      videoSender: null,
-      state: 'connecting',
-      meta: null,
-      seen: false,
-      recoveryTimer: null,
-      handshakeTimer: null,
-      failCount: 0,
-    };
-
-    pc.onicecandidate = (e) => {
-      if (e.candidate && e.candidate.candidate) {
-        try {
-          this.signal(id, { type: 'ice', candidate: e.candidate.toJSON() });
-        } catch {
-          /* ignore */
-        }
-      }
-    };
-
-    pc.ontrack = (e) => {
-      if (!conn.stream.getTracks().some((t) => t.id === e.track.id)) {
-        conn.stream.addTrack(e.track);
-      }
-      if (e.track.kind === 'audio') this.watchAudio(id, e.track);
-      this.emit();
-    };
-
-    const updateConnState = () => {
-      const connState = pc.connectionState;
-      const iceState = pc.iceConnectionState;
-
-      if (connState === 'connected' || iceState === 'connected' || iceState === 'completed') {
-        conn.state = 'connected';
-        conn.failCount = 0;
-        this.clearRecovery(conn);
-        this.clearHandshake(conn);
-      } else if (connState === 'failed' || iceState === 'failed') {
-        conn.state = 'failed';
-        this.scheduleRecovery(conn);
-      } else if (connState === 'closed' || iceState === 'closed') {
-        conn.state = 'closed';
-        this.clearRecovery(conn);
-        this.clearHandshake(conn);
-      } else {
-        conn.state = 'connecting';
-      }
-      this.emit();
-    };
-
-    pc.onconnectionstatechange = updateConnState;
-    pc.oniceconnectionstatechange = updateConnState;
-
-    if (initiator) {
-      const a = pc.addTransceiver('audio', { direction: 'sendrecv' });
-      const v = pc.addTransceiver('video', { direction: 'sendrecv' });
-      conn.audioSender = a.sender;
-      conn.videoSender = v.sender;
-      a.sender.replaceTrack(this.audioTrack).catch(() => {});
-      v.sender.replaceTrack(this.outVideo).catch(() => {});
-      this.optimizeVideoSender(v.sender);
-    }
-
-    // Set handshake timeout to catch dropped signals (resend offer or request offer)
-    conn.handshakeTimer = setTimeout(() => {
-      if (this.destroyed || conn.state === 'connected' || conn.state === 'closed') return;
-      if (conn.initiator) {
-        this.makeOffer(conn);
-      } else {
-        this.signal(id, { type: 'ready-for-offer' });
-      }
-    }, 4500);
-
-    this.conns.set(id, conn);
-    return conn;
-  }
-
-  private clearRecovery(conn: Conn) {
-    if (conn.recoveryTimer) {
-      clearTimeout(conn.recoveryTimer);
-      conn.recoveryTimer = null;
-    }
-  }
-
-  private clearHandshake(conn: Conn) {
-    if (conn.handshakeTimer) {
-      clearTimeout(conn.handshakeTimer);
-      conn.handshakeTimer = null;
-    }
-  }
-
-  private scheduleRecovery(conn: Conn) {
-    if (this.destroyed) return;
-    const id = conn.id;
-    if (conn.recoveryTimer) return;
-
-    conn.failCount = (conn.failCount || 0) + 1;
-    conn.recoveryTimer = setTimeout(async () => {
-      conn.recoveryTimer = null;
-      if (this.destroyed || !this.conns.has(id)) return;
-      if (conn.pc.connectionState === 'connected' || conn.pc.iceConnectionState === 'connected') return;
-
-      console.log(`[party] recovering peer ${id} (attempt ${conn.failCount})`);
-      if (conn.initiator) {
-        try {
-          if ('restartIce' in conn.pc && typeof (conn.pc as any).restartIce === 'function') {
-            (conn.pc as any).restartIce();
-          }
-          await this.makeOffer(conn, true);
-        } catch {
-          this.reconnect(id);
-        }
-      } else {
-        this.signal(id, { type: 'need-restart' });
-      }
-    }, 1200);
-  }
-
-  private optimizeVideoSender(sender: RTCRtpSender | null) {
-    if (!sender || !sender.getParameters) return;
-    try {
-      const params = sender.getParameters();
-      if (!params.encodings || params.encodings.length === 0) {
-        params.encodings = [{}];
-      }
-      // 600 kbps: high quality 360p mobile stream with zero packet drops
-      params.encodings[0].maxBitrate = 600_000;
-      params.encodings[0].networkPriority = 'high';
-      sender.setParameters(params).catch(() => {});
-    } catch {
-      /* ignore */
-    }
-  }
-
-  /** Manually or automatically reconnects to a specific peer */
-  reconnect(peerId: string) {
-    if (this.destroyed) return;
-    const existing = this.conns.get(peerId);
-    const meta = existing?.meta;
-    this.closeConn(peerId);
-
-    const isInitiator = this.me.id < peerId;
-    const conn = this.createConn(peerId, isInitiator);
-    if (meta) conn.meta = meta;
-    conn.seen = true;
-
-    if (conn.initiator) {
-      this.makeOffer(conn);
-    } else {
-      this.signal(peerId, { type: 'ready-for-offer' });
-    }
-    this.emit();
-  }
-
-  private closeConn(id: string) {
-    const conn = this.conns.get(id);
-    if (!conn) return;
-    this.clearRecovery(conn);
-    this.clearHandshake(conn);
-    try {
-      conn.pc.onicecandidate = null;
-      conn.pc.ontrack = null;
-      conn.pc.onconnectionstatechange = null;
-      conn.pc.oniceconnectionstatechange = null;
-      conn.pc.close();
-    } catch {
-      /* ignore */
-    }
-    this.meters.delete(id);
-    this.conns.delete(id);
-  }
-
-  // Signaling
-  private signal(to: string, data: Record<string, unknown>) {
-    this.channel?.send({ type: 'broadcast', event: 'signal', payload: { from: this.me.id, to, ...data } });
-  }
-
-  private async makeOffer(conn: Conn, iceRestart = false) {
-    try {
-      const offer = await conn.pc.createOffer(iceRestart ? { iceRestart: true } : undefined);
-      await conn.pc.setLocalDescription(offer);
-      this.signal(conn.id, { type: 'offer', sdp: { type: offer.type, sdp: offer.sdp } });
-    } catch (e) {
-      console.warn('[party] offer failed', e);
-    }
-  }
-
-  private async handleSignal(p: any) {
-    if (this.destroyed || !p || p.to !== this.me.id || !p.from) return;
-    let conn = this.conns.get(p.from);
-    if (!conn) {
-      const isInitiator = this.me.id < p.from;
-      conn = this.createConn(p.from, isInitiator);
-    }
-    const pc = conn.pc;
-
-    try {
-      if (p.type === 'offer' && p.sdp) {
-        await pc.setRemoteDescription(new RTCSessionDescription(p.sdp));
-        this.prepareAnswererSenders(conn);
-        await this.flushIce(conn);
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-        this.signal(p.from, { type: 'answer', sdp: { type: answer.type, sdp: answer.sdp } });
-      } else if (p.type === 'answer' && p.sdp) {
-        if (pc.signalingState === 'have-local-offer') {
-          await pc.setRemoteDescription(new RTCSessionDescription(p.sdp));
-          await this.flushIce(conn);
-        }
-      } else if (p.type === 'ice' && p.candidate) {
-        const candidateInit = p.candidate;
-        if (!candidateInit || !candidateInit.candidate) return;
-        if (pc.remoteDescription && pc.signalingState !== 'closed') {
-          try {
-            await pc.addIceCandidate(new RTCIceCandidate(candidateInit));
-          } catch {
-            /* ignore duplicate or invalid candidate */
-          }
-        } else {
-          conn.pendingIce.push(candidateInit);
-        }
-      } else if (p.type === 'need-restart') {
-        if (conn.initiator && !this.destroyed) {
-          try {
-            if ('restartIce' in pc && typeof (pc as any).restartIce === 'function') {
-              (pc as any).restartIce();
-            }
-            await this.makeOffer(conn, true);
-          } catch {
-            this.reconnect(p.from);
-          }
-        }
-      } else if (p.type === 'ready-for-offer') {
-        if (conn.initiator && !this.destroyed && conn.state !== 'connected') {
-          await this.makeOffer(conn);
-        }
-      }
-    } catch (e) {
-      console.warn('[party] signal error', p.type, e);
-    }
-  }
-
-  private prepareAnswererSenders(conn: Conn) {
-    conn.pc.getTransceivers().forEach((t) => {
-      try {
-        t.direction = 'sendrecv';
-      } catch {
-        /* ignore */
-      }
-      if (t.receiver.track.kind === 'audio') {
-        conn.audioSender = t.sender;
-        t.sender.replaceTrack(this.audioTrack).catch(() => {});
-      } else {
-        conn.videoSender = t.sender;
-        t.sender.replaceTrack(this.outVideo).catch(() => {});
-        this.optimizeVideoSender(t.sender);
-      }
-    });
-  }
-
-  private async flushIce(conn: Conn) {
-    if (!conn.pc.remoteDescription) return;
-    const list = conn.pendingIce.splice(0);
-    for (const c of list) {
-      try {
-        if (c && c.candidate) {
-          await conn.pc.addIceCandidate(new RTCIceCandidate(c));
-        }
-      } catch {
-        /* ignore invalid or expired candidate */
-      }
-    }
-  }
-
-  // Local media
-  private async acquireAudio(): Promise<void> {
-    if (!navigator.mediaDevices?.getUserMedia) {
-      this.micError = 'Microphone is not available here (it needs HTTPS or localhost).';
-      return;
-    }
-    try {
-      const s = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-      });
-      this.audioTrack = s.getAudioTracks()[0];
-      this.me.audioOn = true;
-      this.micError = null;
-      this.watchAudio(this.me.id, this.audioTrack);
-      this.conns.forEach((c) => c.audioSender?.replaceTrack(this.audioTrack).catch(() => {}));
-    } catch {
-      this.micError = 'Microphone blocked or not found. You can still listen and use text chat.';
-    }
-  }
-
-  private async acquireCamera(facingMode?: 'user' | 'environment'): Promise<void> {
-    if (facingMode) {
-      this.cameraFacing = facingMode;
-      this.me.cameraFacing = facingMode;
-    }
-    if (!navigator.mediaDevices?.getUserMedia) return;
-    try {
-      const s = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: { ideal: this.cameraFacing },
-          width: { ideal: 640 },
-          height: { ideal: 360 },
-          frameRate: { ideal: 24, max: 30 },
+      // 3. Instantiate LiveKit Client Room with adaptive bandwidth and noise suppression
+      const room = new Room({
+        adaptiveStream: true,
+        dynacast: true,
+        audioCaptureDefaults: {
+          autoGainControl: true,
+          echoCancellation: true,
+          noiseSuppression: true,
+        },
+        videoCaptureDefaults: {
+          resolution: { width: 1280, height: 720, frameRate: 30 },
         },
       });
-      this.cameraTrack = s.getVideoTracks()[0];
-      this.cameraTrack.onended = () => {
-        this.cameraTrack = null;
-        this.refreshOutVideo();
-      };
-      this.refreshOutVideo();
-    } catch {
-      this.micError = 'Camera blocked or not found.';
-    }
-  }
 
-  private refreshOutVideo() {
-    const track = this.screenTrack || this.cameraTrack || null;
-    this.outVideo = track;
-    this.me.videoOn = !!this.cameraTrack;
-    this.me.screenOn = !!this.screenTrack;
-    this.me.cameraFacing = this.cameraFacing;
-    this.localStream = track ? new MediaStream([track]) : null;
-    this.conns.forEach((c) => c.videoSender?.replaceTrack(track).catch(() => {}));
-    this.publish();
-    this.emit();
-  }
+      this.room = room;
+      this.bindRoomEvents(room);
 
-  private publish() {
-    this.channel?.track({ ...this.me });
-  }
+      // 4. Connect to LiveKit Cloud Room
+      console.log(`[LiveKit] Connecting to ${url} for room ${this.code}...`);
+      await room.connect(url, token);
+      console.log(`[LiveKit] Successfully connected to room: ${room.name}`);
 
-  async toggleMic() {
-    if (!this.audioTrack) {
-      await this.acquireAudio();
-    } else {
-      this.audioTrack.enabled = !this.audioTrack.enabled;
-      this.me.audioOn = this.audioTrack.enabled;
-    }
-    if (this.me.audioOn && this.me.deafened) this.me.deafened = false;
-    this.publish();
-    this.emit();
-  }
+      // 5. Unlock audio playback for browser autoplay policies
+      await room.startAudio().catch(() => {});
 
-  async toggleCamera() {
-    if (this.cameraTrack) {
-      this.cameraTrack.stop();
-      this.cameraTrack = null;
-      this.refreshOutVideo();
-    } else {
-      await this.acquireCamera();
-    }
-  }
-
-  async flipCamera(): Promise<'user' | 'environment'> {
-    this.cameraFacing = this.cameraFacing === 'user' ? 'environment' : 'user';
-    this.me.cameraFacing = this.cameraFacing;
-    if (this.cameraTrack) {
-      this.cameraTrack.stop();
-      this.cameraTrack = null;
-      await this.acquireCamera();
-    } else {
-      this.publish();
-      this.emit();
-    }
-    return this.cameraFacing;
-  }
-
-  async toggleScreen() {
-    if (this.screenTrack) {
-      this.screenTrack.stop();
-      this.screenTrack = null;
-      this.refreshOutVideo();
-      return;
-    }
-    if (!navigator.mediaDevices?.getDisplayMedia) {
-      this.micError = 'Screen sharing is not supported on this device.';
-      this.emit();
-      return;
-    }
-    try {
-      const s = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: { ideal: 24, max: 30 } }, audio: false });
-      this.screenTrack = s.getVideoTracks()[0];
-      this.screenTrack.onended = () => {
-        this.screenTrack = null;
-        this.refreshOutVideo();
-      };
-      this.refreshOutVideo();
-    } catch {
-      /* user cancelled the picker */
-    }
-  }
-
-  toggleDeafen() {
-    this.me.deafened = !this.me.deafened;
-    if (this.me.deafened && this.audioTrack) {
-      this.audioTrack.enabled = false;
-      this.me.audioOn = false;
-    }
-    this.publish();
-    this.emit();
-  }
-
-  // Speaking detection
-  private watchAudio(id: string, track: MediaStreamTrack) {
-    if (!this.ac) return;
-    try {
-      const src = this.ac.createMediaStreamSource(new MediaStream([track]));
-      const analyser = this.ac.createAnalyser();
-      analyser.fftSize = 512;
-      src.connect(analyser); // not connected to speakers: playback happens in the <video> tile
-      this.meters.set(id, { analyser, data: new Uint8Array(analyser.fftSize), speaking: false, hold: 0 });
-      if (!this.meterTimer) this.meterTimer = setInterval(() => this.tickMeters(), 130);
-    } catch {
-      /* ignore */
-    }
-  }
-
-  private tickMeters() {
-    let changed = false;
-    this.meters.forEach((m) => {
-      m.analyser.getByteTimeDomainData(m.data as any);
-      let sum = 0;
-      for (let i = 0; i < m.data.length; i++) {
-        const v = (m.data[i] - 128) / 128;
-        sum += v * v;
-      }
-      const rms = Math.sqrt(sum / m.data.length);
-      let speaking = m.speaking;
-      if (rms > 0.03) {
-        m.hold = 3;
-        speaking = true;
-      } else if (m.hold > 0) {
-        m.hold--;
+      // 6. Publish Initial Audio Track
+      if (opts?.audio !== false) {
+        try {
+          await room.localParticipant.setMicrophoneEnabled(true);
+          this.me.audioOn = true;
+        } catch (err: any) {
+          console.warn('[LiveKit] Microphone access denied or unavailable:', err?.message || err);
+          this.micError = 'Microphone permission denied. Click unmute when ready.';
+          this.me.audioOn = false;
+        }
       } else {
-        speaking = false;
+        this.me.audioOn = false;
       }
-      if (speaking !== m.speaking) {
-        m.speaking = speaking;
-        changed = true;
+
+      // 7. Publish Initial Video Track
+      if (opts?.video) {
+        try {
+          await room.localParticipant.setCameraEnabled(true, {
+            facingMode: this.cameraFacing,
+          });
+          this.me.videoOn = true;
+        } catch (err: any) {
+          console.warn('[LiveKit] Camera access denied or unavailable:', err?.message || err);
+          this.me.videoOn = false;
+        }
+      } else {
+        this.me.videoOn = false;
+      }
+
+      // 8. Rebuild local stream and sync participant list
+      this.status = 'connected';
+      this.rebuildLocalStream();
+      this.rebuildPeers();
+      this.emit();
+    } catch (err: any) {
+      console.error('[LiveKit Join Error]', err);
+      this.status = 'error';
+      this.error = err?.message || 'Could not connect to the video room.';
+      this.emit();
+    }
+  }
+
+  /**
+   * Bind LiveKit Room events
+   */
+  private bindRoomEvents(room: Room) {
+    // Participant connected
+    room.on(RoomEvent.ParticipantConnected, (participant: RemoteParticipant) => {
+      console.log(`[LiveKit] Participant joined: ${participant.identity} (${participant.name})`);
+      this.rebuildPeers();
+      this.emit();
+    });
+
+    // Participant disconnected
+    room.on(RoomEvent.ParticipantDisconnected, (participant: RemoteParticipant) => {
+      console.log(`[LiveKit] Participant left: ${participant.identity}`);
+      this.rebuildPeers();
+      this.emit();
+    });
+
+    // Remote track subscribed
+    room.on(
+      RoomEvent.TrackSubscribed,
+      (track: RemoteTrack, publication: RemoteTrackPublication, participant: RemoteParticipant) => {
+        console.log(`[LiveKit] Track subscribed: ${track.kind} from ${participant.identity}`);
+        // Attach audio tracks to ensure audio plays reliably across all browsers
+        if (track.kind === Track.Kind.Audio) {
+          try {
+            track.attach();
+          } catch {}
+        }
+        this.rebuildPeers();
+        this.emit();
+      }
+    );
+
+    // Remote track unsubscribed
+    room.on(
+      RoomEvent.TrackUnsubscribed,
+      (track: RemoteTrack, publication: RemoteTrackPublication, participant: RemoteParticipant) => {
+        console.log(`[LiveKit] Track unsubscribed: ${track.kind} from ${participant.identity}`);
+        try {
+          track.detach();
+        } catch {}
+        this.rebuildPeers();
+        this.emit();
+      }
+    );
+
+    // Track muted / unmuted
+    room.on(RoomEvent.TrackMuted, () => {
+      this.rebuildPeers();
+      this.emit();
+    });
+
+    room.on(RoomEvent.TrackUnmuted, () => {
+      this.rebuildPeers();
+      this.emit();
+    });
+
+    // Local tracks published
+    room.on(RoomEvent.LocalTrackPublished, () => {
+      this.rebuildLocalStream();
+      this.emit();
+    });
+
+    room.on(RoomEvent.LocalTrackUnpublished, () => {
+      this.rebuildLocalStream();
+      this.emit();
+    });
+
+    // Active speakers
+    room.on(RoomEvent.ActiveSpeakersChanged, (speakers: Participant[]) => {
+      const activeIds = new Set(speakers.map((s) => s.identity));
+      this.me.speaking = activeIds.has(this.me.id);
+      this.peers.forEach((p) => {
+        if (!p.isLocal) {
+          p.speaking = activeIds.has(p.id);
+        }
+      });
+      this.emit();
+    });
+
+    // Data received (Chat messages, game launch signals, end room signals)
+    room.on(RoomEvent.DataReceived, (payload: Uint8Array, participant?: RemoteParticipant) => {
+      try {
+        const text = new TextDecoder().decode(payload);
+        const data = JSON.parse(text);
+
+        if (data.type === 'chat' && data.message) {
+          this.pushMessage(data.message);
+        } else if (data.type === 'game') {
+          console.log('[LiveKit] Received game launch signal from host');
+          this.gameSignal++;
+          this.emit();
+        } else if (data.type === 'end_room') {
+          console.log('[LiveKit] Room ended by host');
+          this.leave();
+        }
+      } catch (err) {
+        console.warn('[LiveKit] Malformed data packet received:', err);
       }
     });
-    if (changed) this.emit();
+
+    // Reconnecting / Reconnected states
+    room.on(RoomEvent.Reconnecting, () => {
+      console.warn('[LiveKit] Reconnecting to room...');
+      this.peers.forEach((p) => {
+        if (!p.isLocal) p.connection = 'connecting';
+      });
+      this.emit();
+    });
+
+    room.on(RoomEvent.Reconnected, () => {
+      console.log('[LiveKit] Reconnected successfully');
+      this.rebuildPeers();
+      this.emit();
+    });
+
+    // Disconnected
+    room.on(RoomEvent.Disconnected, () => {
+      console.log('[LiveKit] Disconnected from room');
+      this.status = 'closed';
+      this.rebuildPeers();
+      this.emit();
+    });
   }
 
-  // Chat and game state
-  sendChat(text: string) {
+  /**
+   * Reconstruct the local participant MediaStream
+   */
+  private rebuildLocalStream() {
+    if (!this.room) return;
+    const local = this.room.localParticipant;
+    const tracks: MediaStreamTrack[] = [];
+
+    local.videoTrackPublications.forEach((pub: LocalTrackPublication) => {
+      if (pub.track && pub.track.mediaStreamTrack && !pub.isMuted) {
+        tracks.push(pub.track.mediaStreamTrack);
+      }
+    });
+
+    local.audioTrackPublications.forEach((pub: LocalTrackPublication) => {
+      if (pub.track && pub.track.mediaStreamTrack && !pub.isMuted) {
+        tracks.push(pub.track.mediaStreamTrack);
+      }
+    });
+
+    this.me.stream = tracks.length > 0 ? new MediaStream(tracks) : null;
+    this.me.trackCount = tracks.length;
+    this.me.videoOn = local.isCameraEnabled;
+    this.me.audioOn = local.isMicrophoneEnabled;
+    this.me.screenOn = local.isScreenShareEnabled;
+    this.me.cameraFacing = this.cameraFacing;
+  }
+
+  /**
+   * Synchronize remote participants into PeerState array
+   */
+  private rebuildPeers() {
+    if (!this.room) {
+      this.peers = [{ ...this.me }];
+      return;
+    }
+
+    const peerList: PeerState[] = [{ ...this.me }];
+
+    this.room.remoteParticipants.forEach((remote: RemoteParticipant) => {
+      const tracks: MediaStreamTrack[] = [];
+
+      remote.videoTrackPublications.forEach((pub) => {
+        if (pub.track && pub.track.mediaStreamTrack && pub.isSubscribed && !pub.isMuted) {
+          tracks.push(pub.track.mediaStreamTrack);
+        }
+      });
+
+      remote.audioTrackPublications.forEach((pub) => {
+        if (pub.track && pub.track.mediaStreamTrack && pub.isSubscribed && !pub.isMuted) {
+          tracks.push(pub.track.mediaStreamTrack);
+        }
+      });
+
+      // Parse metadata for color and host badge
+      let color = colorFor(remote.identity);
+      let isRemoteHost = remote.identity === this.hostClientId;
+
+      if (remote.metadata) {
+        try {
+          const parsed = JSON.parse(remote.metadata);
+          if (parsed.color) color = parsed.color;
+          if (typeof parsed.isHost === 'boolean') isRemoteHost = parsed.isHost;
+        } catch {}
+      }
+
+      peerList.push({
+        id: remote.identity,
+        name: remote.name || 'Player',
+        color,
+        audioOn: remote.isMicrophoneEnabled,
+        videoOn: remote.isCameraEnabled,
+        screenOn: remote.isScreenShareEnabled,
+        deafened: false,
+        speaking: remote.isSpeaking,
+        isLocal: false,
+        isHost: isRemoteHost,
+        joinedAt: remote.joinedAt ? remote.joinedAt.getTime() : Date.now(),
+        stream: tracks.length > 0 ? new MediaStream(tracks) : null,
+        trackCount: tracks.length,
+        connection: remote.connectionQuality === 'lost' ? 'failed' : 'connected',
+      });
+    });
+
+    this.peers = peerList;
+  }
+
+  /**
+   * Microphone Toggle
+   */
+  async toggleMic(): Promise<void> {
+    if (!this.room) return;
+    const next = !this.me.audioOn;
+    try {
+      await this.room.localParticipant.setMicrophoneEnabled(next);
+      this.me.audioOn = next;
+      this.micError = null;
+      this.rebuildLocalStream();
+      this.emit();
+    } catch (err: any) {
+      console.warn('[LiveKit] toggleMic failed:', err);
+      this.micError = 'Microphone access failed. Please check browser permissions.';
+      this.emit();
+    }
+  }
+
+  /**
+   * Camera Toggle
+   */
+  async toggleCamera(): Promise<void> {
+    if (!this.room) return;
+    const next = !this.me.videoOn;
+    try {
+      await this.room.localParticipant.setCameraEnabled(next, {
+        facingMode: this.cameraFacing,
+      });
+      this.me.videoOn = next;
+      this.rebuildLocalStream();
+      this.emit();
+    } catch (err: any) {
+      console.warn('[LiveKit] toggleCamera failed:', err);
+      this.emit();
+    }
+  }
+
+  /**
+   * Flip Camera for Mobile & Touch devices (Front / Back)
+   */
+  async flipCamera(): Promise<void> {
+    if (!this.room || !this.me.videoOn) return;
+    const nextFacing = this.cameraFacing === 'user' ? 'environment' : 'user';
+    this.cameraFacing = nextFacing;
+    this.me.cameraFacing = nextFacing;
+
+    try {
+      const camPub = this.room.localParticipant.getTrackPublication(Track.Source.Camera);
+      if (camPub && camPub.track) {
+        await this.room.localParticipant.unpublishTrack(camPub.track);
+        camPub.track.stop();
+      }
+
+      const newTrack = await createLocalVideoTrack({
+        facingMode: nextFacing,
+        resolution: { width: 1280, height: 720, frameRate: 30 },
+      });
+
+      await this.room.localParticipant.publishTrack(newTrack, {
+        source: Track.Source.Camera,
+      });
+
+      this.rebuildLocalStream();
+      this.emit();
+    } catch (err: any) {
+      console.error('[LiveKit] Flip camera failed:', err);
+    }
+  }
+
+  /**
+   * Screen Share Toggle
+   */
+  async toggleScreen(): Promise<void> {
+    if (!this.room) return;
+    const next = !this.me.screenOn;
+    try {
+      await this.room.localParticipant.setScreenShareEnabled(next);
+      this.me.screenOn = next;
+      this.rebuildLocalStream();
+      this.emit();
+    } catch (err: any) {
+      console.warn('[LiveKit] toggleScreen failed or cancelled:', err);
+      this.me.screenOn = false;
+      this.rebuildLocalStream();
+      this.emit();
+    }
+  }
+
+  /**
+   * Deafen Toggle (Stop hearing remote audio)
+   */
+  toggleDeafen(): void {
+    this.me.deafened = !this.me.deafened;
+    if (this.room) {
+      this.room.remoteParticipants.forEach((p) => {
+        p.audioTrackPublications.forEach((pub) => {
+          if (pub.track?.mediaStreamTrack) {
+            pub.track.mediaStreamTrack.enabled = !this.me.deafened;
+          }
+        });
+      });
+    }
+    this.emit();
+  }
+
+  /**
+   * Send live chat message
+   */
+  async sendChat(text: string): Promise<void> {
     const clean = text.trim().slice(0, 500);
     if (!clean) return;
+
     const msg: ChatMessage = {
       id: crypto.randomUUID(),
       senderId: this.me.id,
@@ -891,21 +622,19 @@ export class PartyRoomClient {
       text: clean,
       ts: Date.now(),
     };
-    this.pushMessage(msg);
-    this.channel?.send({ type: 'broadcast', event: 'chat', payload: msg });
-    saveMessage(this.code, msg.id, this.identity.clientId, msg.name, msg.text).catch(() => {});
-  }
 
-  private receiveChat(p: any) {
-    if (!p || typeof p.text !== 'string' || !p.id) return;
-    this.pushMessage({
-      id: String(p.id),
-      senderId: String(p.senderId || ''),
-      name: String(p.name || 'Player').slice(0, 40),
-      color: typeof p.color === 'string' ? p.color : '#94a3b8',
-      text: p.text.slice(0, 500),
-      ts: Number(p.ts) || Date.now(),
-    });
+    this.pushMessage(msg);
+
+    if (this.room) {
+      try {
+        const payload = new TextEncoder().encode(JSON.stringify({ type: 'chat', message: msg }));
+        await this.room.localParticipant.publishData(payload, { reliable: true });
+      } catch (err) {
+        console.warn('[LiveKit] publishData failed:', err);
+      }
+    }
+
+    saveMessage(this.code, msg.id, this.identity.clientId, msg.name, msg.text).catch(() => {});
   }
 
   private pushMessage(m: ChatMessage) {
@@ -914,10 +643,80 @@ export class PartyRoomClient {
     this.emit();
   }
 
-  /** Host: opens the party game for everyone in the room. */
-  launchGameForAll() {
-    this.channel?.send({ type: 'broadcast', event: 'game', payload: {} });
+  /**
+   * Host: Launch party game for everyone in the room
+   */
+  async launchGameForAll(): Promise<void> {
+    if (!this.isHost) return;
+    if (this.room) {
+      try {
+        const payload = new TextEncoder().encode(JSON.stringify({ type: 'game' }));
+        await this.room.localParticipant.publishData(payload, { reliable: true });
+      } catch (err) {
+        console.warn('[LiveKit] launchGameForAll broadcast failed:', err);
+      }
+    }
     this.gameSignal++;
     this.emit();
+  }
+
+  signalGame(): Promise<void> {
+    return this.launchGameForAll();
+  }
+
+  /**
+   * Host: End room for everyone
+   */
+  async endRoom(): Promise<void> {
+    if (!this.isHost) return;
+    if (this.room) {
+      try {
+        const payload = new TextEncoder().encode(JSON.stringify({ type: 'end_room' }));
+        await this.room.localParticipant.publishData(payload, { reliable: true });
+      } catch {}
+    }
+    closeRoom(this.code, this.identity.clientId).catch(() => {});
+    this.leave();
+  }
+
+  /**
+   * Leave room and clean up media tracks
+   */
+  leave(): void {
+    if (this.room) {
+      try {
+        this.room.disconnect();
+      } catch {}
+      this.room = null;
+    }
+
+    if (this.me.stream) {
+      this.me.stream.getTracks().forEach((t) => t.stop());
+      this.me.stream = null;
+    }
+
+    this.status = 'closed';
+    this.emit();
+  }
+
+  /**
+   * Manual reconnect / refresh handler
+   */
+  async reconnect(peerId?: string): Promise<void> {
+    if (!this.room) return;
+    console.log(`[LiveKit] Reconnecting tracks for ${peerId || 'all peers'}...`);
+    try {
+      this.room.remoteParticipants.forEach((p) => {
+        if (!peerId || p.identity === peerId) {
+          p.trackPublications.forEach((pub) => {
+            if (!pub.isSubscribed) pub.setSubscribed(true);
+          });
+        }
+      });
+      this.rebuildPeers();
+      this.emit();
+    } catch (err) {
+      console.warn('[LiveKit] Reconnect error:', err);
+    }
   }
 }

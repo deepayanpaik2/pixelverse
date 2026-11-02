@@ -456,6 +456,12 @@ function RoomView({ room, client, onLeft }: { room: PartyRoom; client: PartyRoom
         </div>
       </div>
 
+      {snap.error && (
+        <div className="p-3 rounded-xl border border-arcade-rose/40 bg-arcade-rose/10 text-xs text-arcade-rose flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 shrink-0" /> {snap.error}
+        </div>
+      )}
+
       {snap.micError && (
         <div className="p-2.5 rounded-lg border border-arcade-amber/40 bg-arcade-amber/10 text-xs text-arcade-amber flex items-center gap-2">
           <AlertTriangle className="w-4 h-4 shrink-0" /> {snap.micError}
