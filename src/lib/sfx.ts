@@ -29,13 +29,9 @@ export function isSfxOn(): boolean {
   if (typeof window === 'undefined') return false;
   try {
     const val = window.localStorage.getItem(KEY);
-    if (val !== null) return val === 'on';
-    // By default on mobile devices: sound is muted to prevent heating and click lag.
-    // However, users can freely enable it anytime using the Sound Toggle option!
-    // On PC: sound is enabled by default.
-    return !isMobileDevice();
+    return val === 'on';
   } catch {
-    return !isMobileDevice();
+    return false;
   }
 }
 

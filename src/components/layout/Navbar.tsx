@@ -280,6 +280,15 @@ export function Navbar() {
           </Link>
         </div>
 
+        {/* Desktop Quick Navigation Links */}
+        <nav className="hidden xl:flex items-center gap-1 shrink-0 text-xs font-bold text-slate-300">
+          <Link href="/" onClick={() => playSfx('tap')} className="px-3 py-1.5 rounded-xl hover:text-white hover:bg-white/10 transition-colors">Home</Link>
+          <Link href="/arcade" onClick={() => playSfx('tap')} className="px-3 py-1.5 rounded-xl hover:text-white hover:bg-white/10 transition-colors">Discover</Link>
+          <Link href="/categories" onClick={() => playSfx('tap')} className="px-3 py-1.5 rounded-xl hover:text-white hover:bg-white/10 transition-colors">Categories</Link>
+          <Link href="/trending" onClick={() => playSfx('tap')} className="px-3 py-1.5 rounded-xl hover:text-white hover:bg-white/10 transition-colors">Trending</Link>
+          <Link href="/new" onClick={() => playSfx('tap')} className="px-3 py-1.5 rounded-xl hover:text-white hover:bg-white/10 transition-colors">New Games</Link>
+        </nav>
+
         {/* Center Section: 3D Cyber Search Terminal */}
         <div className="hidden md:flex flex-1 min-w-[80px] max-w-xs lg:max-w-sm relative">
           <form onSubmit={handleSearchSubmit} className="relative w-full">

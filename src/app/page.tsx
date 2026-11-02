@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Gamepad2, Sparkles, Users, Smartphone, Compass, Crown, Flame } from 'lucide-react';
+import { ArrowRight, Gamepad2, Sparkles, Users, Smartphone, Compass, Crown, Flame, Clock } from 'lucide-react';
 import { CATEGORIES, getNewGames, getMasterpieceGames, getCatchyGames } from '@/lib/games';
+import { GameManifest } from '@/types';
 import { SpotlightHero } from '@/components/portal/SpotlightHero';
 import { CategoryChips } from '@/components/portal/CategoryChips';
 import { GameTile } from '@/components/portal/GameTile';
@@ -66,7 +67,13 @@ function Shelf({
 }
 
 export default function HomePage() {
-  const { kidsMode } = useAuth();
+  const { user, kidsMode } = useAuth();
+  const [historyGames, setHistoryGames] = useState<GameManifest[]>([]);
+
+  useEffect(() => {
+    const actorKey = user ? user.id : 'guest';
+    setHistoryGames(mockStore.getHistory(actorKey).slice(0, 6));
+  }, [user]);
 
   const games = useMemo(() => mockStore.getGames(kidsMode), [kidsMode]);
 
@@ -140,6 +147,44 @@ export default function HomePage() {
 
       {/* 3D Category Control Bar */}
       <CategoryChips />
+
+      {/* Continue Playing (Only when real history exists) */}
+      {historyGames.length > 0 && (
+        <section className="space-y-3.5 sm:space-y-4 fade-up">
+          <div className="section-head">
+            <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+              <div
+                className="gaming-icon-box w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0 text-cyan-400"
+                style={{ borderColor: 'rgba(6, 182, 212, 0.4)', boxShadow: '0 0 16px rgba(6, 182, 212, 0.2)' }}
+              >
+                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-lg sm:text-2xl text-white font-display font-extrabold tracking-tight flex items-center gap-2 truncate">
+                  Continue Playing
+                </h2>
+                <p className="text-xs text-slate-400 font-medium truncate">
+                  Pick up right where you left off from your recent gaming sessions
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/history"
+              onClick={() => playSfx('tap')}
+              className="glass-chip shrink-0 flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl text-xs font-black text-cyan-200 hover:text-white transition-all group border-cyan-500/30"
+            >
+              <span>View All History</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-4 lg:gap-5">
+            {historyGames.map((game) => (
+              <GameTile key={`history-${game.id}`} game={game} size="1x1" priority />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* 1. All-Time Masterpieces Section (Hall of Fame) */}
       {masterpieceGames.length > 0 && (

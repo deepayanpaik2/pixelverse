@@ -162,6 +162,14 @@ export function SpotlightHero({ games }: SpotlightHeroProps) {
               <Play className="w-4 h-4 fill-current ml-0.5" /> Play Now
             </Link>
 
+            <Link
+              href="/arcade"
+              onClick={() => playSfx('tap')}
+              className="flex items-center justify-center px-6 py-3.5 sm:py-4 rounded-full font-bold text-xs sm:text-sm tracking-wide bg-white/10 hover:bg-white/15 border border-white/15 text-slate-200 hover:text-white transition-all text-center w-full sm:w-auto active:scale-95"
+            >
+              Explore Games
+            </Link>
+
             <button
               type="button"
               onClick={() => {

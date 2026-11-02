@@ -67,7 +67,7 @@ function GameTileBase({ game, size = '1x1', priority = false }: GameTileProps) {
       title={game.title}
       onPointerMove={onTilt}
       onPointerLeave={onTiltEnd}
-      className={`game-tile group relative rounded-[1.2rem] sm:rounded-[1.4rem] p-1.5 sm:p-2 bg-[#090b14]/90 border border-white/[0.12] ${outlineTheme.tileHoverBorder} transition-all flex flex-col justify-between ${SIZE_CLASSES[size]}`}
+      className={`game-tile group relative rounded-[1.2rem] sm:rounded-[1.4rem] p-1.5 sm:p-2 bg-[#090b14]/90 border border-white/[0.12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${outlineTheme.tileHoverBorder} transition-all flex flex-col justify-between ${SIZE_CLASSES[size]}`}
     >
       {/* 3D Depth Reactive Ambient Glow customized per game outline theme (desktop hover only) */}
       <div className="hidden sm:block absolute inset-0 z-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">

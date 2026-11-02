@@ -9,7 +9,6 @@ import { Sidebar } from './Sidebar';
 import { Footer } from './Footer';
 import { ProfileGate } from './ProfileGate';
 import { GamingBackground } from './GamingBackground';
-import { FallingGlitter } from './FallingGlitter';
 import { PointerFX } from './PointerFX';
 
 const ACCENT_MAP: Record<string, { color: string; rgb: string }> = {
@@ -66,7 +65,6 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
               Skip to main content
             </a>
             <GamingBackground />
-            <FallingGlitter />
             <PointerFX />
             <ProfileGate />
             <Navbar />
