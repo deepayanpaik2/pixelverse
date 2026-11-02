@@ -623,7 +623,7 @@ export default function GamePlayerPage() {
                 sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-pointer-lock allow-orientation-lock allow-presentation allow-modals allow-downloads"
                 allow="accelerometer; autoplay; camera; clipboard-read; clipboard-write; display-capture; fullscreen; gamepad; geolocation; gyroscope; microphone; midi; payment; picture-in-picture; screen-wake-lock; web-share"
                 allowFullScreen
-                className="relative z-10 w-full h-full border-none bg-black block"
+                className="relative z-10 w-full h-full border-none bg-black block cyber-game-iframe"
                 style={{ contain: 'strict' }}
               />
             </div>

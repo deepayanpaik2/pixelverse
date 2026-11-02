@@ -1158,8 +1158,8 @@ body.gaming-bg { background: transparent !important; }
   position: absolute;
   inset: -60% 0 -20% 0;
   background-image:
-    linear-gradient(rgba(var(--accent-rgb), 0.24) 1.5px, transparent 1.5px),
-    linear-gradient(90deg, rgba(var(--accent-rgb), 0.24) 1.5px, transparent 1.5px);
+    linear-gradient(rgba(var(--accent-rgb), 0.35) 1.5px, transparent 1.5px),
+    linear-gradient(90deg, rgba(var(--accent-rgb), 0.35) 1.5px, transparent 1.5px);
   background-size: 56px 56px;
   transform: rotateX(66deg);
   transform-origin: 50% 100%;
@@ -1270,4 +1270,193 @@ body.gaming-bg { background: transparent !important; }
 
 .arcade-btn-secondary:active {
   transform: translateY(1px);
+}
+
+
+/* ==========================================================================
+   CYBER CURSOR & INTERACTIVE FX
+   Zero-lag GPU-accelerated targeting reticle for PC, touch shockwave for Mobile
+   ========================================================================== */
+
+/* Universal Hardware Cursor on Fine Pointer Devices */
+@media (pointer: fine) {
+  html,
+  body,
+  iframe,
+  .cyber-game-iframe,
+  embed,
+  object {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cdefs%3E%3Cfilter id='g' x='-50%25' y='-50%25' width='200%25' height='200%25'%3E%3CfeDropShadow dx='0' dy='0' stdDeviation='1.5' flood-color='%2300f0ff' flood-opacity='0.9'/%3E%3C/filter%3E%3C/defs%3E%3Ccircle cx='16' cy='16' r='10' stroke='%2300f0ff' stroke-width='1.5' fill='none' filter='url(%23g)'/%3E%3Cline x1='16' y1='2' x2='16' y2='7' stroke='%2300f0ff' stroke-width='1.5'/%3E%3Cline x1='16' y1='25' x2='16' y2='30' stroke='%2300f0ff' stroke-width='1.5'/%3E%3Cline x1='2' y1='16' x2='7' y2='16' stroke='%2300f0ff' stroke-width='1.5'/%3E%3Cline x1='25' y1='16' x2='30' y2='16' stroke='%2300f0ff' stroke-width='1.5'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='%23ffffff' stroke='%2300f0ff' stroke-width='1'/%3E%3C/svg%3E") 16 16, crosshair !important;
+  }
+
+  body.cyber-cursor-enabled,
+  body.cyber-cursor-enabled *:not(iframe) {
+    cursor: none !important;
+  }
+}
+
+.cyber-cursor-container {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  pointer-events: none;
+  overflow: hidden;
+  contain: strict;
+}
+
+.cyber-cursor-dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  margin-left: -3px;
+  border-radius: 50%;
+  background: var(--accent, #00f0ff);
+  box-shadow: 0 0 10px 2px var(--accent-glow, rgba(0, 240, 255, 0.7)), 0 0 4px #ffffff;
+  pointer-events: none;
+  will-change: transform;
+  transition: opacity 0.2s ease, width 0.2s ease, height 0.2s ease, margin 0.2s ease;
+}
+
+.cyber-cursor-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 32px;
+  height: 32px;
+  margin-top: -16px;
+  margin-left: -16px;
+  border-radius: 50%;
+  border: 1.5px solid var(--accent, rgba(0, 240, 255, 0.75));
+  box-shadow: 0 0 16px var(--accent-glow, rgba(0, 240, 255, 0.35)), inset 0 0 6px var(--accent-glow, rgba(0, 240, 255, 0.2));
+  pointer-events: none;
+  will-change: transform;
+  transition: opacity 0.2s ease, width 0.22s cubic-bezier(0.16, 1, 0.3, 1), height 0.22s cubic-bezier(0.16, 1, 0.3, 1), margin 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Precision Crosshairs on Cursor Ring */
+.cyber-cursor-ring::before,
+.cyber-cursor-ring::after {
+  content: "";
+  position: absolute;
+  background: var(--accent, #00f0ff);
+  opacity: 0.8;
+  transition: all 0.22s ease;
+}
+
+/* Top and bottom tick */
+.cyber-cursor-ring::before {
+  top: -4px;
+  bottom: -4px;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  clip-path: polygon(0 0, 100% 0, 100% 3px, 0 3px, 0 calc(100% - 3px), 100% calc(100% - 3px), 100% 100%, 0 100%);
+}
+
+/* Left and right tick */
+.cyber-cursor-ring::after {
+  left: -4px;
+  right: -4px;
+  top: 50%;
+  height: 1px;
+  transform: translateY(-50%);
+  clip-path: polygon(0 0, 3px 0, 3px 100%, 0 100%, calc(100% - 3px) 0, 100% 0, 100% 100%, calc(100% - 3px) 100%);
+}
+
+/* Text / Input Precision Bracket Cursor */
+.cyber-cursor-ring[data-input="true"] {
+  width: 14px !important;
+  height: 28px !important;
+  margin-top: -14px !important;
+  margin-left: -7px !important;
+  border-radius: 4px !important;
+  border: 1.5px solid var(--accent, #00f0ff) !important;
+  background: rgba(var(--accent-rgb), 0.1) !important;
+  transform: rotate(0deg) !important;
+}
+
+.cyber-cursor-ring[data-input="true"]::before,
+.cyber-cursor-ring[data-input="true"]::after {
+  display: none !important;
+}
+
+.cyber-cursor-dot[data-input="true"] {
+  opacity: 0.7;
+  width: 2px !important;
+  height: 18px !important;
+  margin-top: -9px !important;
+  margin-left: -1px !important;
+  border-radius: 1px !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 8px var(--accent) !important;
+}
+
+/* Hovering interactive target state */
+.cyber-cursor-ring[data-hover="true"] {
+  width: 48px;
+  height: 48px;
+  margin-top: -24px;
+  margin-left: -24px;
+  border-color: #ffffff;
+  border-width: 2px;
+  box-shadow: 0 0 24px var(--accent, rgba(0, 240, 255, 0.75)), inset 0 0 10px var(--accent, rgba(0, 240, 255, 0.35));
+  transform-origin: center;
+}
+
+.cyber-cursor-dot[data-hover="true"] {
+  width: 8px;
+  height: 8px;
+  margin-top: -4px;
+  margin-left: -4px;
+  background: #ffffff;
+  box-shadow: 0 0 14px 3px #ffffff, 0 0 20px 6px var(--accent, rgba(0, 240, 255, 0.9));
+}
+
+/* Clicking / Mouse Down state */
+.cyber-cursor-ring[data-down="true"] {
+  width: 22px;
+  height: 22px;
+  margin-top: -11px;
+  margin-left: -11px;
+  border-width: 2px;
+  border-color: var(--accent, #00f0ff);
+  box-shadow: 0 0 30px 6px var(--accent, rgba(0, 240, 255, 0.8));
+}
+
+.cyber-cursor-dot[data-down="true"] {
+  transform: scale(0.6);
+}
+
+/* Hidden when off-screen or playing */
+.cyber-cursor-hidden {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* Mobile & Touch Shockwave Ripple */
+.fx-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483646;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.cyber-touch-ripple {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  border: 2px solid var(--accent, #00f0ff);
+  box-shadow: 0 0 16px var(--accent-glow, rgba(0, 240, 255, 0.8)), inset 0 0 8px var(--accent-glow, rgba(0, 240, 255, 0.4));
+  will-change: transform, opacity;
+}
+
+.cyber-touch-spark {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 1px;
+  will-change: transform, opacity;
 }
