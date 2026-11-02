@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AccessToken } from 'livekit-server-sdk';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,28 +15,41 @@ export async function POST(req: NextRequest) {
 
     const { room, identity, name, color, isHost } = body;
 
-    // Validate room
+    // Validate and sanitize room name
     if (!room || typeof room !== 'string') {
       return NextResponse.json({ error: 'Room identifier is required' }, { status: 400 });
     }
     const cleanRoom = room.trim().replace(/[^a-zA-Z0-9_\-\.]/g, '').slice(0, 64);
     if (!cleanRoom) {
-      return NextResponse.json({ error: 'Invalid room identifier' }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid room identifier format' }, { status: 400 });
     }
 
-    // Validate identity
-    if (!identity || typeof identity !== 'string') {
-      return NextResponse.json({ error: 'Participant identity is required' }, { status: 400 });
-    }
-    const cleanIdentity = identity.trim().slice(0, 128);
-    if (!cleanIdentity) {
-      return NextResponse.json({ error: 'Invalid participant identity' }, { status: 400 });
-    }
-
+    // Client-supplied fallback fields
+    const cleanIdentity = typeof identity === 'string' && identity.trim()
+      ? identity.trim().replace(/[^a-zA-Z0-9_\-\.]/g, '').slice(0, 128)
+      : '';
     const cleanName = typeof name === 'string' && name.trim() ? name.trim().slice(0, 40) : 'Guest';
     const cleanColor = typeof color === 'string' && color.startsWith('#') ? color.slice(0, 7) : '#00f0ff';
 
-    // LiveKit credentials
+    // Verify session authentication with Supabase if configured
+    let authUser: { id: string; email?: string; user_metadata?: any } | null = null;
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      try {
+        const supabaseServer = createServerSupabaseClient();
+        const { data: { user } } = await supabaseServer.auth.getUser();
+        if (user) {
+          authUser = user;
+        }
+      } catch {
+        // Guest or localStorage mode
+      }
+    }
+
+    // Derive participant identity from authenticated session when available, or fall back to verified guest identity
+    const participantIdentity = authUser ? authUser.id : (cleanIdentity || `guest_${crypto.randomUUID().slice(0, 8)}`);
+    const participantName = authUser?.user_metadata?.display_name || authUser?.user_metadata?.full_name || authUser?.email?.split('@')[0] || cleanName;
+
+    // LiveKit credentials from server-side environment variables
     const apiKey = process.env.LIVEKIT_API_KEY;
     const apiSecret = process.env.LIVEKIT_API_SECRET;
     const livekitUrl =
@@ -45,28 +59,30 @@ export async function POST(req: NextRequest) {
 
     if (!apiKey || !apiSecret || apiKey === '<my_rotated_livekit_api_key>' || apiKey === 'your_livekit_api_key') {
       console.warn(
-        `[LiveKit Token] Missing or placeholder credentials for room: ${cleanRoom}. Set LIVEKIT_API_KEY and LIVEKIT_API_SECRET in .env.local`
+        `[LiveKit Token] Missing or placeholder credentials for room: ${cleanRoom}. Set LIVEKIT_API_KEY and LIVEKIT_API_SECRET in environment variables.`
       );
       return NextResponse.json(
         {
-          error: 'LiveKit Cloud credentials not configured. Please add LIVEKIT_API_KEY and LIVEKIT_API_SECRET to your .env.local or deployment environment variables.',
+          error: 'LiveKit Cloud credentials not configured. Please add LIVEKIT_API_KEY and LIVEKIT_API_SECRET to your environment variables.',
           missingConfig: true,
         },
         { status: 503 }
       );
     }
 
-    // Generate short-lived (4 hours) access token
+    // Generate short-lived access token (3 hours - ideal for game parties)
     const at = new AccessToken(apiKey, apiSecret, {
-      identity: cleanIdentity,
-      name: cleanName,
+      identity: participantIdentity,
+      name: participantName,
       metadata: JSON.stringify({
         color: cleanColor,
         isHost: Boolean(isHost),
+        isGuest: !authUser,
       }),
-      ttl: '4h',
+      ttl: '3h',
     });
 
+    // Grant participant room permissions
     at.addGrant({
       room: cleanRoom,
       roomJoin: true,
@@ -77,14 +93,14 @@ export async function POST(req: NextRequest) {
 
     const token = await at.toJwt();
 
-    // Safe diagnostic log (never log secrets or tokens)
-    console.log(`[LiveKit Token] Issued token for participant "${cleanIdentity}" in room "${cleanRoom}"`);
+    // Safe diagnostic log (never log secret or token)
+    console.log(`[LiveKit Token] Issued token for participant "${participantIdentity}" in room "${cleanRoom}"`);
 
     return NextResponse.json({
       token,
       url: livekitUrl,
       room: cleanRoom,
-      identity: cleanIdentity,
+      identity: participantIdentity,
     });
   } catch (err: any) {
     console.error('[LiveKit Token Error]', err?.message || 'Token generation failed');
@@ -103,14 +119,13 @@ export async function GET(req: NextRequest) {
   const color = searchParams.get('color') || '#00f0ff';
   const isHost = searchParams.get('isHost') === 'true' || searchParams.get('isHost') === '1';
 
-  if (!room || !identity) {
+  if (!room) {
     return NextResponse.json(
-      { error: 'room and identity query parameters are required for GET' },
+      { error: 'room query parameter is required for GET' },
       { status: 400 }
     );
   }
 
-  // Delegate to POST logic
   return POST(
     new NextRequest(req.url, {
       method: 'POST',
