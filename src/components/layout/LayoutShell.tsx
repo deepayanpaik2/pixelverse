@@ -59,7 +59,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
       <ThemeApplicator />
       <VoiceProvider>
         <ChatProvider>
-          <div className="grain relative isolate min-h-screen flex flex-col bg-[var(--background)] text-[var(--foreground)] transition-colors duration-300 w-full max-w-full overflow-x-hidden">
+          <div className="grain relative isolate min-h-screen flex flex-col bg-[var(--background)] text-[var(--foreground)] transition-colors duration-300 w-full max-w-full">
             {/* Skip link for keyboard / screen reader users */}
             <a href="#main-content" className="skip-link">
               Skip to main content
@@ -68,10 +68,10 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
             <PointerFX />
             <ProfileGate />
             <Navbar />
-            <div className="flex-1 flex w-full max-w-full min-w-0 overflow-x-hidden">
+            <div className="flex-1 flex w-full max-w-full min-w-0">
               <Sidebar />
-              <div className="flex-1 min-w-0 flex flex-col max-w-full overflow-x-hidden">
-                <main id="main-content" className="flex-1 min-w-0 p-2 sm:p-6 lg:p-8 max-w-[1920px] mx-auto w-full pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-8">
+              <div className="flex-1 min-w-0 flex flex-col max-w-full">
+                <main id="main-content" className="flex-1 min-w-0 p-2 sm:p-5 lg:p-6 max-w-[1920px] mx-auto w-full pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-8">
                   {children}
                 </main>
                 <Footer />

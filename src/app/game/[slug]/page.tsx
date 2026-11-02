@@ -401,7 +401,7 @@ export default function GamePlayerPage() {
   };
 
   return (
-    <div className="space-y-8 pb-16">
+    <>
       {/* JSON-LD Structured Data for Search Engines */}
       <script
         type="application/ld+json"
@@ -434,7 +434,8 @@ export default function GamePlayerPage() {
         }}
       />
 
-      {/* Top Breadcrumb */}
+      <div className="space-y-4 sm:space-y-6 pb-16">
+        {/* Top Breadcrumb */}
       <div className="flex items-center justify-between text-xs text-slate-400">
         <div className="flex items-center gap-2">
           <Link href="/" className="hover:text-[var(--accent)] transition-colors">Home</Link>
@@ -984,6 +985,7 @@ export default function GamePlayerPage() {
         duelUrl={duelUrl}
         challengeText={challengeText}
       />
-    </div>
+      </div>
+    </>
   );
 }

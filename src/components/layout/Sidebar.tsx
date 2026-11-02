@@ -64,7 +64,7 @@ export function Sidebar() {
   return (
     <>
       {/* Desktop & Tablet Sidebar (CrazyGames style) */}
-      <aside className="hidden md:flex flex-col w-16 lg:w-60 drawer-neon border-r border-white/10 h-[calc(100dvh-57px)] sticky top-[57px] z-40 py-3.5 px-2 select-none">
+      <aside className="hidden md:flex flex-col w-16 lg:w-60 drawer-neon border-r border-t-0 rounded-t-none border-white/10 h-[calc(100dvh-58px)] sm:h-[calc(100dvh-60px)] sticky top-[58px] sm:top-[60px] z-40 py-3 px-2 select-none">
         {/* Scrollable Nav Items */}
         <div className="flex-1 overflow-y-auto space-y-1 pr-1 scrollbar-none">
           {/* Main Core Links */}
