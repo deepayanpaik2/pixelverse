@@ -1,9 +1,19 @@
 'use client';
 
-import React, { useEffect, useRef, useState, useCallback, Suspense } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useSyncExternalStore, Suspense } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import {
+  Mic,
+  MicOff,
+  Video,
+  VideoOff,
+  SwitchCamera,
+  MonitorUp,
+  MonitorOff,
+  Headphones,
+  HeadphoneOff,
+  PhoneOff,
   Gamepad2,
   Send,
   Play,
@@ -19,9 +29,6 @@ import {
   Minimize2,
   RotateCw,
   RotateCcw,
-  PhoneOff,
-  Video,
-  Share2,
 } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { FEATURED_GAMES } from '@/lib/games';
@@ -34,56 +41,147 @@ import {
   normalizeCode,
   roomsBackendReady,
   saveGuestName,
-  loadMessages,
-  saveMessage,
-  closeRoom,
   type PartyRoom,
-  type SavedMessage,
-  type Identity,
 } from '@/lib/party/rooms';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
-import { JitsiPartyCall } from '@/components/party/JitsiPartyCall';
+import { PartyRoomClient, type PeerState } from '@/lib/party/rtc';
 import { GameHowToPlayGuide } from '@/components/portal/GameHowToPlayGuide';
 
-interface ChatMsg {
-  id: string;
-  senderId: string;
-  name: string;
-  color: string;
-  text: string;
-  ts: number;
+// Participant tile
+function Tile({
+  p,
+  deafened,
+  compact,
+  onFlipCamera,
+}: {
+  p: PeerState;
+  deafened: boolean;
+  compact?: boolean;
+  onFlipCamera?: () => void;
+}) {
+  const ref = useRef<HTMLVideoElement>(null);
+  const showVideo = p.videoOn || p.screenOn;
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (p.stream && p.trackCount > 0) {
+      el.srcObject = new MediaStream(p.stream.getTracks());
+      el.play().catch(() => {});
+    } else {
+      el.srcObject = null;
+    }
+  }, [p.stream, p.trackCount]);
+
+  useEffect(() => {
+    if (ref.current) ref.current.muted = p.isLocal || deafened;
+  }, [p.isLocal, deafened]);
+
+  const initials = p.name.trim().slice(0, 2).toUpperCase() || '?';
+
+  return (
+    <div
+      className={`relative aspect-video rounded-2xl overflow-hidden bg-[#06070b] border transition-all duration-300 ${
+        p.speaking
+          ? 'border-emerald-400 shadow-[0_0_20px_rgba(52,211,153,0.5)] ring-2 ring-emerald-400/40'
+          : 'border-white/10 hover:border-white/20'
+      } ${compact ? 'w-36 sm:w-44 shrink-0 shadow-md' : 'w-full shadow-xl'}`}
+    >
+      {/* Video element */}
+      <video
+        ref={ref}
+        autoPlay
+        playsInline
+        className={`absolute inset-0 w-full h-full ${p.screenOn ? 'object-contain bg-black' : 'object-cover'} ${
+          showVideo ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        } ${p.isLocal && p.videoOn && !p.screenOn && p.cameraFacing !== 'environment' ? '-scale-x-100' : ''}`}
+      />
+
+      {/* Floating Flip Camera button on local tile for mobile & touch users */}
+      {p.isLocal && p.videoOn && !p.screenOn && onFlipCamera && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onFlipCamera();
+          }}
+          className="absolute top-2 left-2 z-20 flex items-center gap-1 px-2 py-1 rounded-lg bg-black/80 hover:bg-black text-white hover:text-[var(--accent)] border border-white/20 transition-all shadow-md active:scale-90 text-[10px] font-bold backdrop-blur-sm cursor-pointer"
+          title="Flip camera (Front / Back)"
+          aria-label="Flip camera"
+        >
+          <SwitchCamera className="w-3.5 h-3.5 text-[var(--accent)]" />
+          <span className="capitalize">{p.cameraFacing === 'environment' ? 'Back' : 'Front'}</span>
+        </button>
+      )}
+
+      {/* Fallback Avatar Initials */}
+      {!showVideo && (
+        <div className="absolute inset-0 flex items-center justify-center bg-radial-gradient from-white/[0.04] to-black">
+          <div
+            className={`rounded-2xl flex items-center justify-center font-black text-black shadow-lg transition-transform ${
+              compact ? 'w-10 h-10 text-sm' : 'w-16 h-16 sm:w-20 sm:h-20 text-xl sm:text-2xl'
+            } ${p.speaking ? 'scale-110 ring-4 ring-emerald-400/50' : ''}`}
+            style={{ backgroundColor: p.color }}
+          >
+            {initials}
+          </div>
+        </div>
+      )}
+
+      {/* Host Crown Badge */}
+      {p.isHost && (
+        <span
+          className="absolute top-2 right-2 p-1.5 rounded-xl bg-amber-400 text-black shadow-[0_0_12px_rgba(251,191,36,0.5)]"
+          title="Room host"
+        >
+          <Crown className="w-3 h-3 fill-current" />
+        </span>
+      )}
+
+      {/* Connection State */}
+      {!p.isLocal && p.connection !== 'connected' && (
+        <span className="absolute top-2 left-2 px-2 py-0.5 rounded-lg bg-black/80 text-[10px] text-slate-200 flex items-center gap-1 border border-white/10 backdrop-blur-sm">
+          {p.connection === 'failed' ? (
+            <>
+              <AlertTriangle className="w-3 h-3 text-rose-400" /> Failed
+            </>
+          ) : (
+            <>
+              <Loader2 className="w-3 h-3 animate-spin text-[var(--accent)]" /> Connecting
+            </>
+          )}
+        </span>
+      )}
+
+      {/* Participant Name & Status Bar */}
+      <div className="absolute bottom-0 inset-x-0 px-2.5 py-1.5 bg-gradient-to-t from-black/90 via-black/50 to-transparent flex items-center justify-between gap-1 backdrop-blur-[2px]">
+        <span className="text-[11px] font-bold text-white truncate flex items-center gap-1">
+          {p.name}
+          {p.isLocal ? ' (You)' : ''}
+        </span>
+        <span className="flex items-center gap-1 shrink-0">
+          {p.screenOn && <MonitorUp className="w-3 h-3 text-[var(--accent)]" />}
+          {p.deafened && <HeadphoneOff className="w-3 h-3 text-rose-400" />}
+          {!p.audioOn && <MicOff className="w-3 h-3 text-rose-400" />}
+        </span>
+      </div>
+    </div>
+  );
 }
 
-const COLORS = ['#00f0ff', '#39ff14', '#ff0055', '#9d4edd', '#ffbe0b', '#ff7a00', '#4cc9f0', '#f72585'];
-
-function colorFor(id: string): string {
-  let h = 0;
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
-  return COLORS[h % COLORS.length];
+function gridCols(n: number) {
+  if (n <= 1) return 'grid-cols-1 max-w-xl mx-auto';
+  if (n <= 4) return 'grid-cols-1 sm:grid-cols-2';
+  if (n <= 6) return 'grid-cols-2 lg:grid-cols-3';
+  return 'grid-cols-2 lg:grid-cols-4';
 }
 
 // In-room view
-function RoomView({
-  room,
-  identity,
-  userEmail,
-  avatarUrl,
-  onLeft,
-}: {
-  room: PartyRoom;
-  identity: Identity;
-  userEmail?: string;
-  avatarUrl?: string;
-  onLeft: () => void;
-}) {
+function RoomView({ room, client, onLeft }: { room: PartyRoom; client: PartyRoomClient; onLeft: () => void }) {
   const searchParams = useSearchParams();
   const isDuel = searchParams?.get('duel') === '1' || searchParams?.get('duel') === 'true';
-  const isHost = identity.clientId === room.host_client_id;
-
+  const snap = useSyncExternalStore(client.subscribe, client.getSnapshot, client.getSnapshot);
   const [tab, setTab] = useState<'lobby' | 'game'>(isDuel ? 'game' : 'lobby');
   const [text, setText] = useState('');
-  const [messages, setMessages] = useState<ChatMsg[]>([]);
-  const [participantCount, setParticipantCount] = useState(1);
   const [copied, setCopied] = useState(false);
   const [showControlsGuide, setShowControlsGuide] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -91,13 +189,14 @@ function RoomView({
   const [isMobileDevice, setIsMobileDevice] = useState(false);
   const [mobileFsOrientation, setMobileFsOrientation] = useState<'landscape' | 'portrait'>('landscape');
   const [iframeKey, setIframeKey] = useState(1);
-
   const gameContainerRef = useRef<HTMLDivElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const lastGameSignal = useRef(0);
+  const countRef = useRef(1);
 
   const game = FEATURED_GAMES.find((g) => g.id === room.selected_game_id);
+  const me = snap.me;
 
-  // Detect mobile
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const ua = navigator.userAgent || '';
@@ -234,71 +333,37 @@ function RoomView({
     }
   };
 
-  // Heartbeat to keep room active in public lobby
   useEffect(() => {
-    const beat = () => heartbeat(room.code, participantCount).catch(() => {});
+    countRef.current = snap.peers.length;
+  }, [snap.peers.length]);
+
+  // Keep room visible in public lobby
+  useEffect(() => {
+    if (snap.status !== 'connected') return;
+    const beat = () => heartbeat(room.code, countRef.current).catch(() => {});
     beat();
     const t = setInterval(beat, 30000);
     return () => clearInterval(t);
-  }, [room.code, participantCount]);
+  }, [snap.status, room.code]);
 
-  // Load chat history & setup Supabase Realtime channel for chat & game launch broadcast
+  // Host launched the game -> all squad members jump to the game tab
   useEffect(() => {
-    let mounted = true;
-
-    // Load initial messages
-    loadMessages(room.code)
-      .then((history) => {
-        if (!mounted || !history || history.length === 0) return;
-        setMessages(
-          history.map((h) => ({
-            id: h.id,
-            senderId: h.client_id,
-            name: h.sender_name,
-            color: colorFor(h.client_id),
-            text: h.body,
-            ts: new Date(h.created_at).getTime(),
-          }))
-        );
-      })
-      .catch(() => {});
-
-    // Supabase Realtime channel for instant text chat and game signals
-    let channel: any = null;
-    if (isSupabaseConfigured()) {
-      channel = supabase.channel(`party-sync-${room.code}`);
-      channel
-        .on('broadcast', { event: 'chat' }, ({ payload }: { payload: ChatMsg }) => {
-          if (!mounted || !payload) return;
-          setMessages((prev) => (prev.some((m) => m.id === payload.id) ? prev : [...prev, payload]));
-        })
-        .on('broadcast', { event: 'launch-game' }, () => {
-          if (!mounted || !game) return;
-          setTab('game');
-          playSfx('launch');
-        })
-        .on('broadcast', { event: 'room-closed' }, () => {
-          if (!mounted) return;
-          alert('The host has ended this party room.');
-          onLeft();
-        })
-        .subscribe();
-    }
-
-    return () => {
-      mounted = false;
-      if (channel) {
-        try {
-          supabase.removeChannel(channel);
-        } catch {}
+    if (snap.gameSignal > lastGameSignal.current) {
+      lastGameSignal.current = snap.gameSignal;
+      if (game) {
+        setTab('game');
+        playSfx('launch');
       }
-    };
-  }, [room.code, game, onLeft]);
+    }
+  }, [snap.gameSignal, game]);
 
-  // Auto-scroll chat to latest message
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ block: 'end' });
-  }, [messages.length]);
+  }, [snap.messages.length]);
+
+  useEffect(() => {
+    if (snap.status === 'closed' || snap.status === 'full' || snap.status === 'error') onLeft();
+  }, [snap.status, onLeft]);
 
   const copyLink = () => {
     navigator.clipboard.writeText(`${window.location.origin}/rooms/${room.code}`);
@@ -307,73 +372,24 @@ function RoomView({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const send = async (e: React.FormEvent) => {
+  const send = (e: React.FormEvent) => {
     e.preventDefault();
     if (!text.trim()) return;
-
-    const msgId = 'msg-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
-    const newMsg: ChatMsg = {
-      id: msgId,
-      senderId: identity.clientId,
-      name: identity.name,
-      color: identity.color || colorFor(identity.clientId),
-      text: text.trim(),
-      ts: Date.now(),
-    };
-
-    setMessages((prev) => [...prev, newMsg]);
+    client.sendChat(text);
     setText('');
     playSfx('tap');
-
-    // Save to database & broadcast
-    saveMessage(room.code, msgId, identity.clientId, identity.name, newMsg.text).catch(() => {});
-    if (isSupabaseConfigured()) {
-      try {
-        const ch = supabase.channel(`party-sync-${room.code}`);
-        ch.send({
-          type: 'broadcast',
-          event: 'chat',
-          payload: newMsg,
-        });
-      } catch {}
-    }
   };
 
-  const handleLaunchGameForAll = () => {
-    if (!game) return;
-    setTab('game');
-    playSfx('launch');
-    if (isSupabaseConfigured()) {
-      try {
-        const ch = supabase.channel(`party-sync-${room.code}`);
-        ch.send({
-          type: 'broadcast',
-          event: 'launch-game',
-          payload: {},
-        });
-      } catch {}
-    }
-  };
+  if (!me) return null;
 
-  const handleEndOrLeave = async () => {
-    if (isHost && participantCount > 1 && !window.confirm('End this room for everyone?')) {
-      return;
-    }
-    if (isHost) {
-      if (isSupabaseConfigured()) {
-        try {
-          const ch = supabase.channel(`party-sync-${room.code}`);
-          ch.send({
-            type: 'broadcast',
-            event: 'room-closed',
-            payload: {},
-          });
-        } catch {}
-      }
-      await closeRoom(room.code, identity.clientId).catch(() => {});
-    }
-    onLeft();
-  };
+  const btn = (active: boolean, danger = false) =>
+    `flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-xl text-xs font-bold transition-all border cursor-pointer active:scale-95 shadow-sm ${
+      danger
+        ? 'bg-rose-500/15 border-rose-500/40 text-rose-300 hover:bg-rose-500 hover:text-white'
+        : active
+        ? 'bg-white/10 border-white/15 text-slate-100 hover:border-[var(--accent)] hover:text-[var(--accent)]'
+        : 'bg-rose-500 text-white border-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.5)]'
+    }`;
 
   return (
     <div className="space-y-4 pb-16 w-full max-w-full">
@@ -382,7 +398,10 @@ function RoomView({
         <div className="flex items-center gap-3 min-w-0">
           <button
             type="button"
-            onClick={onLeft}
+            onClick={() => {
+              client.leave();
+              onLeft();
+            }}
             className="p-2 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:border-white/25 transition-all shadow-sm active:scale-95 cursor-pointer shrink-0"
             title="Leave room"
           >
@@ -400,10 +419,10 @@ function RoomView({
                 </span>
               )}
               <span className="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
-                <Users className="w-3.5 h-3.5 text-emerald-400" /> {participantCount}/{room.max_participants}
+                <Users className="w-3.5 h-3.5 text-emerald-400" /> {snap.peers.length}/{room.max_participants}
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5 truncate">{room.description || 'Live Voice, Video & Screen Sharing Party'}</p>
+            <p className="text-xs text-slate-400 mt-0.5 truncate">{room.description || 'Voice, Video & Screen Sharing Party'}</p>
           </div>
         </div>
 
@@ -424,14 +443,13 @@ function RoomView({
                 setTab('lobby');
                 playSfx('tap');
               }}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-black transition-all cursor-pointer ${
+              className={`px-3 py-1 rounded-lg text-xs font-black transition-all cursor-pointer ${
                 tab === 'lobby'
                   ? 'bg-[var(--accent)] text-black shadow-[0_0_12px_var(--accent-glow)]'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              <Video className="w-3.5 h-3.5" />
-              <span>Meet</span>
+              Party
             </button>
             {game && (
               <button
@@ -451,96 +469,39 @@ function RoomView({
               </button>
             )}
           </div>
-
-          <button
-            type="button"
-            onClick={handleEndOrLeave}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500 border border-rose-500/30 text-rose-200 hover:text-white text-xs font-bold transition-all active:scale-95 cursor-pointer shadow-sm"
-            title={isHost ? 'End room for everyone' : 'Leave room'}
-          >
-            <PhoneOff className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">{isHost ? 'End Party' : 'Leave'}</span>
-          </button>
         </div>
       </div>
 
+      {snap.micError && (
+        <div className="p-3 rounded-xl border border-amber-500/30 bg-amber-500/10 text-xs text-amber-300 flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400" /> {snap.micError}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Main Stage: Jitsi Meet or Game + Compact Squad Strip */}
+        {/* Main Stage */}
         <div className="lg:col-span-2 space-y-4 min-w-0">
           {tab === 'lobby' ? (
-            <div className="space-y-4">
-              {/* Fullscreen Google Meet Style Grid Video Call */}
-              <div className="h-[520px] sm:h-[620px] w-full rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black">
-                <JitsiPartyCall
-                  roomCode={room.code}
-                  roomName={room.name}
-                  userName={identity.name}
-                  userEmail={userEmail}
-                  avatarUrl={avatarUrl}
-                  isHost={isHost}
-                  onLeft={onLeft}
-                  onParticipantCountChange={(c) => setParticipantCount(Math.max(1, c))}
-                  compact={false}
-                />
+            <div className="p-4 sm:p-6 rounded-3xl border border-white/10 bg-[#090b11]/80 backdrop-blur-xl space-y-4 shadow-2xl">
+              <div className={`grid gap-3 ${gridCols(snap.peers.length)}`}>
+                {snap.peers.map((p) => (
+                  <Tile key={p.id} p={p} deafened={me.deafened} onFlipCamera={() => client.flipCamera()} />
+                ))}
               </div>
-
-              {/* Game Quick-Launch Banner if Room Has Selected Game */}
-              {game && (
-                <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-12 h-12 rounded-xl overflow-hidden bg-black/60 border border-white/15 flex items-center justify-center p-0.5 shrink-0">
-                      <img src={game.thumbnail_url} alt={game.title} className="w-full h-full object-contain" />
-                    </div>
-                    <div className="min-w-0">
-                      <span className="text-[10px] font-black text-[var(--accent)] uppercase tracking-wider">Party Game</span>
-                      <h3 className="text-sm font-extrabold text-white truncate">{game.title}</h3>
-                      <p className="text-[11px] text-slate-400">
-                        {game.category} • {game.supported_players}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    {isHost && (
-                      <button
-                        type="button"
-                        onClick={handleLaunchGameForAll}
-                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[var(--accent)] hover:bg-white text-black font-extrabold text-xs shadow-[0_0_15px_var(--accent-glow)] transition-all active:scale-95 cursor-pointer"
-                        title="Broadcast launch to all squad members"
-                      >
-                        <Play className="w-3.5 h-3.5 fill-current" />
-                        <span className="hidden sm:inline">Launch for Squad</span>
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setTab('game');
-                        playSfx('tap');
-                      }}
-                      className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white font-bold text-xs transition-all active:scale-95 cursor-pointer"
-                    >
-                      <Gamepad2 className="w-3.5 h-3.5 text-[var(--accent)]" />
-                      <span>Open Canvas</span>
-                    </button>
-                  </div>
+              {snap.peers.length === 1 && (
+                <div className="text-center py-6 text-xs text-slate-400 space-y-1">
+                  <p className="font-bold text-white">You&apos;re the only one here right now!</p>
+                  <p>Click &quot;Invite Squad&quot; above to copy your room link and send it to friends.</p>
                 </div>
               )}
             </div>
           ) : (
             <div className="space-y-3">
-              {/* Compact Squad Video Call Strip while Playing */}
-              <div className="h-44 sm:h-52 w-full rounded-2xl overflow-hidden border border-white/10 shadow-lg bg-black">
-                <JitsiPartyCall
-                  roomCode={room.code}
-                  roomName={room.name}
-                  userName={identity.name}
-                  userEmail={userEmail}
-                  avatarUrl={avatarUrl}
-                  isHost={isHost}
-                  onLeft={onLeft}
-                  onParticipantCountChange={(c) => setParticipantCount(Math.max(1, c))}
-                  compact={true}
-                />
+              {/* Compact squad video strip */}
+              <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-thin">
+                {snap.peers.map((p) => (
+                  <Tile key={p.id} p={p} deafened={me.deafened} compact onFlipCamera={() => client.flipCamera()} />
+                ))}
               </div>
 
               {/* Game Frame */}
@@ -641,7 +602,7 @@ function RoomView({
                       onClick={() => setTab('lobby')}
                       className="text-xs font-bold text-[var(--accent)] hover:underline shrink-0"
                     >
-                      ← Back to Meet
+                      ← Back to party
                     </button>
                   </div>
                 </div>
@@ -665,26 +626,119 @@ function RoomView({
               </div>
             </div>
           )}
+
+          {/* Controls Bar */}
+          <div className="flex flex-wrap items-center justify-center gap-2 p-3 rounded-2xl bg-[#090b11] border border-white/10 shadow-xl">
+            <button type="button" onClick={() => client.toggleMic()} className={btn(me.audioOn)} title="Microphone">
+              {me.audioOn ? <Mic className="w-4 h-4 text-emerald-400" /> : <MicOff className="w-4 h-4" />}
+              <span className="hidden sm:inline">{me.audioOn ? 'Mute' : 'Unmute'}</span>
+            </button>
+            <button type="button" onClick={() => client.toggleCamera()} className={btn(me.videoOn)} title="Camera">
+              {me.videoOn ? <Video className="w-4 h-4 text-[var(--accent)]" /> : <VideoOff className="w-4 h-4" />}
+              <span className="hidden sm:inline">{me.videoOn ? 'Camera off' : 'Camera on'}</span>
+            </button>
+            {me.videoOn && (
+              <button
+                type="button"
+                onClick={() => client.flipCamera()}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all border bg-white/5 border-white/15 text-slate-100 hover:border-[var(--accent)] hover:text-[var(--accent)] active:scale-95 shadow-sm cursor-pointer"
+                title="Flip camera (Front / Back for mobiles)"
+              >
+                <SwitchCamera className="w-4 h-4 text-[var(--accent)]" />
+                <span className="hidden sm:inline">Flip camera</span>
+                <span className="text-[9px] uppercase font-mono px-1.5 py-0.5 rounded bg-black/50 text-[var(--accent)] border border-[var(--accent)]/30">
+                  {me.cameraFacing === 'environment' ? 'Back' : 'Front'}
+                </span>
+              </button>
+            )}
+            <button type="button" onClick={() => client.toggleScreen()} className={btn(true)} title="Share your screen">
+              {me.screenOn ? <MonitorOff className="w-4 h-4 text-rose-400" /> : <MonitorUp className="w-4 h-4 text-purple-400" />}
+              <span className="hidden sm:inline">{me.screenOn ? 'Stop sharing' : 'Share screen'}</span>
+            </button>
+            <button type="button" onClick={() => client.toggleDeafen()} className={btn(!me.deafened)} title="Deafen (stop hearing everyone)">
+              {me.deafened ? <HeadphoneOff className="w-4 h-4" /> : <Headphones className="w-4 h-4 text-purple-400" />}
+              <span className="hidden sm:inline">{me.deafened ? 'Undeafen' : 'Deafen'}</span>
+            </button>
+
+            {client.isHost && game && (
+              <button
+                type="button"
+                onClick={() => {
+                  client.launchGameForAll();
+                  setTab('game');
+                  playSfx('launch');
+                }}
+                className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-black bg-[var(--accent)] text-black shadow-[0_0_15px_var(--accent-glow)] hover:bg-white transition-colors active:scale-95 cursor-pointer"
+              >
+                <Play className="w-4 h-4 fill-current" /> <span className="hidden sm:inline">Launch game for squad</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={() => {
+                if (client.isHost && snap.peers.length > 1 && !window.confirm('End this room for everyone?')) return;
+                if (client.isHost) client.endRoom();
+                else client.leave();
+                onLeft();
+              }}
+              className={btn(true, true)}
+            >
+              <PhoneOff className="w-4 h-4" /> <span className="hidden sm:inline">{client.isHost ? 'End room' : 'Leave'}</span>
+            </button>
+          </div>
+
+          {game && tab === 'lobby' && (
+            <div className="space-y-3">
+              <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.03] flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-14 h-14 rounded-xl overflow-hidden bg-black/60 border border-white/10 flex items-center justify-center p-1 shrink-0">
+                    <img src={game.thumbnail_url} alt={game.title} className="w-full h-full object-contain" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-[10px] font-black text-[var(--accent)] uppercase tracking-wider">Party Game</span>
+                    <h3 className="text-base font-bold text-white truncate">{game.title}</h3>
+                    <p className="text-xs text-slate-400">
+                      {game.category} • {game.supported_players}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTab('game');
+                    playSfx('tap');
+                  }}
+                  className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-xs font-bold text-white transition-colors flex items-center gap-2 shrink-0 cursor-pointer active:scale-95"
+                >
+                  <Play className="w-4 h-4 fill-current text-[var(--accent)]" /> Open game
+                </button>
+              </div>
+
+              {/* How to Play Guide */}
+              <GameHowToPlayGuide game={game} variant="compact" />
+            </div>
+          )}
         </div>
 
-        {/* Right Panel: Realtime Room Chat */}
-        <div className="rounded-2xl border border-white/10 bg-[#090b11] h-[520px] sm:h-[620px] flex flex-col overflow-hidden shadow-xl">
+        {/* Right Panel: Room Chat */}
+        <div className="rounded-2xl border border-white/10 bg-[#090b11] h-[520px] lg:h-[640px] flex flex-col overflow-hidden shadow-xl">
           <div className="px-4 py-3 border-b border-white/10 bg-black/50 flex items-center justify-between">
             <span className="text-xs font-black text-white uppercase tracking-wider flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               Room Chat
             </span>
-            <span className="text-[10px] text-slate-400 font-mono">Synced</span>
+            <span className="text-[10px] text-slate-400 font-mono">Live</span>
           </div>
 
           <div className="flex-1 p-3 overflow-y-auto space-y-2.5">
-            {messages.length === 0 && (
+            {snap.messages.length === 0 && (
               <div className="text-center pt-10 text-slate-500 text-xs space-y-1">
                 <p className="font-bold">No messages yet.</p>
-                <p className="text-[11px] text-slate-600">Send a greeting to your gaming party!</p>
+                <p className="text-[11px] text-slate-600">Send a greeting to your squad!</p>
               </div>
             )}
-            {messages.map((m) => (
+            {snap.messages.map((m) => (
               <div key={m.id} className="text-xs space-y-0.5">
                 <div className="flex items-center gap-2">
                   <span className="font-extrabold" style={{ color: m.color }}>
@@ -714,7 +768,6 @@ function RoomView({
             <button
               type="submit"
               className="p-2 rounded-xl bg-[var(--accent)] hover:bg-white text-black font-extrabold transition-all active:scale-95 shadow-md cursor-pointer"
-              title="Send"
             >
               <Send className="w-4 h-4" />
             </button>
@@ -733,12 +786,66 @@ function RoomPageContent() {
   const code = normalizeCode((params?.id as string) || '');
   const { user } = useAuth();
 
+  const urlCam = searchParams?.get('cam');
+  const urlFacing = searchParams?.get('facing') as 'user' | 'environment' | null;
+  const urlMic = searchParams?.get('mic');
+
   const [room, setRoom] = useState<PartyRoom | null>(null);
   const [loadState, setLoadState] = useState<'loading' | 'ready' | 'notfound' | 'error'>('loading');
   const [loadError, setLoadError] = useState('');
   const [name, setName] = useState('');
-  const [joined, setJoined] = useState(false);
+  const [wantMic, setWantMic] = useState(urlMic !== '0');
+  const [wantCam, setWantCam] = useState(urlCam === '1');
+  const [cameraFacing, setCameraFacing] = useState<'user' | 'environment'>(
+    urlFacing === 'environment' ? 'environment' : 'user'
+  );
+  const [joining, setJoining] = useState(false);
+  const [client, setClient] = useState<PartyRoomClient | null>(null);
   const [copied, setCopied] = useState(false);
+
+  const joinPreviewRef = useRef<HTMLVideoElement>(null);
+
+  const stopJoinPreview = useCallback(() => {
+    if (joinPreviewRef.current?.srcObject) {
+      const stream = joinPreviewRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach((t) => t.stop());
+      joinPreviewRef.current.srcObject = null;
+    }
+  }, []);
+
+  // Pre-join camera live preview with flip camera for mobiles
+  useEffect(() => {
+    if (client || !wantCam) {
+      stopJoinPreview();
+      return;
+    }
+    let active = true;
+    if (!navigator.mediaDevices?.getUserMedia) return;
+    navigator.mediaDevices
+      .getUserMedia({
+        video: {
+          facingMode: { ideal: cameraFacing },
+          width: { ideal: 640 },
+          height: { ideal: 360 },
+        },
+      })
+      .then((stream) => {
+        if (!active) {
+          stream.getTracks().forEach((t) => t.stop());
+          return;
+        }
+        if (joinPreviewRef.current) {
+          joinPreviewRef.current.srcObject = stream;
+          joinPreviewRef.current.play().catch(() => {});
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      active = false;
+      stopJoinPreview();
+    };
+  }, [client, wantCam, cameraFacing, stopJoinPreview]);
 
   useEffect(() => {
     if (!roomsBackendReady()) {
@@ -746,32 +853,49 @@ function RoomPageContent() {
       setLoadState('error');
       return;
     }
-
-    const defaultName = getIdentity(user?.display_name).name;
-    setName(defaultName);
-
+    setName(getIdentity(user?.display_name).name);
     getRoomByCode(code)
       .then((r) => {
-        if (!r || r.is_closed) {
-          setLoadState('notfound');
-        } else {
+        if (!r || r.is_closed) setLoadState('notfound');
+        else {
           setRoom(r);
           setLoadState('ready');
         }
       })
       .catch((e) => {
-        setLoadError(e?.message || 'Could not load gaming room.');
+        setLoadError(e?.message || 'Could not load the room.');
         setLoadState('error');
       });
   }, [code, user?.display_name]);
 
-  const handleJoin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!room) return;
+  // Clean disconnect when leaving page
+  useEffect(() => {
+    if (!client) return;
+    const bye = () => client.leave();
+    window.addEventListener('pagehide', bye);
+    return () => {
+      window.removeEventListener('pagehide', bye);
+      client.leave();
+    };
+  }, [client]);
+
+  const join = async () => {
+    if (!room || joining) return;
+    setJoining(true);
+    stopJoinPreview();
+    playSfx('launch');
     const finalName = (name.trim() || 'Gamer').slice(0, 24);
     if (!user) saveGuestName(finalName);
-    playSfx('launch');
-    setJoined(true);
+    const identity = { ...getIdentity(user?.display_name), name: user?.display_name || finalName };
+    const c = new PartyRoomClient({
+      code: room.code,
+      identity,
+      maxParticipants: room.max_participants,
+      hostClientId: room.host_client_id,
+    });
+    await c.join({ audio: wantMic, video: wantCam, facingMode: cameraFacing });
+    setClient(c);
+    setJoining(false);
   };
 
   const copyInvite = () => {
@@ -799,7 +923,7 @@ function RoomPageContent() {
         <div className="space-y-1">
           <h2 className="text-lg font-black text-white">Room Not Found or Closed</h2>
           <p className="text-xs text-slate-400">
-            Room <code className="text-[var(--accent)] font-bold">{code}</code> does not exist or has already been closed by its host.
+            Room <code className="text-[var(--accent)] font-bold">{code}</code> does not exist or has already been closed.
           </p>
         </div>
         <Link
@@ -833,24 +957,12 @@ function RoomPageContent() {
     );
   }
 
-  const identity: Identity = {
-    ...getIdentity(user?.display_name),
-    name: user?.display_name || (name.trim() || 'Gamer').slice(0, 24),
-  };
+  // Active connected room view
+  if (client) {
+    return <RoomView room={room} client={client} onLeft={() => router.push('/rooms')} />;
+  }
 
   const selectedGame = FEATURED_GAMES.find((g) => g.id === room.selected_game_id);
-
-  // If already joined, show full active room view
-  if (joined) {
-    return (
-      <RoomView
-        room={room}
-        identity={identity}
-        avatarUrl={user?.avatar_url || undefined}
-        onLeft={() => router.push('/rooms')}
-      />
-    );
-  }
 
   // Pre-join Lobby
   return (
@@ -859,7 +971,7 @@ function RoomPageContent() {
         <div className="flex items-center justify-between pb-4 border-b border-white/10">
           <div className="space-y-1">
             <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent)] font-mono">
-              Pixelverse Live Meet
+              Pixelverse Gaming Party
             </span>
             <h1 className="text-xl sm:text-2xl font-black text-white">{room.name}</h1>
           </div>
@@ -884,28 +996,62 @@ function RoomPageContent() {
           </div>
         )}
 
-        {/* Features Checklist */}
-        <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-300">
-          <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />
-            <span>HD Voice &amp; Video</span>
+        {/* Pre-join Camera Live Preview (if enabled) */}
+        {wantCam && (
+          <div className="relative aspect-video rounded-2xl overflow-hidden bg-black border border-white/15 shadow-inner">
+            <video
+              ref={joinPreviewRef}
+              autoPlay
+              playsInline
+              muted
+              className={`w-full h-full object-cover ${cameraFacing !== 'environment' ? '-scale-x-100' : ''}`}
+            />
+            <button
+              type="button"
+              onClick={() => {
+                stopJoinPreview();
+                setCameraFacing((prev) => (prev === 'user' ? 'environment' : 'user'));
+              }}
+              className="absolute top-2 right-2 flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-black/80 hover:bg-black text-white hover:text-[var(--accent)] border border-white/20 text-xs font-bold transition-all shadow-lg active:scale-95 cursor-pointer backdrop-blur-sm"
+              title="Flip camera"
+            >
+              <SwitchCamera className="w-3.5 h-3.5 text-[var(--accent)]" />
+              <span className="capitalize">{cameraFacing === 'environment' ? 'Back' : 'Front'}</span>
+            </button>
           </div>
-          <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee]" />
-            <span>Screen &amp; Game Stream</span>
-          </div>
-          <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-purple-400 shadow-[0_0_8px_#c084fc]" />
-            <span>Google Meet Grid View</span>
-          </div>
-          <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_#fbbf24]" />
-            <span>100% Free &amp; Unlimited</span>
-          </div>
+        )}
+
+        {/* Media Controls for Joining */}
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={() => setWantMic(!wantMic)}
+            className={`flex items-center justify-center gap-2 p-3 rounded-2xl border text-xs font-black transition-all cursor-pointer active:scale-95 ${
+              wantMic
+                ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300 shadow-[0_0_15px_rgba(52,211,153,0.2)]'
+                : 'bg-rose-500/15 border-rose-500/40 text-rose-300'
+            }`}
+          >
+            {wantMic ? <Mic className="w-4 h-4 text-emerald-400" /> : <MicOff className="w-4 h-4 text-rose-400" />}
+            <span>{wantMic ? 'Mic: Enabled' : 'Mic: Muted'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setWantCam(!wantCam)}
+            className={`flex items-center justify-center gap-2 p-3 rounded-2xl border text-xs font-black transition-all cursor-pointer active:scale-95 ${
+              wantCam
+                ? 'bg-[var(--accent)]/15 border-[var(--accent)]/40 text-[var(--accent)] shadow-[0_0_15px_var(--accent-glow)]'
+                : 'bg-white/5 border-white/10 text-slate-400'
+            }`}
+          >
+            {wantCam ? <Video className="w-4 h-4 text-[var(--accent)]" /> : <VideoOff className="w-4 h-4" />}
+            <span>{wantCam ? 'Camera: On' : 'Camera: Off'}</span>
+          </button>
         </div>
 
         {/* Nickname Form */}
-        <form onSubmit={handleJoin} className="space-y-4">
+        <div className="space-y-3">
           <div className="space-y-1.5">
             <label className="text-xs font-extrabold text-slate-300">Gamer Nickname</label>
             <input
@@ -920,13 +1066,15 @@ function RoomPageContent() {
           </div>
 
           <button
-            type="submit"
-            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-[var(--accent)] hover:bg-white text-black font-black text-sm uppercase tracking-wider shadow-[0_0_24px_var(--accent-glow)] transition-all active:scale-95 cursor-pointer"
+            type="button"
+            onClick={join}
+            disabled={joining}
+            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-[var(--accent)] hover:bg-white text-black font-black text-sm uppercase tracking-wider shadow-[0_0_24px_var(--accent-glow)] transition-all active:scale-95 cursor-pointer disabled:opacity-60"
           >
-            <Video className="w-4 h-4 fill-current" />
-            <span>Join Party Meet</span>
+            {joining ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4 fill-current" />}
+            <span>{joining ? 'Connecting to Party...' : 'Join Party Room'}</span>
           </button>
-        </form>
+        </div>
 
         {/* Share Link button */}
         <div className="pt-2 flex items-center justify-between border-t border-white/10 text-xs">
@@ -935,7 +1083,7 @@ function RoomPageContent() {
             onClick={copyInvite}
             className="flex items-center gap-1.5 text-slate-400 hover:text-[var(--accent)] transition-colors cursor-pointer"
           >
-            {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5" />}
+            {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
             <span>{copied ? 'Link Copied to Clipboard!' : 'Copy Invite Link'}</span>
           </button>
           <Link href="/rooms" className="text-slate-400 hover:text-white transition-colors">

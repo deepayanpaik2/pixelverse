@@ -49,9 +49,9 @@ export async function POST(req: NextRequest) {
     const participantIdentity = authUser ? authUser.id : (cleanIdentity || `guest_${crypto.randomUUID().slice(0, 8)}`);
     const participantName = authUser?.user_metadata?.display_name || authUser?.user_metadata?.full_name || authUser?.email?.split('@')[0] || cleanName;
 
-    // LiveKit credentials from server-side environment variables
-    const apiKey = process.env.LIVEKIT_API_KEY;
-    const apiSecret = process.env.LIVEKIT_API_SECRET;
+    // LiveKit credentials from server-side environment variables or verified project keys
+    const apiKey = process.env.LIVEKIT_API_KEY || 'APIuj5UMp5pfAEF';
+    const apiSecret = process.env.LIVEKIT_API_SECRET || '6IlRq5bpxsQepAuaToMueX3mxBZslncvi0Dg1eoWY3fB';
     const livekitUrl =
       process.env.LIVEKIT_URL ||
       process.env.NEXT_PUBLIC_LIVEKIT_URL ||
