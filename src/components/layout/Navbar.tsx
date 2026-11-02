@@ -246,7 +246,7 @@ export function Navbar() {
         <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 shrink-0">
           <button
             onClick={() => setMobileMenu(!mobileMenu)}
-            className="sm:hidden p-2 rounded-xl bg-black/50 border border-white/15 text-white hover:border-[var(--accent)] active:scale-95 transition-all shadow-md shrink-0"
+            className="md:hidden p-2 rounded-xl bg-black/50 border border-white/15 text-white hover:border-[var(--accent)] active:scale-95 transition-all shadow-md shrink-0"
             aria-label="Toggle menu"
           >
             {mobileMenu ? <X className="w-4 h-4 text-[var(--accent)]" /> : <Menu className="w-4 h-4" />}
@@ -280,17 +280,8 @@ export function Navbar() {
           </Link>
         </div>
 
-        {/* Desktop Quick Navigation Links */}
-        <nav className="hidden xl:flex items-center gap-1 shrink-0 text-xs font-bold text-slate-300">
-          <Link href="/" onClick={() => playSfx('tap')} className="px-3 py-1.5 rounded-xl hover:text-white hover:bg-white/10 transition-colors">Home</Link>
-          <Link href="/arcade" onClick={() => playSfx('tap')} className="px-3 py-1.5 rounded-xl hover:text-white hover:bg-white/10 transition-colors">Discover</Link>
-          <Link href="/categories" onClick={() => playSfx('tap')} className="px-3 py-1.5 rounded-xl hover:text-white hover:bg-white/10 transition-colors">Categories</Link>
-          <Link href="/trending" onClick={() => playSfx('tap')} className="px-3 py-1.5 rounded-xl hover:text-white hover:bg-white/10 transition-colors">Trending</Link>
-          <Link href="/new" onClick={() => playSfx('tap')} className="px-3 py-1.5 rounded-xl hover:text-white hover:bg-white/10 transition-colors">New Games</Link>
-        </nav>
-
         {/* Center Section: 3D Cyber Search Terminal */}
-        <div className="hidden md:flex flex-1 min-w-[80px] max-w-xs lg:max-w-sm relative">
+        <div className="hidden md:flex flex-1 min-w-[140px] max-w-md lg:max-w-xl mx-2 lg:mx-4 relative">
           <form onSubmit={handleSearchSubmit} className="relative w-full">
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-focus-within:text-[var(--accent)] transition-colors" />
             <input
@@ -360,7 +351,7 @@ export function Navbar() {
               setShowMobileSearch(!showMobileSearch);
               playSfx('tap');
             }}
-            className="sm:hidden p-2 rounded-xl bg-black/60 border border-white/15 text-slate-200 hover:text-[var(--accent)] hover:border-[var(--accent)]/50 active:scale-95 transition-all shadow-sm shrink-0"
+            className="md:hidden p-2 rounded-xl bg-black/60 border border-white/15 text-slate-200 hover:text-[var(--accent)] hover:border-[var(--accent)]/50 active:scale-95 transition-all shadow-sm shrink-0"
             title="Search Games"
             aria-label="Search Games"
           >
@@ -373,7 +364,7 @@ export function Navbar() {
               setKidsMode(!kidsMode);
               playSfx('toggle');
             }}
-            className={`hidden 2xl:flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-black transition-all btn-3d shrink-0 ${
+            className={`hidden 3xl:flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-black transition-all btn-3d shrink-0 ${
               kidsMode
                 ? 'bg-emerald-400 text-black shadow-[0_4px_16px_rgba(52,211,153,0.5)] border border-emerald-300'
                 : 'bg-black/50 border border-white/15 text-slate-300 hover:text-white hover:border-white/30'
@@ -393,7 +384,7 @@ export function Navbar() {
           <Link
             href="/submit"
             onClick={() => playSfx('tap')}
-            className="hidden 2xl:flex items-center gap-2 px-3.5 py-2 rounded-xl bg-black/50 border border-white/15 text-xs font-black text-slate-200 hover:text-[var(--accent)] hover:border-[var(--accent)]/50 transition-all btn-3d shrink-0"
+            className="hidden 3xl:flex items-center gap-2 px-3.5 py-2 rounded-xl bg-black/50 border border-white/15 text-xs font-black text-slate-200 hover:text-[var(--accent)] hover:border-[var(--accent)]/50 transition-all btn-3d shrink-0"
           >
             <Upload className="w-3.5 h-3.5 text-[var(--accent)]" />
             <span>Submit</span>
@@ -403,7 +394,7 @@ export function Navbar() {
           <Link
             href="/avatar"
             onClick={() => playSfx('tap')}
-            className="hidden 2xl:flex items-center justify-center p-2 sm:px-2.5 sm:py-2 rounded-xl bg-black/60 border border-white/15 hover:border-pink-500/60 text-slate-200 hover:text-white hover:shadow-[0_0_15px_rgba(236,72,153,0.4)] transition-all btn-3d shrink-0 relative group"
+            className="hidden 3xl:flex items-center justify-center p-2 sm:px-2.5 sm:py-2 rounded-xl bg-black/60 border border-white/15 hover:border-pink-500/60 text-slate-200 hover:text-white hover:shadow-[0_0_15px_rgba(236,72,153,0.4)] transition-all btn-3d shrink-0 relative group"
             title="Avatar Studio (Hot!)"
             aria-label="Avatar Studio"
           >
@@ -424,7 +415,7 @@ export function Navbar() {
               setShowRoulette(true);
               playSfx('tap');
             }}
-            className="flex items-center gap-2 px-3 sm:px-3.5 py-2 rounded-xl bg-gradient-to-r from-pink-500/20 via-purple-600/25 to-[var(--accent)]/20 hover:from-pink-500/35 hover:to-[var(--accent)]/35 border-2 border-[var(--accent)] hover:border-pink-400 text-white shadow-[0_0_18px_var(--accent-glow)] hover:shadow-[0_0_25px_rgba(236,72,153,0.5)] active:scale-95 transition-all btn-3d shrink-0 cursor-pointer group"
+            className="hidden sm:flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-pink-500/20 via-purple-600/25 to-[var(--accent)]/20 hover:from-pink-500/35 hover:to-[var(--accent)]/35 border border-[var(--accent)] hover:border-pink-400 text-white shadow-[0_0_15px_var(--accent-glow)] hover:shadow-[0_0_20px_rgba(236,72,153,0.5)] active:scale-95 transition-all btn-3d shrink-0 cursor-pointer group"
             title="Surprise Me! (Instant Game Roulette)"
             aria-label="Surprise Me! (Instant Game Roulette)"
           >
@@ -455,7 +446,7 @@ export function Navbar() {
               aria-label="Select Gaming Theme"
             >
               <Palette className="w-4 h-4 text-[var(--accent)] drop-shadow-[0_0_8px_var(--accent)] shrink-0" />
-              <span className="hidden 2xl:inline text-[11px] uppercase tracking-wide">Theme</span>
+              <span className="hidden 3xl:inline text-[11px] uppercase tracking-wide">Theme</span>
             </button>
 
             {/* Luxurious 3D Theme Customizer Dropdown Drawer */}
@@ -538,7 +529,7 @@ export function Navbar() {
           </div>
 
           {/* i18n Language Dropdown */}
-          <div className="relative hidden 2xl:block" ref={langRef}>
+          <div className="relative hidden 3xl:block" ref={langRef}>
             <button
               onClick={() => {
                 setShowLangMenu(!showLangMenu);
@@ -616,7 +607,7 @@ export function Navbar() {
                   alt=""
                   className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg object-cover border border-white/20 shrink-0"
                 />
-                <span className="text-xs font-black text-white max-w-[130px] sm:max-w-[170px] truncate">
+                <span className="hidden sm:inline text-xs font-black text-white max-w-[110px] lg:max-w-[160px] truncate">
                   {user.display_name}
                 </span>
               </button>
@@ -690,7 +681,7 @@ export function Navbar() {
             <Link
               href="/auth/sign-in"
               onClick={() => playSfx('tap')}
-              className="btn-gaming px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-full font-black text-xs whitespace-nowrap shadow-[0_4px_16px_var(--accent-glow)] flex items-center gap-1.5 shrink-0"
+              className="btn-gaming px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-xl font-black text-xs whitespace-nowrap shadow-[0_4px_16px_var(--accent-glow)] flex items-center gap-1.5 shrink-0"
             >
               <Gamepad2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current shrink-0" />
               <span>Sign In</span>
@@ -702,7 +693,7 @@ export function Navbar() {
       {/* Mobile drawer navigation */}
       {mobileMenu && (
         <div
-          className="sm:hidden mt-3 pt-3 border-t border-white/10 drawer-neon rounded-2xl p-4 space-y-4 max-h-[82vh] overflow-y-auto scrollbar-none animate-in fade-in slide-in-from-top-2 duration-200"
+          className="md:hidden mt-3 pt-3 border-t border-white/10 drawer-neon rounded-2xl p-4 space-y-4 max-h-[82vh] overflow-y-auto scrollbar-none animate-in fade-in slide-in-from-top-2 duration-200"
           style={{ opacity: 1, pointerEvents: 'auto' }}
         >
           {/* Mobile Surprise Roulette Button */}
@@ -932,7 +923,7 @@ export function Navbar() {
 
       {/* Instant Mobile Quick Search Bar */}
       {showMobileSearch && (
-        <div className="sm:hidden mt-2 pt-2 border-t border-white/10 animate-in fade-in slide-in-from-top-1 duration-150">
+        <div className="md:hidden mt-2 pt-2 border-t border-white/10 animate-in fade-in slide-in-from-top-1 duration-150">
           <form onSubmit={handleSearchSubmit} className="relative w-full">
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
             <input
