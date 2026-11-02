@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { 
@@ -42,6 +43,7 @@ function RoomsContent() {
   const { user } = useAuth();
 
   const [rooms, setRooms] = useState<PartyRoom[]>([]);
+  const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [creating, setCreating] = useState(false);
@@ -65,6 +67,10 @@ function RoomsContent() {
   const [camError, setCamError] = useState<string | null>(null);
   const previewVideoRef = React.useRef<HTMLVideoElement>(null);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const stopPreviewStream = useCallback(() => {
     if (previewVideoRef.current?.srcObject) {
       const stream = previewVideoRef.current.srcObject as MediaStream;
@@ -72,6 +78,18 @@ function RoomsContent() {
       previewVideoRef.current.srcObject = null;
     }
   }, []);
+
+  useEffect(() => {
+    if (!showCreateModal) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        stopPreviewStream();
+        setShowCreateModal(false);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [showCreateModal, stopPreviewStream]);
 
   useEffect(() => {
     if (!showCreateModal || !wantCam) {
@@ -357,14 +375,22 @@ function RoomsContent() {
       </div>
 
       {/* Create Room Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-2.5 sm:p-4 overflow-y-auto overscroll-contain animate-in fade-in duration-200">
+      {showCreateModal && mounted && createPortal(
+        <div
+          className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-xl overflow-y-auto overscroll-contain animate-in fade-in duration-200"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              stopPreviewStream();
+              setShowCreateModal(false);
+            }
+          }}
+        >
           <form
             onSubmit={handleCreateRoom}
-            className="glass-panel max-w-lg w-full max-h-[calc(100dvh-1.5rem)] sm:max-h-[90vh] rounded-2xl border border-arcade-border shadow-2xl flex flex-col my-auto overflow-hidden animate-in zoom-in-95 duration-200"
+            className="w-full max-w-lg max-h-[calc(100dvh-2.5rem)] sm:max-h-[88vh] rounded-3xl border border-white/15 bg-[#0b0e1b]/95 backdrop-blur-2xl shadow-[0_25px_70px_-15px_rgba(0,0,0,0.95)] flex flex-col my-auto overflow-hidden animate-in zoom-in-95 duration-200"
           >
             {/* Sticky Modal Header */}
-            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-arcade-border shrink-0 bg-[#070913]/95">
+            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-white/10 shrink-0 bg-white/[0.03]">
               <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
                 <Tv className="w-4 h-4 text-arcade-sage" /> Create New Gaming Room
               </h2>
@@ -374,7 +400,7 @@ function RoomsContent() {
                   stopPreviewStream();
                   setShowCreateModal(false);
                 }}
-                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
                 aria-label="Close"
               >
                 <X className="w-4 h-4" />
@@ -391,7 +417,7 @@ function RoomsContent() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Neon Speedrun Squad"
-                  className="w-full bg-arcade-midnight border border-arcade-border rounded-lg p-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-arcade-sage"
+                  className="w-full bg-[#060812] border border-white/10 rounded-xl p-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-arcade-sage transition-colors"
                 />
               </div>
 
@@ -402,7 +428,7 @@ function RoomsContent() {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="What is this party doing? (Voice required, casual, etc.)"
-                  className="w-full bg-arcade-midnight border border-arcade-border rounded-lg p-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-arcade-sage"
+                  className="w-full bg-[#060812] border border-white/10 rounded-xl p-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-arcade-sage transition-colors"
                 />
               </div>
 
@@ -412,7 +438,7 @@ function RoomsContent() {
                   <GameSelect
                     value={selectedGameId}
                     onChange={(id) => setSelectedGameId(id)}
-                    className="w-full bg-arcade-midnight border border-arcade-border rounded-lg p-2.5 text-white focus:outline-none focus:border-arcade-sage"
+                    className="w-full bg-[#060812] border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-arcade-sage"
                   />
                 </div>
 
@@ -424,7 +450,7 @@ function RoomsContent() {
                     max="12"
                     value={maxParticipants}
                     onChange={(e) => setMaxParticipants(Math.min(12, Math.max(2, parseInt(e.target.value, 10) || 2)))}
-                    className="w-full bg-arcade-midnight border border-arcade-border rounded-lg p-2.5 text-white focus:outline-none focus:border-arcade-sage"
+                    className="w-full bg-[#060812] border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-arcade-sage"
                   />
                 </div>
               </div>
@@ -437,10 +463,10 @@ function RoomsContent() {
                       type="button"
                       key={v}
                       onClick={() => setVisibility(v)}
-                      className={`p-2 rounded-lg capitalize font-bold transition-colors ${
+                      className={`p-2.5 rounded-xl capitalize font-bold transition-all ${
                         visibility === v
-                          ? 'bg-arcade-sage text-arcade-dark'
-                          : 'bg-arcade-midnight border border-arcade-border text-slate-300'
+                          ? 'bg-arcade-sage text-arcade-dark shadow-sm'
+                          : 'bg-[#060812] border border-white/10 text-slate-300 hover:border-white/20'
                       }`}
                     >
                       {v}
@@ -450,7 +476,7 @@ function RoomsContent() {
               </div>
 
               {/* Camera & Microphone Setup with Flip Camera Option for Mobiles */}
-              <div className="p-3 rounded-xl bg-black/40 border border-arcade-border/70 space-y-2.5">
+              <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-3">
                 <div className="flex items-center justify-between">
                   <label className="text-slate-300 font-bold flex items-center gap-1.5">
                     <Video className="w-3.5 h-3.5 text-arcade-champagne" /> Camera & Mic (Mobile Ready)
@@ -459,7 +485,7 @@ function RoomsContent() {
                     <button
                       type="button"
                       onClick={handleFlipCamera}
-                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-arcade-surface hover:bg-arcade-border text-white text-[11px] font-bold border border-arcade-champagne/40 transition-colors shadow-sm active:scale-95"
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/15 text-white text-[11px] font-bold border border-arcade-champagne/40 transition-colors shadow-sm active:scale-95"
                       title="Flip camera between front selfie and rear environment"
                     >
                       <SwitchCamera className="w-3.5 h-3.5 text-arcade-champagne animate-pulse" />
@@ -475,10 +501,10 @@ function RoomsContent() {
                   <button
                     type="button"
                     onClick={() => setWantMic(!wantMic)}
-                    className={`flex items-center justify-center gap-2 p-2 rounded-lg border font-bold text-xs transition-colors ${
+                    className={`flex items-center justify-center gap-2 p-2.5 rounded-xl border font-bold text-xs transition-colors ${
                       wantMic
                         ? 'bg-arcade-sage/15 border-arcade-sage text-arcade-sage'
-                        : 'bg-arcade-midnight border-arcade-border text-slate-400'
+                        : 'bg-[#060812] border-white/10 text-slate-400 hover:text-white'
                     }`}
                   >
                     {wantMic ? <Mic className="w-3.5 h-3.5" /> : <MicOff className="w-3.5 h-3.5" />}
@@ -488,10 +514,10 @@ function RoomsContent() {
                   <button
                     type="button"
                     onClick={() => setWantCam(!wantCam)}
-                    className={`flex items-center justify-center gap-2 p-2 rounded-lg border font-bold text-xs transition-colors ${
+                    className={`flex items-center justify-center gap-2 p-2.5 rounded-xl border font-bold text-xs transition-colors ${
                       wantCam
                         ? 'bg-arcade-champagne/15 border-arcade-champagne text-arcade-champagne'
-                        : 'bg-arcade-midnight border-arcade-border text-slate-400'
+                        : 'bg-[#060812] border-white/10 text-slate-400 hover:text-white'
                     }`}
                   >
                     {wantCam ? <Video className="w-3.5 h-3.5" /> : <VideoOff className="w-3.5 h-3.5" />}
@@ -500,7 +526,7 @@ function RoomsContent() {
                 </div>
 
                 {wantCam && (
-                  <div className="relative aspect-video rounded-lg overflow-hidden bg-black border border-arcade-border/80 flex items-center justify-center">
+                  <div className="relative aspect-video rounded-xl overflow-hidden bg-black/80 border border-white/10 flex items-center justify-center">
                     <video
                       ref={previewVideoRef}
                       autoPlay
@@ -533,21 +559,21 @@ function RoomsContent() {
               </div>
 
               {createError && (
-                <div className="p-2.5 rounded-lg border border-arcade-rose/40 bg-arcade-rose/10 text-xs text-arcade-rose">
+                <div className="p-3 rounded-xl border border-arcade-rose/40 bg-arcade-rose/10 text-xs text-arcade-rose">
                   {createError}
                 </div>
               )}
             </div>
 
             {/* Sticky Modal Footer (Always visible on all screen heights & mobile devices) */}
-            <div className="flex items-center justify-end gap-2.5 p-3.5 sm:p-4 border-t border-arcade-border bg-[#070913]/95 shrink-0 z-10">
+            <div className="flex items-center justify-end gap-2.5 p-3.5 sm:p-4 border-t border-white/10 bg-white/[0.03] shrink-0 z-10">
               <button
                 type="button"
                 onClick={() => {
                   stopPreviewStream();
                   setShowCreateModal(false);
                 }}
-                className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:bg-white/5 border border-white/10 transition-colors"
+                className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:bg-white/10 border border-white/10 transition-colors"
               >
                 Cancel
               </button>
@@ -570,7 +596,8 @@ function RoomsContent() {
               </button>
             </div>
           </form>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

@@ -74,7 +74,7 @@ export function ChallengeDuelModal({
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md overflow-y-auto overscroll-contain animate-in fade-in duration-200"
+      className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xl overflow-y-auto overscroll-contain animate-in fade-in duration-200"
       style={{ opacity: 1, pointerEvents: 'auto' }}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();

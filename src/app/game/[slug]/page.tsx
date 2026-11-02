@@ -920,8 +920,13 @@ export default function GamePlayerPage() {
 
       {/* Report Broken Modal */}
       {showReportModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="glass-panel max-w-md w-full p-6 rounded-2xl border border-arcade-border space-y-4">
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-xl z-[99999] flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowReportModal(false);
+          }}
+        >
+          <div className="glass-panel max-w-md w-full p-6 rounded-3xl border border-white/15 bg-[#0b0e1b]/95 backdrop-blur-2xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.95)] space-y-4 animate-in zoom-in-95 duration-200">
             <h3 className="text-base font-bold text-white flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-arcade-rose" /> Report Issue: {game.title}
             </h3>
